@@ -1,0 +1,30 @@
+Package: scholid
+Type: Package
+Title: Tools for Scholarly and Academic Identifiers
+Version: 0.1.0
+Authors@R: 
+    person("Thomas", "Rauter",
+           email = "rauterthomas0@gmail.com",
+           role = c("aut", "cre", "fnd"),
+           comment = c(ORCID = "0009-0004-5578-3628"))
+Description: Tools for detecting, normalizing, classifying, and extracting
+    scholarly and academic identifier strings. The package provides
+    lightweight, dependency-free helpers for common identifier systems such
+    as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed records.
+    Functions are designed to be vectorized, predictable, and suitable as
+    low-level building blocks for other R packages and data workflows.
+License: MIT + file LICENSE
+URL: https://github.com/Thomas-Rauter/scholid.git
+BugReports: https://github.com/Thomas-Rauter/scholid/issues
+Depends: R (>= 4.5.0)
+Imports:
+Suggests:
+    testthat (>= 3.0.0),
+    knitr (>= 1.30),
+    devtools (>= 2.4.0)
+Encoding: UTF-8
+LazyData: false
+RoxygenNote: 7.3.3
+Roxygen: list(markdown = TRUE)
+Config/testthat/edition: 3
+VignetteBuilder: knitr

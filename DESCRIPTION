@@ -21,7 +21,8 @@ Imports:
 Suggests:
     testthat (>= 3.0.0),
     knitr (>= 1.30),
-    devtools (>= 2.4.0)
+    devtools (>= 2.4.0),
+    covr (>= 3.6.0)
 Encoding: UTF-8
 LazyData: false
 RoxygenNote: 7.3.3

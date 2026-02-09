@@ -4,4 +4,4 @@
 ^\.Rproj\.user$
 ^_pkgdown\.yml$
 ^dev$
-
+^.github$

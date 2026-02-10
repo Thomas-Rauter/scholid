@@ -7,4 +7,5 @@ renv.lock
 scholid.Rcheck/
 renv/
 dev/
+docs/
 scholid.Rproj

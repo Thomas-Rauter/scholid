@@ -1,8 +1,7 @@
 # Check scholarly identifiers
 
 Vectorized predicate for checking whether values match a supported
-scholarly identifier type (e.g., DOI, ORCID). Dispatches to the
-corresponding `is_*()` implementation (such as `is_doi()`).
+scholarly identifier type (e.g., DOI, ORCID).
 
 ## Usage
 

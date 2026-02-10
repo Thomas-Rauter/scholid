@@ -21,3 +21,18 @@ classify_scholid(x)
 A character vector of the same length as `x`, giving the detected
 identifier type for each element, or `NA_character_` if no match is
 found.
+
+## Details
+
+Classification is based on canonical identifier syntax. Wrapped forms
+(e.g., URLs or labels) should be normalized first with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md).
+
+## Examples
+
+``` r
+classify_scholid(c("10.1000/182", "0000-0002-1825-0097", "not an id"))
+#> [1] "doi"   "orcid" NA     
+classify_scholid(normalize_scholid("https://doi.org/10.1000/182", "doi"))
+#> [1] "doi"
+```

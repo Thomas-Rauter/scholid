@@ -1,8 +1,7 @@
 # Normalize scholarly identifiers
 
-Vectorized normalizer for supported scholarly identifier types.
-Dispatches to the corresponding `normalize_*()` implementation (such as
-`normalize_doi()`).
+Vectorized normalizer that converts supported scholarly identifier
+values to a canonical form (e.g., removing URL prefixes).
 
 ## Usage
 
@@ -24,8 +23,8 @@ normalize_scholid(x, type)
 
 ## Value
 
-A character vector with the same length as `x`. Invalid inputs should
-yield `NA_character_`, depending on the called normalizer.
+A character vector with the same length as `x`. Invalid inputs yield
+`NA_character_`.
 
 ## Examples
 

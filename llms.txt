@@ -30,41 +30,47 @@ communication:
 - PubMed (PMID)
 - PubMed Central (PMCID)
 
-## Design principles
+## Interface
 
-- Base R only (no runtime dependencies)
-- Vectorized functions with predictable output
-- Strict input validation
-- Clear separation between detection, normalization, and extraction
-- Comprehensive unit tests
+User-available functions:
 
-## Core interface
+| Function                                                                                | Purpose                                                |
+|-----------------------------------------------------------------------------------------|--------------------------------------------------------|
+| [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md) | List supported scholarly identifier types              |
+| `is_scholid(x, type)`                                                                   | Test whether values conform to a given identifier type |
+| `normalize_scholid(x, type)`                                                            | Normalize identifiers to canonical form                |
+| `extract_scholid(text, type)`                                                           | Extract identifiers of a given type from free text     |
+| `classify_scholid(x)`                                                                   | Guess the identifier type of each input value          |
 
-The main entry points are generic helpers that dispatch to
-identifier-specific implementations:
+## Examples
 
 ``` r
+# list supported scholarly identifier types
 scholid::scholid_types()
-scholid::is_scholid(x, type)
-scholid::normalize_scholid(x, type)
-scholid::extract_scholid(text, type)
-scholid::classify_scholid(x)
 ```
 
-Each identifier type also has dedicated helpers such as `is_doi()`,
-`normalize_orcid()`, and `extract_isbn()`.
-
-## Example
-
-A minimal example using fully qualified calls:
+``` R
+## [1] "arxiv" "doi"   "isbn"  "issn"  "orcid" "pmcid" "pmid"
+```
 
 ``` r
-x <- c(
-  "https://doi.org/10.1000/182",
-  "0000-0002-1825-0097"
+# test whether values match a given identifier type
+scholid::is_scholid(
+  x    = "10.1000/182",
+  type = "doi"
 )
+```
 
-scholid::normalize_scholid(x[1], "doi")
+``` R
+## [1] TRUE
+```
+
+``` r
+# normalize identifiers to canonical form
+scholid::normalize_scholid(
+  x    = "https://doi.org/10.1000/182",
+  type = "doi"
+)
 ```
 
 ``` R
@@ -72,11 +78,31 @@ scholid::normalize_scholid(x[1], "doi")
 ```
 
 ``` r
-scholid::is_scholid(x[2], "orcid")
+# extract identifiers of a given type from free text
+scholid::extract_scholid(
+  text = "See https://doi.org/10.1000/182 for details.",
+  type = "doi"
+)
 ```
 
 ``` R
-## [1] TRUE
+## [[1]]
+## [1] "10.1000/182"
+```
+
+``` r
+# classify the identifier type of each input value
+scholid::classify_scholid(
+  x = c(
+    "10.1000/182",
+    "0000-0002-1825-0097",
+    "not an id"
+  )
+)
+```
+
+``` R
+## [1] "doi"   "orcid" NA
 ```
 
 For more detailed usage patterns, including extraction from text and

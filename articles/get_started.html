@@ -66,26 +66,15 @@ small, well-tested helpers to detect, normalize, classify, and extract
 common identifier strings.</p>
 <p>This vignette introduces the core interface and typical workflows for
 mixed, messy identifier data.</p>
-<div class="section level3">
-<h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h3>
+<div class="section level2">
+<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
+</h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"scholid"</span><span class="op">)</span></span></code></pre></div>
 </div>
-<div class="section level3">
-<h3 id="supported-identifier-types">Supported identifier types<a class="anchor" aria-label="anchor" href="#supported-identifier-types"></a>
-</h3>
-<p>Use <code><a href="../reference/scholid_types.html">scholid_types()</a></code> to see which identifier systems are
-supported by the package.</p>
-</div>
 <div class="section level2">
-<h2 id="scholid_types">scholid_types()<a class="anchor" aria-label="anchor" href="#scholid_types"></a>
+<h2 id="core-interface">Core interface<a class="anchor" aria-label="anchor" href="#core-interface"></a>
 </h2>
-<p>The exact set may expand over time, but the package aims to keep a
-small, stable API.</p>
-<div class="section level3">
-<h3 id="core-interface">Core interface<a class="anchor" aria-label="anchor" href="#core-interface"></a>
-</h3>
 <p><code>scholid</code> exposes a small set of user-facing functions
 that operate consistently across identifier types:</p>
 <ul>
@@ -108,57 +97,79 @@ element.</li>
 implementations such as <code>is_doi()</code>,
 <code>normalize_orcid()</code>, and <code>extract_isbn()</code>.</p>
 </div>
-<div class="section level3">
-<h3 id="detect-is_scholid">Detect: <code>is_scholid()</code><a class="anchor" aria-label="anchor" href="#detect-is_scholid"></a>
-</h3>
+<div class="section level2">
+<h2 id="supported-identifier-types">Supported identifier types<a class="anchor" aria-label="anchor" href="#supported-identifier-types"></a>
+</h2>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/scholid_types.html">scholid_types</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="detect-is_scholid">Detect: <code>is_scholid()</code><a class="anchor" aria-label="anchor" href="#detect-is_scholid"></a>
+</h2>
 <p><code><a href="../reference/is_scholid.html">is_scholid()</a></code> checks whether each value matches a
 specific identifier type. It is vectorized and preserves missing
 values.</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"10.1000/182"</span>, <span class="st">"not a doi"</span>, <span class="cn">NA</span><span class="op">)</span></span>
-<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/is_scholid.html">is_scholid</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"doi"</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"10.1000/182"</span>,</span>
+<span>    <span class="st">"not a doi"</span>,</span>
+<span>    <span class="cn">NA</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/is_scholid.html">is_scholid</a></span><span class="op">(</span></span>
+<span>    x    <span class="op">=</span> <span class="va">x</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">"doi"</span></span>
+<span>    <span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1]  TRUE FALSE    NA</span></span></code></pre>
 </div>
-<div class="section level3">
-<h3 id="normalize-normalize_scholid">Normalize: <code>normalize_scholid()</code><a class="anchor" aria-label="anchor" href="#normalize-normalize_scholid"></a>
-</h3>
+<div class="section level2">
+<h2 id="normalize-normalize_scholid">Normalize: <code>normalize_scholid()</code><a class="anchor" aria-label="anchor" href="#normalize-normalize_scholid"></a>
+</h2>
 <p>Normalization removes common wrappers and enforces a canonical
 representation. This is particularly useful when identifiers are stored
 as URLs or prefixed labels.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"https://doi.org/10.1000/182."</span>,</span>
 <span>  <span class="st">"doi:10.1000/182"</span>,</span>
 <span>  <span class="st">" 10.1000/182 "</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/normalize_scholid.html">normalize_scholid</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"doi"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/normalize_scholid.html">normalize_scholid</a></span><span class="op">(</span></span>
+<span>    x    <span class="op">=</span> <span class="va">x</span>, </span>
+<span>    type <span class="op">=</span> <span class="st">"doi"</span></span>
+<span>    <span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "10.1000/182" "10.1000/182" "10.1000/182"</span></span></code></pre>
 <p>For ORCID iDs, normalization removes URL prefixes and enforces
 hyphenated grouping.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"https://orcid.org/0000-0002-1825-0097"</span>,</span>
 <span>  <span class="st">"0000000218250097"</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/normalize_scholid.html">normalize_scholid</a></span><span class="op">(</span><span class="va">x</span>, <span class="st">"orcid"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/normalize_scholid.html">normalize_scholid</a></span><span class="op">(</span></span>
+<span>    x    <span class="op">=</span> <span class="va">x</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">"orcid"</span></span>
+<span>    <span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "0000-0002-1825-0097" "0000-0002-1825-0097"</span></span></code></pre>
 <p>Normalization is designed to be predictable: - <code>NA</code> input
 stays <code>NA</code>. - Invalid inputs typically become
 <code>NA_character_</code>.</p>
 </div>
-<div class="section level3">
-<h3 id="extract-extract_scholid">Extract: <code>extract_scholid()</code><a class="anchor" aria-label="anchor" href="#extract-extract_scholid"></a>
-</h3>
+<div class="section level2">
+<h2 id="extract-extract_scholid">Extract: <code>extract_scholid()</code><a class="anchor" aria-label="anchor" href="#extract-extract_scholid"></a>
+</h2>
 <p>Extraction is for harvesting identifiers from unstructured text. The
 result is a list with one element per input element. Each element is a
 character vector of matches (possibly empty).</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">txt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"See https://doi.org/10.1000/182 and doi:10.5555/12345678."</span>,</span>
 <span>  <span class="st">"No identifier here."</span>,</span>
 <span>  <span class="cn">NA</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/extract_scholid.html">extract_scholid</a></span><span class="op">(</span><span class="va">txt</span>, <span class="st">"doi"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/extract_scholid.html">extract_scholid</a></span><span class="op">(</span></span>
+<span>    text <span class="op">=</span> <span class="va">txt</span>,</span>
+<span>    type <span class="op">=</span> <span class="st">"doi"</span></span>
+<span>    <span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
 <span><span class="co">## [1] "10.1000/182"       "10.5555/12345678."</span></span>
 <span><span class="co">## </span></span>
@@ -170,14 +181,14 @@ character vector of matches (possibly empty).</p>
 <p>The list return type is intentional: a single text string can contain
 multiple identifiers.</p>
 </div>
-<div class="section level3">
-<h3 id="classify-classify_scholid">Classify: <code>classify_scholid()</code><a class="anchor" aria-label="anchor" href="#classify-classify_scholid"></a>
-</h3>
+<div class="section level2">
+<h2 id="classify-classify_scholid">Classify: <code>classify_scholid()</code><a class="anchor" aria-label="anchor" href="#classify-classify_scholid"></a>
+</h2>
 <p><code><a href="../reference/classify_scholid.html">classify_scholid()</a></code> returns the best-guess identifier
 type per element for mixed identifier columns. Classification is based
 on the set of available <code>is_&lt;type&gt;()</code> checks and the
 precedence order defined by <code><a href="../reference/scholid_types.html">scholid_types()</a></code>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"10.1000/182"</span>,</span>
 <span>  <span class="st">"0000-0002-1825-0097"</span>,</span>
@@ -186,11 +197,11 @@ precedence order defined by <code><a href="../reference/scholid_types.html">scho
 <span>  <span class="st">"not an id"</span>,</span>
 <span>  <span class="cn">NA</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/classify_scholid.html">classify_scholid</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/classify_scholid.html">classify_scholid</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "doi"   "orcid" "pmcid" "arxiv" NA      NA</span></span></code></pre>
-<div class="section level4">
-<h4 id="normalization-classification-in-messy-data">Normalization + classification in messy data<a class="anchor" aria-label="anchor" href="#normalization-classification-in-messy-data"></a>
-</h4>
+<div class="section level3">
+<h3 id="normalization-classification-in-messy-data">Normalization + classification in messy data<a class="anchor" aria-label="anchor" href="#normalization-classification-in-messy-data"></a>
+</h3>
 <p>Many identifiers appear wrapped (URLs, prefixes, trailing
 punctuation). Classification is strict and typically expects canonical
 strings. A common pattern is:</p>
@@ -199,7 +210,7 @@ strings. A common pattern is:</p>
 <li>Normalize extracted values.</li>
 <li>Classify and/or validate.</li>
 </ol>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">txt</span> <span class="op">&lt;-</span> <span class="st">"Read https://doi.org/10.1000/182 (and ORCID 0000-0002-1825-0097)."</span></span>
 <span><span class="va">dois</span> <span class="op">&lt;-</span> <span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/extract_scholid.html">extract_scholid</a></span><span class="op">(</span><span class="va">txt</span>, <span class="st">"doi"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">orcids</span> <span class="op">&lt;-</span> <span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/extract_scholid.html">extract_scholid</a></span><span class="op">(</span><span class="va">txt</span>, <span class="st">"orcid"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
@@ -209,17 +220,17 @@ strings. A common pattern is:</p>
 <span></span>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/classify_scholid.html">classify_scholid</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dois_n</span>, <span class="va">orcids_n</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "doi"   "orcid"</span></span></code></pre>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/is_scholid.html">is_scholid</a></span><span class="op">(</span><span class="va">dois_n</span>, <span class="st">"doi"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/is_scholid.html">is_scholid</a></span><span class="op">(</span><span class="va">orcids_n</span>, <span class="st">"orcid"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
 </div>
 </div>
-<div class="section level3">
-<h3 id="design-notes">Design notes<a class="anchor" aria-label="anchor" href="#design-notes"></a>
-</h3>
+<div class="section level2">
+<h2 id="design-notes">Design notes<a class="anchor" aria-label="anchor" href="#design-notes"></a>
+</h2>
 <p><code>scholid</code> is intentionally small and conservative:</p>
 <ul>
 <li>It uses base R only at runtime.</li>
@@ -230,10 +241,10 @@ strings. A common pattern is:</p>
 packages.</li>
 </ul>
 </div>
-<div class="section level3">
-<h3 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
-</h3>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="section level2">
+<h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
+</h2>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## R version 4.5.2 (2025-10-31)</span></span>
 <span><span class="co">## Platform: x86_64-pc-linux-gnu</span></span>
@@ -263,7 +274,6 @@ packages.</li>
 <span><span class="co">## [17] systemfonts_1.3.1 compiler_4.5.2    tools_4.5.2       ragg_1.5.0       </span></span>
 <span><span class="co">## [21] bslib_0.10.0      evaluate_1.0.5    yaml_2.3.12       otel_0.2.0       </span></span>
 <span><span class="co">## [25] jsonlite_2.0.0    rlang_1.1.7       fs_1.6.6          htmlwidgets_1.6.4</span></span></code></pre>
-</div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

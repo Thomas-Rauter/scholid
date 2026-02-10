@@ -63,7 +63,22 @@ identifier type, or <code>NA_character_</code> if no supported type matches.</p>
 identifier type for each element, or <code>NA_character_</code> if no match is
 found.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>Classification is based on canonical identifier syntax. Wrapped forms
+(e.g., URLs or labels) should be normalized first with
+<code><a href="normalize_scholid.html">normalize_scholid()</a></code>.</p>
+    </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu">classify_scholid</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"10.1000/182"</span>, <span class="st">"0000-0002-1825-0097"</span>, <span class="st">"not an id"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "doi"   "orcid" NA     </span>
+<span class="r-in"><span><span class="fu">classify_scholid</span><span class="op">(</span><span class="fu"><a href="normalize_scholid.html">normalize_scholid</a></span><span class="op">(</span><span class="st">"https://doi.org/10.1000/182"</span>, <span class="st">"doi"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "doi"</span>
+<span class="r-in"><span></span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 

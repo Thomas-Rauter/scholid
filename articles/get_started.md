@@ -8,24 +8,13 @@ identifier strings.
 This vignette introduces the core interface and typical workflows for
 mixed, messy identifier data.
 
-### Installation
+## Installation
 
 ``` r
 install.packages("scholid")
 ```
 
-### Supported identifier types
-
-Use
-[`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
-to see which identifier systems are supported by the package.
-
-## scholid_types()
-
-The exact set may expand over time, but the package aims to keep a
-small, stable API.
-
-### Core interface
+## Core interface
 
 `scholid` exposes a small set of user-facing functions that operate
 consistently across identifier types:
@@ -41,20 +30,33 @@ These generic helpers dispatch internally to type-specific
 implementations such as `is_doi()`, `normalize_orcid()`, and
 `extract_isbn()`.
 
-### Detect: `is_scholid()`
+## Supported identifier types
+
+``` r
+scholid::scholid_types()
+```
+
+## Detect: `is_scholid()`
 
 [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
 checks whether each value matches a specific identifier type. It is
 vectorized and preserves missing values.
 
 ``` r
-x <- c("10.1000/182", "not a doi", NA)
-scholid::is_scholid(x, "doi")
+x <- c(
+    "10.1000/182",
+    "not a doi",
+    NA
+)
+scholid::is_scholid(
+    x    = x,
+    type = "doi"
+    )
 ```
 
     ## [1]  TRUE FALSE    NA
 
-### Normalize: `normalize_scholid()`
+## Normalize: `normalize_scholid()`
 
 Normalization removes common wrappers and enforces a canonical
 representation. This is particularly useful when identifiers are stored
@@ -66,7 +68,10 @@ x <- c(
   "doi:10.1000/182",
   " 10.1000/182 "
 )
-scholid::normalize_scholid(x, "doi")
+scholid::normalize_scholid(
+    x    = x, 
+    type = "doi"
+    )
 ```
 
     ## [1] "10.1000/182" "10.1000/182" "10.1000/182"
@@ -79,7 +84,10 @@ x <- c(
   "https://orcid.org/0000-0002-1825-0097",
   "0000000218250097"
 )
-scholid::normalize_scholid(x, "orcid")
+scholid::normalize_scholid(
+    x    = x,
+    type = "orcid"
+    )
 ```
 
     ## [1] "0000-0002-1825-0097" "0000-0002-1825-0097"
@@ -87,7 +95,7 @@ scholid::normalize_scholid(x, "orcid")
 Normalization is designed to be predictable: - `NA` input stays `NA`. -
 Invalid inputs typically become `NA_character_`.
 
-### Extract: `extract_scholid()`
+## Extract: `extract_scholid()`
 
 Extraction is for harvesting identifiers from unstructured text. The
 result is a list with one element per input element. Each element is a
@@ -99,7 +107,10 @@ txt <- c(
   "No identifier here.",
   NA
 )
-scholid::extract_scholid(txt, "doi")
+scholid::extract_scholid(
+    text = txt,
+    type = "doi"
+    )
 ```
 
     ## [[1]]
@@ -114,7 +125,7 @@ scholid::extract_scholid(txt, "doi")
 The list return type is intentional: a single text string can contain
 multiple identifiers.
 
-### Classify: `classify_scholid()`
+## Classify: `classify_scholid()`
 
 [`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md)
 returns the best-guess identifier type per element for mixed identifier
@@ -131,12 +142,12 @@ x <- c(
   "not an id",
   NA
 )
-scholid::classify_scholid(x)
+scholid::classify_scholid(x = x)
 ```
 
     ## [1] "doi"   "orcid" "pmcid" "arxiv" NA      NA
 
-#### Normalization + classification in messy data
+### Normalization + classification in messy data
 
 Many identifiers appear wrapped (URLs, prefixes, trailing punctuation).
 Classification is strict and typically expects canonical strings. A
@@ -171,7 +182,7 @@ scholid::is_scholid(orcids_n, "orcid")
 
     ## [1] TRUE
 
-### Design notes
+## Design notes
 
 `scholid` is intentionally small and conservative:
 
@@ -182,7 +193,7 @@ scholid::is_scholid(orcids_n, "orcid")
 - The package is designed to be a low-level building block for other
   packages.
 
-### Session information
+## Session information
 
 ``` r
 sessionInfo()

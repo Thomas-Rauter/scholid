@@ -108,3 +108,18 @@ testthat::test_that("classify_scholid errors on invalid x inputs", {
         "data frame"
     )
 })
+
+
+testthat::test_that(
+    "classify_scholid returns all NA when all inputs are NA",
+    {
+        x <- rep(
+            NA_character_,
+            3L
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)

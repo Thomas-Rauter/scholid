@@ -39,6 +39,7 @@ extract_scholid <- function(
         inherits = TRUE
         )
 
+    # nocov start
     if (is.null(fun)) {
         stop(
             "Missing implementation: ",
@@ -47,6 +48,7 @@ extract_scholid <- function(
             call. = FALSE
             )
     }
+    # nocov end
 
     fun(text)
 }

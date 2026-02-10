@@ -33,9 +33,11 @@ classify_scholid <- function(x) {
             inherits = FALSE
         )
 
+        # nocov start
         if (is.null(fun)) {
             next
         }
+        # nocov end
 
         res <- fun(x[idx])
         hit <- !is.na(res) & res

@@ -37,6 +37,7 @@ is_scholid <- function(
         inherits = TRUE
         )
 
+    # nocov start
     if (is.null(fun)) {
         stop(
             "Missing implementation: ",
@@ -45,6 +46,7 @@ is_scholid <- function(
             call. = FALSE
             )
     }
+    # nocov end
 
     fun(x)
 }

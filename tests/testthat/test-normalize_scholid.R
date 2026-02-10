@@ -158,3 +158,79 @@ testthat::test_that("normalize_pmcid strips label and enforces PMC prefix", {
 
     testthat::expect_identical(got, exp)
 })
+
+testthat::test_that(
+    "normalize_orcid drops lowercase x and returns NA",
+    {
+        x <- c(
+            "0000-0002-1694-233x",
+            NA_character_
+        )
+
+        got <- normalize_orcid(x)
+
+        testthat::expect_identical(
+            got,
+            c(NA_character_, NA_character_)
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_doi strips multiple trailing punctuation",
+    {
+        x <- c(
+            "10.1000/182,,,",
+            "10.1000/182;:",
+            NA_character_
+        )
+
+        got <- normalize_doi(x)
+
+        testthat::expect_identical(
+            got,
+            c("10.1000/182", "10.1000/182", NA_character_)
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid dispatches to normalize_<type>()",
+    {
+        x <- c(
+            " https://doi.org/10.1000/182. ",
+            NA_character_
+        )
+
+        got <- normalize_scholid(
+            x,
+            "doi"
+        )
+
+        testthat::expect_identical(
+            got,
+            c("10.1000/182", NA_character_)
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid works for another type",
+    {
+        x <- c(
+            "https://orcid.org/0000-0002-1825-0097",
+            "bad",
+            NA_character_
+        )
+
+        got <- normalize_scholid(
+            x,
+            "orcid"
+        )
+
+        testthat::expect_identical(
+            got,
+            c("0000-0002-1825-0097", NA_character_, NA_character_)
+        )
+    }
+)

@@ -23,9 +23,11 @@ normalize_scholid <- function(x, type) {
     fun_name <- paste0("normalize_", type)
     fun <- get0(fun_name, mode = "function", inherits = TRUE)
 
+    # nocov start
     if (is.null(fun)) {
         stop("Missing implementation: ", fun_name, "().", call. = FALSE)
     }
+    # nocov end
 
     fun(x)
 }

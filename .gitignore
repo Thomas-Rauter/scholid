@@ -2,6 +2,8 @@
 .Rhistory
 .RData
 .Ruserdata
+.Rprofile
+renv.lock
 scholid.Rcheck/
 renv/
 dev/

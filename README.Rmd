@@ -1,20 +1,24 @@
+---
+output: github_document
+editor_options:
+  markdown:
+    wrap: 72
+---
 
 # scholid
 
 [![R-CMD-check](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml)
-[![Codecov test
-coverage](https://codecov.io/gh/Thomas-Rauter/scholid/branch/main/graph/badge.svg)](https://codecov.io/gh/Thomas-Rauter/scholid)
+[![Codecov test coverage](https://codecov.io/gh/Thomas-Rauter/scholid/branch/main/graph/badge.svg)](https://codecov.io/gh/Thomas-Rauter/scholid)
 
-`scholid` provides lightweight, dependency-free utilities for working
-with scholarly identifiers in R. The package is designed as a small,
-well-tested foundation that can be safely reused by other packages and
-data workflows.
+`scholid` provides lightweight, dependency-free utilities for working with
+scholarly identifiers in R. The package is designed as a small, well-tested
+foundation that can be safely reused by other packages and data workflows.
 
 ## Installation
 
 Install the released version from CRAN:
 
-``` r
+```{r install, eval = FALSE}
 install.packages("scholid")
 ```
 
@@ -44,7 +48,7 @@ communication:
 The main entry points are generic helpers that dispatch to
 identifier-specific implementations:
 
-``` r
+```{r entry points, eval = FALSE}
 scholid::scholid_types()
 scholid::is_scholid(x, type)
 scholid::normalize_scholid(x, type)
@@ -59,22 +63,15 @@ Each identifier type also has dedicated helpers such as `is_doi()`,
 
 A minimal example using fully qualified calls:
 
-``` r
+```{r example, eval = TRUE}
 x <- c(
   "https://doi.org/10.1000/182",
   "0000-0002-1825-0097"
 )
 
 scholid::normalize_scholid(x[1], "doi")
-```
-
-    ## [1] "10.1000/182"
-
-``` r
 scholid::is_scholid(x[2], "orcid")
 ```
-
-    ## [1] TRUE
 
 For more detailed usage patterns, including extraction from text and
 classification of mixed identifier columns, see the **Get started**

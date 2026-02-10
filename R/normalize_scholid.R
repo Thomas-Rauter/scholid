@@ -44,7 +44,7 @@ normalize_scholid <- function(x, type) {
 #'
 #' @return A character vector of normalized DOIs.
 #'
-#' @export
+#' @noRd
 normalize_doi <- function(x) {
     x <- as.character(x)
     out <- rep(NA_character_, length(x))
@@ -73,7 +73,7 @@ normalize_doi <- function(x) {
 #'
 #' @return A character vector of normalized ORCID iDs.
 #'
-#' @export
+#' @noRd
 normalize_orcid <- function(x) {
     x <- as.character(x)
     out <- rep(NA_character_, length(x))
@@ -113,7 +113,7 @@ normalize_orcid <- function(x) {
 #'
 #' @return A character vector of normalized ISBNs.
 #'
-#' @export
+#' @noRd
 normalize_isbn <- function(x) {
     x <- as.character(x)
     out <- rep(NA_character_, length(x))
@@ -140,7 +140,7 @@ normalize_isbn <- function(x) {
 #'
 #' @return A character vector of normalized ISSNs.
 #'
-#' @export
+#' @noRd
 normalize_issn <- function(x) {
     x <- as.character(x)
     out <- rep(NA_character_, length(x))
@@ -173,7 +173,7 @@ normalize_issn <- function(x) {
 #'
 #' @return A character vector of normalized arXiv identifiers.
 #'
-#' @export
+#' @noRd
 normalize_arxiv <- function(x) {
     x <- as.character(x)
     out <- rep(NA_character_, length(x))
@@ -202,7 +202,7 @@ normalize_arxiv <- function(x) {
 #'
 #' @return A character vector of normalized PMIDs.
 #'
-#' @export
+#' @noRd
 normalize_pmid <- function(x) {
     x <- as.character(x)
     out <- rep(NA_character_, length(x))
@@ -226,7 +226,7 @@ normalize_pmid <- function(x) {
 #'
 #' @return A character vector of normalized PMCIDs.
 #'
-#' @export
+#' @noRd
 normalize_pmcid <- function(x) {
     x <- as.character(x)
     out <- rep(NA_character_, length(x))

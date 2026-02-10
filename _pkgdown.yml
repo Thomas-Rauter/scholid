@@ -1,10 +1,10 @@
 template:
   bootstrap: 5
 
-url: https://csbg.github.io/SplineOmics/
+url: https://thomas-rauter.github.io/scholid/
 
 pkgdown:
-  title: SplineOmics
+  title: scholid
 
 navbar:
   structure:
@@ -12,97 +12,26 @@ navbar:
       - home
       - get-started
       - reference
-      - articles      
-      - faq
-      - changelog
+      - news
 
   components:
     get-started:
       text: "Get started"
       href: articles/get_started.html
 
-    articles:
-      text: "Articles"
-      menu:
-        # --- Section 1: Further use cases
-        - text: "Further use cases"
-          html: true
-        - text: "RNA-seq analysis"
-          href: articles/RNA-seq-analysis.html
-        - text: "Glycan analysis"
-          href: articles/glycan-analysis.html
-        - text: "Peak-Valley-Cliff (PVC) analysis"
-          href: articles/PVC_analysis.html
-        - text: "Gene-centric multiomics clustering"
-          href: articles/Gene_centric_multiomics_clustering.html
-
-        - text: "---"   # divider between sections
-
-        # --- Section 2: Guides
-        - text: "Guides"
-          html: true
-        - text: "limma result categories"
-          href: articles/limma_result_categories.html
-        - text: "Designing a limma design formula"
-          href: articles/design_limma_design_formula.html
-        - text: "Docker container instructions"
-          href: articles/Docker-instructions.html
-        - text: "Docker permission denied"
-          href: articles/Docker_permission_denied.html
-
-    changelog:
-      text: "Changelog"
-      href: articles/CHANGELOG.html
-
-    faq:
-      text: "FAQ"
-      href: articles/faq.html
+    news:
+      text: "News"
+      href: news/index.html
 
 reference:
   - title: User Available Functions
-    desc: This section contains the documentation for all functions available 
-          to the user in the SplineOmics package.
+    desc: >
+      Documentation for all user-facing functions (for internal functions,
+      see GitHub).
     contents:
-      - compare_results
-      - cluster_genes_multiomics
-      - cluster_hits
-      - create_clustering_report
-      - create_limma_report
-      - create_ora_report
-      - create_pvc_report
-      - create_splineomics
-      - extract_gene_sets
-      - download_enrichr_databases
-      - explore_data
-      - extract_data
-      - find_pvc
-      - plot_umap_clusters
-      - preprocess_rna_seq_data
-      - print.SplineOmics
-      - run_ora
-      - run_limma_splines
-      - update_splineomics
-
-extra_files:
-  - googleabfeff244193b2bc.html
-
-# Keep the articles index so pkgdown is happy (not linked in navbar).
-articles:
-  - title: "Further use cases"
-    contents:
-      - get_started
-      - RNA-seq-analysis
-      - glycan-analysis
-      - PVC_analysis
-      - Gene_centric_multiomics_clustering
-  - title: "Guides"
-    contents:
-      - design_limma_design_formula
-      - limma_result_categories
-      - Docker-instructions
-      - Docker_permission_denied
-  - title: "Special pages"
-    contents:
-      - faq
-      - CHANGELOG
+      - classify_scholid
+      - extract_scholid
+      - is_scholid
+      - normalize_scholid
+      - scholid_types
 

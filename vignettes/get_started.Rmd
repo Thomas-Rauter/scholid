@@ -21,16 +21,6 @@ mixed, messy identifier data.
 install.packages("scholid")
 ```
 
-## Supported identifier types
-
-Use `scholid_types()` to see which identifier systems are supported by
-the package.
-
-# scholid_types()
-
-The exact set may expand over time, but the package aims to keep a small,
-stable API.
-
 ## Core interface
 
 `scholid` exposes a small set of user-facing functions that operate
@@ -46,14 +36,27 @@ These generic helpers dispatch internally to type-specific
 implementations such as `is_doi()`, `normalize_orcid()`, and
 `extract_isbn()`.
 
+## Supported identifier types
+
+```{r scholid types, eval = FALSE}
+scholid::scholid_types()
+```
+
 ## Detect: `is_scholid()`
 
 `is_scholid()` checks whether each value matches a specific identifier
 type. It is vectorized and preserves missing values.
 
 ```{r check if DOI}
-x <- c("10.1000/182", "not a doi", NA)
-scholid::is_scholid(x, "doi")
+x <- c(
+    "10.1000/182",
+    "not a doi",
+    NA
+)
+scholid::is_scholid(
+    x    = x,
+    type = "doi"
+    )
 ```
 
 ## Normalize: `normalize_scholid()`
@@ -68,7 +71,10 @@ x <- c(
   "doi:10.1000/182",
   " 10.1000/182 "
 )
-scholid::normalize_scholid(x, "doi")
+scholid::normalize_scholid(
+    x    = x, 
+    type = "doi"
+    )
 ```
 
 For ORCID iDs, normalization removes URL prefixes and enforces hyphenated
@@ -79,7 +85,10 @@ x <- c(
   "https://orcid.org/0000-0002-1825-0097",
   "0000000218250097"
 )
-scholid::normalize_scholid(x, "orcid")
+scholid::normalize_scholid(
+    x    = x,
+    type = "orcid"
+    )
 ```
 
 Normalization is designed to be predictable:
@@ -98,7 +107,10 @@ txt <- c(
   "No identifier here.",
   NA
 )
-scholid::extract_scholid(txt, "doi")
+scholid::extract_scholid(
+    text = txt,
+    type = "doi"
+    )
 ```
 
 The list return type is intentional: a single text string can contain
@@ -120,7 +132,7 @@ x <- c(
   "not an id",
   NA
 )
-scholid::classify_scholid(x)
+scholid::classify_scholid(x = x)
 ```
 
 ### Normalization + classification in messy data

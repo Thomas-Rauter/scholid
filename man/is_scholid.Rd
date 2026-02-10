@@ -18,8 +18,7 @@ A logical vector with the same length as \code{x}. \code{NA} inputs yield
 }
 \description{
 Vectorized predicate for checking whether values match a supported
-scholarly identifier type (e.g., DOI, ORCID). Dispatches to the
-corresponding \verb{is_*()} implementation (such as \code{is_doi()}).
+scholarly identifier type (e.g., DOI, ORCID).
 }
 \examples{
 is_scholid("10.1000/182", "doi")

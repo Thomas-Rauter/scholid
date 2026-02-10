@@ -1,31 +1,48 @@
 #' Normalize scholarly identifiers
 #'
-#' Vectorized normalizer for supported scholarly identifier types.
-#' Dispatches to the corresponding `normalize_*()` implementation (such as
-#' `normalize_doi()`).
+#' Vectorized normalizer that converts supported scholarly identifier values
+#' to a canonical form (e.g., removing URL prefixes).
 #'
 #' @param x A vector of values to normalize.
 #' @param type A single string giving the identifier type. See
 #'   `scholid_types()` for supported values.
 #'
 #' @return A character vector with the same length as `x`. Invalid inputs
-#'   should yield `NA_character_`, depending on the called normalizer.
+#'   yield `NA_character_`.
 #'
 #' @examples
 #' normalize_scholid("https://doi.org/10.1000/182", "doi")
 #' normalize_scholid("https://orcid.org/0000-0002-1825-0097", "orcid")
 #'
 #' @export
-normalize_scholid <- function(x, type) {
-    .scholid_check_x(x, arg = "x")
+normalize_scholid <- function(
+        x,
+        type
+        ) {
+    .scholid_check_x(
+        x,
+        arg = "x"
+        )
     type <- .scholid_match_type(type)
 
-    fun_name <- paste0("normalize_", type)
-    fun <- get0(fun_name, mode = "function", inherits = TRUE)
+    fun_name <- paste0(
+        "normalize_",
+        type
+        )
+    fun <- get0(
+        fun_name,
+        mode = "function",
+        inherits = TRUE
+        )
 
     # nocov start
     if (is.null(fun)) {
-        stop("Missing implementation: ", fun_name, "().", call. = FALSE)
+        stop(
+            "Missing implementation: ",
+            fun_name,
+            "().",
+            call. = FALSE
+            )
     }
     # nocov end
 

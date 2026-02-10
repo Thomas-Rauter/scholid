@@ -14,12 +14,11 @@ normalize_scholid(x, type)
 }
 \value{
 A character vector with the same length as \code{x}. Invalid inputs
-should yield \code{NA_character_}, depending on the called normalizer.
+yield \code{NA_character_}.
 }
 \description{
-Vectorized normalizer for supported scholarly identifier types.
-Dispatches to the corresponding \verb{normalize_*()} implementation (such as
-\code{normalize_doi()}).
+Vectorized normalizer that converts supported scholarly identifier values
+to a canonical form (e.g., removing URL prefixes).
 }
 \examples{
 normalize_scholid("https://doi.org/10.1000/182", "doi")

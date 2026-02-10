@@ -19,3 +19,13 @@ Performs best-guess classification of scholarly identifier strings.
 For each element of the input, the function returns the first matching
 identifier type, or \code{NA_character_} if no supported type matches.
 }
+\details{
+Classification is based on canonical identifier syntax. Wrapped forms
+(e.g., URLs or labels) should be normalized first with
+\code{normalize_scholid()}.
+}
+\examples{
+classify_scholid(c("10.1000/182", "0000-0002-1825-0097", "not an id"))
+classify_scholid(normalize_scholid("https://doi.org/10.1000/182", "doi"))
+
+}

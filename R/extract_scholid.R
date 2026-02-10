@@ -1,12 +1,13 @@
 #' Extract scholarly identifiers from text
 #'
-#' Extracts identifiers of a single type from free text. This is a front-door
-#' helper that dispatches to the corresponding `extract_*()` implementation
-#' (such as `extract_doi()`).
+#' Extract identifiers of a single supported type from free text.
 #'
-#' The result is a list with one element per input element. Each list element
-#' is a character vector of matches (possibly length 0). `NA` inputs yield an
-#' empty character vector.
+#' The result is a list with one element per input element. Each element is a
+#' character vector of matches (possibly length 0). `NA` inputs yield an empty
+#' character vector.
+#'
+#' Matches are returned as found in the text; use `normalize_scholid()` to
+#' convert identifiers to canonical form.
 #'
 #' @param text A character vector of text.
 #' @param type A single string giving the identifier type. See

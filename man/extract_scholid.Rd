@@ -16,14 +16,15 @@ extract_scholid(text, type)
 A list of character vectors of extracted identifiers.
 }
 \description{
-Extracts identifiers of a single type from free text. This is a front-door
-helper that dispatches to the corresponding \verb{extract_*()} implementation
-(such as \code{extract_doi()}).
+Extract identifiers of a single supported type from free text.
 }
 \details{
-The result is a list with one element per input element. Each list element
-is a character vector of matches (possibly length 0). \code{NA} inputs yield an
-empty character vector.
+The result is a list with one element per input element. Each element is a
+character vector of matches (possibly length 0). \code{NA} inputs yield an empty
+character vector.
+
+Matches are returned as found in the text; use \code{normalize_scholid()} to
+convert identifiers to canonical form.
 }
 \examples{
 extract_scholid("See https://doi.org/10.1000/182.", "doi")

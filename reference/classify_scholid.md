@@ -4,6 +4,10 @@ Performs best-guess classification of scholarly identifier strings. For
 each element of the input, the function returns the first matching
 identifier type, or `NA_character_` if no supported type matches.
 
+Classification is based on canonical identifier syntax. Wrapped forms
+(e.g., URLs or labels) should be normalized first with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md).
+
 ## Usage
 
 ``` r
@@ -21,12 +25,6 @@ classify_scholid(x)
 A character vector of the same length as `x`, giving the detected
 identifier type for each element, or `NA_character_` if no match is
 found.
-
-## Details
-
-Classification is based on canonical identifier syntax. Wrapped forms
-(e.g., URLs or labels) should be normalized first with
-[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md).
 
 ## Examples
 

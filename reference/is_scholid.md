@@ -1,7 +1,18 @@
-# Check scholarly identifiers
+# Test scholarly identifier validity
 
-Vectorized predicate for checking whether values match a supported
-scholarly identifier type (e.g., DOI, ORCID).
+Vectorized predicate that tests whether values are valid scholarly
+identifiers of a given supported type.
+
+Validation is stricter than normalization. Values must conform to the
+canonical identifier syntax, and for identifier types with checksum
+algorithms (e.g., ORCID, ISBN, ISSN), checksum correctness is verified.
+
+Inputs that are `NA` yield `NA`. Non-matching values return `FALSE`.
+
+Use
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+to convert structurally plausible identifiers to canonical form without
+performing checksum validation.
 
 ## Usage
 
@@ -13,7 +24,7 @@ is_scholid(x, type)
 
 - x:
 
-  A vector of values to check.
+  A vector of values to test.
 
 - type:
 
@@ -23,8 +34,13 @@ is_scholid(x, type)
 
 ## Value
 
-A logical vector with the same length as `x`. `NA` inputs yield `NA`
-outputs.
+A logical vector of the same length as `x`, indicating whether each
+element is a valid identifier of the specified type.
+
+## See also
+
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md),
+[`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
 
 ## Examples
 
@@ -33,6 +49,4 @@ is_scholid("10.1000/182", "doi")
 #> [1] TRUE
 is_scholid("0000-0002-1825-0097", "orcid")
 #> [1] TRUE
-is_scholid(c("10.1000/182", NA), "doi")
-#> [1] TRUE   NA
 ```

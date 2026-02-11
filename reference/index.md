@@ -10,7 +10,7 @@ GitHub).
 - [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
   : Extract scholarly identifiers from text
 - [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
-  : Check scholarly identifiers
+  : Test scholarly identifier validity
 - [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
   : Normalize scholarly identifiers
 - [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)

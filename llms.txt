@@ -2,7 +2,7 @@
 
 [![R-CMD-check](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/Thomas-Rauter/scholid/branch/main/graph/badge.svg)](https://codecov.io/gh/Thomas-Rauter/scholid)
+coverage](https://codecov.io/gh/Thomas-Rauter/scholid/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Thomas-Rauter/scholid)
 
 `scholid` provides lightweight, dependency-free utilities for working
 with scholarly identifiers in R. The package is designed as a small,
@@ -125,7 +125,7 @@ GitHub).
 - [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
   : Extract scholarly identifiers from text
 - [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
-  : Check scholarly identifiers
+  : Test scholarly identifier validity
 - [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
   : Normalize scholarly identifiers
 - [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
@@ -137,3 +137,5 @@ GitHub).
 
 - [Getting started with
   scholid](https://thomas-rauter.github.io/scholid/articles/get_started.md):
+- [How Scholarly Identifiers Are
+  Defined](https://thomas-rauter.github.io/scholid/articles/scholid_definitions.md):

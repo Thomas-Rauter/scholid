@@ -1,7 +1,21 @@
 # Normalize scholarly identifiers
 
 Vectorized normalizer that converts supported scholarly identifier
-values to a canonical form (e.g., removing URL prefixes).
+values to a canonical form (e.g., removing URL prefixes, labels, or
+separators).
+
+Normalization is structural: inputs that conform to the expected
+identifier syntax are converted to a canonical representation. Inputs
+that do not match the required structure yield `NA_character_`.
+
+For identifier types with checksum algorithms (e.g., ORCID, ISBN, ISSN),
+normalization does not verify checksum correctness. It only enforces
+structural plausibility and canonical formatting.
+
+Use
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+to test whether values are fully valid identifiers, including checksum
+verification where applicable.
 
 ## Usage
 
@@ -23,8 +37,13 @@ normalize_scholid(x, type)
 
 ## Value
 
-A character vector with the same length as `x`. Invalid inputs yield
-`NA_character_`.
+A character vector with the same length as `x`. Invalid or structurally
+non-matching inputs yield `NA_character_`.
+
+## See also
+
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md),
+[`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
 
 ## Examples
 

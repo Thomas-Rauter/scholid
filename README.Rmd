@@ -46,6 +46,7 @@ User-available functions:
 | `normalize_scholid(x, type)` | Normalize identifiers to canonical form |
 | `extract_scholid(text, type)` | Extract identifiers of a given type from free text |
 | `classify_scholid(x)` | Guess the identifier type of each input value |
+| `detect_scholid_type(x)` | Detect identifier types from canonical or wrapped input values |
 
 ## Examples
 
@@ -79,11 +80,19 @@ scholid::classify_scholid(
     "not an id"
   )
 )
+
+# detect identifier types from canonical or wrapped input values
+scholid::detect_scholid_type(
+  x = c(
+    "https://doi.org/10.1000/182",
+    "ORCID: 0000-0002-1825-0097",
+    "arXiv:2101.00001",
+    "not an id"
+  )
+)
 ```
 
-For more detailed usage patterns, including extraction from text and
-classification of mixed identifier columns, see the **Get started**
-vignette.
+For more detailed usage patterns check out the **Get started** vignette.
 
 ## License
 

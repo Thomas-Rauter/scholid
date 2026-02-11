@@ -11,20 +11,17 @@ Authors@R:
 Description: Tools for detecting, normalizing, classifying, and extracting
     scholarly identifier strings. The package provides lightweight,
     dependency-free helpers for common identifier systems such as DOIs,
-    ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed records.
+    ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers.
     Functions are designed to be vectorized, predictable, and suitable as
     low-level building blocks for other R packages and data workflows.
 License: MIT + file LICENSE
 URL: https://thomas-rauter.github.io/scholid/
 BugReports: https://github.com/Thomas-Rauter/scholid/issues
 Depends: R (>= 3.5.0)
-Imports:
 Suggests:
     testthat (>= 3.0.0),
     knitr (>= 1.30),
-    devtools (>= 2.4.0),
-    covr (>= 3.6.0),
-    pkgdown (>= 2.0.0)
+    rmarkdown
 Encoding: UTF-8
 LazyData: false
 RoxygenNote: 7.3.3

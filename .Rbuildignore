@@ -4,7 +4,10 @@
 ^\.Rproj\.user$
 ^_pkgdown\.yml$
 ^dev$
-^.github$
+^\.github$
 ^docs$
 ^README\.Rmd$
-
+^\.git$
+^\.gitignore$
+^\.Rprofile$
+^LICENSE\.md$

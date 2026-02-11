@@ -15,3 +15,5 @@ GitHub).
   : Normalize scholarly identifiers
 - [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
   : Supported scholid identifier types
+- [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+  : Detect scholarly identifier types

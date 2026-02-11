@@ -1,4 +1,4 @@
 # License
 
     YEAR: 2026
-    COPYRIGHT HOLDER: Thomas Rauter
+    COPYRIGHT HOLDER: scholid authors

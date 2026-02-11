@@ -2,7 +2,7 @@
 
 [![R-CMD-check](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://codecov.io/gh/Thomas-Rauter/scholid/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Thomas-Rauter/scholid)
+coverage](https://app.codecov.io/gh/Thomas-Rauter/scholid/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Thomas-Rauter/scholid)
 
 `scholid` provides lightweight, dependency-free utilities for working
 with scholarly identifiers in R. The package is designed as a small,
@@ -34,13 +34,14 @@ communication:
 
 User-available functions:
 
-| Function                                                                                | Purpose                                                |
-|-----------------------------------------------------------------------------------------|--------------------------------------------------------|
-| [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md) | List supported scholarly identifier types              |
-| `is_scholid(x, type)`                                                                   | Test whether values conform to a given identifier type |
-| `normalize_scholid(x, type)`                                                            | Normalize identifiers to canonical form                |
-| `extract_scholid(text, type)`                                                           | Extract identifiers of a given type from free text     |
-| `classify_scholid(x)`                                                                   | Guess the identifier type of each input value          |
+| Function                                                                                | Purpose                                                        |
+|-----------------------------------------------------------------------------------------|----------------------------------------------------------------|
+| [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md) | List supported scholarly identifier types                      |
+| `is_scholid(x, type)`                                                                   | Test whether values conform to a given identifier type         |
+| `normalize_scholid(x, type)`                                                            | Normalize identifiers to canonical form                        |
+| `extract_scholid(text, type)`                                                           | Extract identifiers of a given type from free text             |
+| `classify_scholid(x)`                                                                   | Guess the identifier type of each input value                  |
+| `detect_scholid_type(x)`                                                                | Detect identifier types from canonical or wrapped input values |
 
 ## Examples
 
@@ -103,6 +104,22 @@ scholid::classify_scholid(
 
 ``` R
 ## [1] "doi"   "orcid" NA
+```
+
+``` r
+# detect identifier types from canonical or wrapped input values
+scholid::detect_scholid_type(
+  x = c(
+    "https://doi.org/10.1000/182",
+    "ORCID: 0000-0002-1825-0097",
+    "arXiv:2101.00001",
+    "not an id"
+  )
+)
+```
+
+``` R
+## [1] "doi"   NA      "arxiv" NA
 ```
 
 For more detailed usage patterns, including extraction from text and

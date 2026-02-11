@@ -5,8 +5,8 @@ working with scholarly and academic identifiers. It provides small,
 well-tested helpers to detect, normalize, classify, and extract common
 identifier strings.
 
-This vignette introduces the core interface and typical workflows for
-mixed, messy identifier data.
+This vignette introduces the interface and typical workflows for mixed,
+messy identifier data.
 
 ## Installation
 
@@ -14,17 +14,19 @@ mixed, messy identifier data.
 install.packages("scholid")
 ```
 
-## Core interface
+## Interface
 
 `scholid` exposes a small set of user-facing functions that operate
 consistently across identifier types:
 
+- [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
+  lists supported identifier types.
 - `is_scholid(x, type)` checks whether values match the identifier type.
 - `normalize_scholid(x, type)` returns canonical identifier strings.
 - `extract_scholid(text, type)` extracts identifiers from free text.
 - `classify_scholid(x)` guesses the identifier type per element.
-- [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
-  lists supported identifier types.
+- `detect_scholid_type(x)` detects identifier types from canonical or
+  wrapped input values (e.g., URLs or labels).
 
 These generic helpers dispatch internally to type-specific
 implementations such as `is_doi()`, `normalize_orcid()`, and
@@ -35,6 +37,8 @@ implementations such as `is_doi()`, `normalize_orcid()`, and
 ``` r
 scholid::scholid_types()
 ```
+
+    ## [1] "arxiv" "doi"   "isbn"  "issn"  "orcid" "pmcid" "pmid"
 
 ## Detect: `is_scholid()`
 
@@ -51,7 +55,7 @@ x <- c(
 scholid::is_scholid(
     x    = x,
     type = "doi"
-    )
+)
 ```
 
     ## [1]  TRUE FALSE    NA
@@ -71,7 +75,7 @@ x <- c(
 scholid::normalize_scholid(
     x    = x, 
     type = "doi"
-    )
+)
 ```
 
     ## [1] "10.1000/182" "10.1000/182" "10.1000/182"
@@ -87,7 +91,7 @@ x <- c(
 scholid::normalize_scholid(
     x    = x,
     type = "orcid"
-    )
+)
 ```
 
     ## [1] "0000-0002-1825-0097" "0000-0002-1825-0097"
@@ -110,7 +114,7 @@ txt <- c(
 scholid::extract_scholid(
     text = txt,
     type = "doi"
-    )
+)
 ```
 
     ## [[1]]
@@ -150,8 +154,8 @@ scholid::classify_scholid(x = x)
 ### Normalization + classification in messy data
 
 Many identifiers appear wrapped (URLs, prefixes, trailing punctuation).
-Classification is strict and typically expects canonical strings. A
-common pattern is:
+Classification is strict and expects canonical strings. A common pattern
+is:
 
 1.  Extract identifiers from text.
 2.  Normalize extracted values.
@@ -182,6 +186,72 @@ scholid::is_scholid(orcids_n, "orcid")
 
     ## [1] TRUE
 
+## Detect: `detect_scholid_type()`
+
+[`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+performs best-effort type detection for mixed, messy identifier input.
+In contrast to
+[`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md),
+detection also recognizes common wrapped forms such as URLs and prefixed
+labels (e.g., `doi:`, `https://orcid.org/`, `arXiv:`, `PMID:`).
+
+Detection is useful when working with raw data where identifiers may not
+yet be normalized.
+
+For example, wrapped identifiers are not classified strictly:
+
+``` r
+x <- c(
+  "https://doi.org/10.1000/182",
+  "ORCID: 0000-0002-1825-0097",
+  "arXiv:2101.00001",
+  "PMID: 12345",
+  "not an id"
+)
+scholid::classify_scholid(x)
+```
+
+    ## [1] NA NA NA NA NA
+
+However, they can be detected directly:
+
+``` r
+scholid::detect_scholid_type(x)
+```
+
+    ## [1] "doi"   "orcid" "arxiv" "pmid"  NA
+
+Whitespace and minor formatting irregularities are handled
+conservatively:
+
+``` r
+scholid::detect_scholid_type(
+  c(
+    " 0000-0002-1825-0097 ",
+    " 10.1000/182 ",
+    "ISSN 0317-8471"
+  )
+)
+```
+
+    ## [1] "orcid" "doi"   "issn"
+
+[`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+does not modify values. Once the identifier type is known, use
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+to convert to canonical form and
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+for strict validation.
+
+A typical workflow for messy data is:
+
+1.  Detect identifier types.
+2.  Normalize by detected type.
+3.  Validate canonical identifiers.
+
+This separation keeps detection permissive and normalization
+predictable, while preserving strict validation where needed.
+
 ## Design notes
 
 `scholid` is intentionally small and conservative:
@@ -191,7 +261,7 @@ scholid::is_scholid(orcids_n, "orcid")
 - Type-specific logic is kept in small `is_*()`, `normalize_*()`, and
   `extract_*()` helpers.
 - The package is designed to be a low-level building block for other
-  packages.
+  packages and for workflows.
 
 ## Session information
 

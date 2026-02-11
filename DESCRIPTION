@@ -2,6 +2,7 @@ Package: scholid
 Type: Package
 Title: Tools for Scholarly and Academic Identifiers
 Version: 0.1.0
+Language: en-US
 Authors@R:
     person("Thomas", "Rauter",
            email = "rauterthomas0@gmail.com",
@@ -14,8 +15,7 @@ Description: Tools for detecting, normalizing, classifying, and extracting
     Functions are designed to be vectorized, predictable, and suitable as
     low-level building blocks for other R packages and data workflows.
 License: MIT + file LICENSE
-URL: https://thomas-rauter.github.io/scholid,
-    https://github.com/Thomas-Rauter/scholid
+URL: https://thomas-rauter.github.io/scholid/
 BugReports: https://github.com/Thomas-Rauter/scholid/issues
 Depends: R (>= 3.5.0)
 Imports:

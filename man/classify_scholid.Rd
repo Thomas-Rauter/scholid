@@ -18,8 +18,7 @@ found.
 Performs best-guess classification of scholarly identifier strings.
 For each element of the input, the function returns the first matching
 identifier type, or \code{NA_character_} if no supported type matches.
-}
-\details{
+
 Classification is based on canonical identifier syntax. Wrapped forms
 (e.g., URLs or labels) should be normalized first with
 \code{normalize_scholid()}.

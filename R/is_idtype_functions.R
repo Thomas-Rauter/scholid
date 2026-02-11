@@ -14,10 +14,8 @@
 is_doi <- function(x) {
     x <- as.character(x)
     out <- rep(NA, length(x))
-
     ok <- !is.na(x)
-    pat <- "^10\\.[0-9]{4,9}/\\S+$"
-
+    pat <- .scholid_registry()[["doi"]]$pat
     out[ok] <- grepl(pat, x[ok], perl = TRUE)
     out
 }
@@ -149,12 +147,11 @@ is_issn <- function(x) {
 is_arxiv <- function(x) {
     x <- as.character(x)
     out <- rep(NA, length(x))
-
     ok <- !is.na(x)
-    pat1 <- "^\\d{4}\\.\\d{4,5}(v\\d+)?$"
-    pat2 <- "^[a-z\\-]+/\\d{7}(v\\d+)?$"
-
-    out[ok] <- grepl(pat1, x[ok]) | grepl(pat2, x[ok])
+    reg <- .scholid_registry()[["arxiv"]]
+    pat1 <- reg$pat1
+    pat2 <- reg$pat2
+    out[ok] <- grepl(pat1, x[ok], perl = TRUE) | grepl(pat2, x[ok], perl = TRUE)
     out
 }
 
@@ -171,9 +168,9 @@ is_arxiv <- function(x) {
 is_pmid <- function(x) {
     x <- as.character(x)
     out <- rep(NA, length(x))
-
     ok <- !is.na(x)
-    out[ok] <- grepl("^\\d+$", x[ok])
+    pat <- .scholid_registry()[["pmid"]]$pat
+    out[ok] <- grepl(pat, x[ok], perl = TRUE)
     out
 }
 
@@ -190,8 +187,8 @@ is_pmid <- function(x) {
 is_pmcid <- function(x) {
     x <- as.character(x)
     out <- rep(NA, length(x))
-
     ok <- !is.na(x)
-    out[ok] <- grepl("^PMC\\d+$", x[ok])
+    pat <- .scholid_registry()[["pmcid"]]$pat
+    out[ok] <- grepl(pat, x[ok], perl = TRUE)
     out
 }

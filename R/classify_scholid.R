@@ -1,5 +1,6 @@
 #' Classify scholarly identifiers
 #'
+#' @description
 #' Performs best-guess classification of scholarly identifier strings.
 #' For each element of the input, the function returns the first matching
 #' identifier type, or `NA_character_` if no supported type matches.

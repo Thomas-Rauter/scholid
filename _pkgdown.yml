@@ -12,12 +12,17 @@ navbar:
       - home
       - get-started
       - reference
+      - scholid-definitions
       - news
 
   components:
     get-started:
       text: "Get started"
       href: articles/get_started.html
+    
+    scholid-definitions:
+      text: "About identifiers"
+      href: articles/scholid_definitions.html
 
     news:
       text: "News"

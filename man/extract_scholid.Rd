@@ -17,8 +17,7 @@ A list of character vectors of extracted identifiers.
 }
 \description{
 Extract identifiers of a single supported type from free text.
-}
-\details{
+
 The result is a list with one element per input element. Each element is a
 character vector of matches (possibly length 0). \code{NA} inputs yield an empty
 character vector.

@@ -2,27 +2,38 @@
 % Please edit documentation in R/is_scholid.R
 \name{is_scholid}
 \alias{is_scholid}
-\title{Check scholarly identifiers}
+\title{Test scholarly identifier validity}
 \usage{
 is_scholid(x, type)
 }
 \arguments{
-\item{x}{A vector of values to check.}
+\item{x}{A vector of values to test.}
 
 \item{type}{A single string giving the identifier type. See
-\code{scholid_types()} for supported values.}
+\code{\link[=scholid_types]{scholid_types()}} for supported values.}
 }
 \value{
-A logical vector with the same length as \code{x}. \code{NA} inputs yield
-\code{NA} outputs.
+A logical vector of the same length as \code{x}, indicating whether
+each element is a valid identifier of the specified type.
 }
 \description{
-Vectorized predicate for checking whether values match a supported
-scholarly identifier type (e.g., DOI, ORCID).
+Vectorized predicate that tests whether values are valid scholarly
+identifiers of a given supported type.
+
+Validation is stricter than normalization. Values must conform to the
+canonical identifier syntax, and for identifier types with checksum
+algorithms (e.g., ORCID, ISBN, ISSN), checksum correctness is verified.
+
+Inputs that are \code{NA} yield \code{NA}. Non-matching values return \code{FALSE}.
+
+Use \code{\link[=normalize_scholid]{normalize_scholid()}} to convert structurally plausible identifiers
+to canonical form without performing checksum validation.
 }
 \examples{
 is_scholid("10.1000/182", "doi")
 is_scholid("0000-0002-1825-0097", "orcid")
-is_scholid(c("10.1000/182", NA), "doi")
 
+}
+\seealso{
+\code{\link[=normalize_scholid]{normalize_scholid()}}, \code{\link[=scholid_types]{scholid_types()}}
 }

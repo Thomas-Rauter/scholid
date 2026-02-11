@@ -1,0 +1,310 @@
+---
+title: "How Scholarly Identifiers Are Defined"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{How Scholarly Identifiers Are Defined}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+# Introduction
+
+This vignette explains how common scholarly identifiers are formally defined,
+what their structural components are, and what it means for them to be *valid*
+in a programmatic context.
+
+When working with identifiers in R, it is essential to distinguish between:
+
+- **Structural validity** (does it match the formal grammar?)
+- **Checksum validity** (does the control digit verify?)
+- **Registry validity** (does the identifier actually exist?)
+
+The functions in `scholid` operate at the **structural level**. The regexes
+shown below describe the structural form that an identifier must match.
+
+---
+
+# DOI (Digital Object Identifier)
+
+**Governing body:** International DOI Foundation  
+**Standard:** ISO 26324
+
+## Structure
+
+A DOI has two parts:
+
+```
+prefix/suffix
+```
+
+### Prefix
+- Always begins with `10.`
+- Followed by a registrant code (4–9 digits)
+
+Example:
+```
+10.1000
+10.1038
+```
+
+### Suffix
+- Assigned by the registrant
+- May contain almost any printable character
+- Has no globally fixed grammar
+- Case-sensitive in theory
+
+Example:
+```
+10.1000/182
+10.1038/s41586-020-2649-2
+```
+
+## Important Properties
+
+- No checksum.
+- The suffix is opaque.
+- Structural validation cannot confirm existence.
+- DOI resolution requires registry lookup (e.g., via doi.org).
+
+## Structural Regex
+
+A commonly accepted structural regex:
+
+```
+^10\.\d{4,9}/\S+$
+```
+
+This checks:
+- Prefix starts with `10.`
+- 4–9 digits
+- A slash
+- Non-whitespace suffix
+
+---
+
+# ORCID
+
+**Governing body:** ORCID, Inc.  
+**Standard basis:** ISO 7064 (checksum algorithm)
+
+## Structure
+
+An ORCID iD consists of 16 characters:
+
+```
+0000-0002-1825-0097
+```
+
+### Components
+
+- 16 digits total
+- Grouped as 4-4-4-4
+- Final character is a checksum digit
+- Check digit may be `X`
+
+Internally (without hyphens):
+
+```
+0000000218250097
+```
+
+## Checksum
+
+Uses ISO 7064 Mod 11-2 algorithm.  
+A structurally correct ORCID may still be invalid if the checksum does not match.
+
+## Structural Regex
+
+Hyphenated form:
+
+```
+^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$
+```
+
+Unhyphenated internal form:
+
+```
+^\d{15}[\dX]$
+```
+
+---
+
+# ISBN (International Standard Book Number)
+
+**Governing body:** International ISBN Agency  
+**Standard:** ISO 2108
+
+## Two Forms
+
+### ISBN-10
+- 9 digits + checksum digit
+- Check digit may be `X`
+
+Example:
+```
+0306406152
+030640615X
+```
+
+### ISBN-13
+- 13 digits
+- Usually begins with 978 or 979
+- EAN-13 checksum algorithm
+
+Example:
+```
+9780306406157
+```
+
+## Structural Regex
+
+ISBN-10:
+
+```
+^\d{9}[\dX]$
+```
+
+ISBN-13:
+
+```
+^\d{13}$
+```
+
+---
+
+# ISSN (International Standard Serial Number)
+
+**Governing body:** ISSN International Centre  
+**Standard:** ISO 3297
+
+## Structure
+
+An ISSN has 8 characters:
+
+```
+1234-567X
+```
+
+### Components
+
+- 7 digits
+- 1 checksum digit (0–9 or X)
+- Canonical display includes a hyphen after 4 digits
+
+Internal numeric form:
+
+```
+1234567X
+```
+
+## Structural Regex
+
+Hyphenated:
+
+```
+^\d{4}-\d{3}[\dX]$
+```
+
+Compact form:
+
+```
+^\d{7}[\dX]$
+```
+
+---
+
+# arXiv Identifier
+
+**Authority:** arXiv (Cornell University)
+
+## Two Formats
+
+### Modern (post-2007)
+
+```
+YYMM.NNNN
+YYMM.NNNNN
+```
+
+Optional version suffix:
+
+```
+YYMM.NNNN(v2)
+```
+
+Components:
+- 4-digit year/month
+- Dot
+- 4–5 digit submission number
+- Optional version `vN`
+
+Structural regex:
+
+```
+^\d{4}\.\d{4,5}(v\d+)?$
+```
+
+---
+
+### Legacy (pre-2007)
+
+```
+archive/YYMMNNN
+```
+
+Example:
+```
+hep-th/9901001
+```
+
+Structural regex:
+
+```
+^[a-z\-]+/\d{7}(v\d+)?$
+```
+
+---
+
+# PMID (PubMed Identifier)
+
+**Authority:** U.S. National Library of Medicine
+
+## Structure
+
+- Pure integer
+- Variable length
+- No checksum
+
+Example:
+
+```
+12345678
+```
+
+Structural regex:
+
+```
+^\d+$
+```
+
+---
+
+# PMCID (PubMed Central Identifier)
+
+**Authority:** PubMed Central
+
+## Structure
+
+```
+PMC1234567
+```
+
+Components:
+- Literal prefix `PMC`
+- One or more digits
+
+Structural regex:
+
+```
+^PMC\d+$
+```

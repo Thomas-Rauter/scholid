@@ -88,7 +88,7 @@ testthat::test_that(
                 x = NULL,
                 arg = "type"
             ),
-            "`type` is required"
+            "`type` must not be NULL"
         )
     }
 )

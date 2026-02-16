@@ -1,6 +1,7 @@
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   workflow_dispatch:
 
 name: pkgdown
@@ -13,28 +14,41 @@ jobs:
       contents: write
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - uses: r-lib/actions/setup-pandoc@v2
+      - name: Setup Pandoc
+        uses: r-lib/actions/setup-pandoc@v2
 
-      - uses: r-lib/actions/setup-r@v2
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
         with:
           r-version: "release"
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
+      - name: Install dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
 
-      - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE)
+      - name: Build pkgdown site
+        run: pkgdown::build_site(new_process = FALSE)
         shell: Rscript {0}
 
-      - name: Deploy to gh-pages
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: Deploy multi-version site (with dropdown)
+        uses: insightsengineering/r-pkgdown-multiversion@v3
         with:
-          branch: gh-pages
-          folder: docs
-          clean: true
+          # Root URL shows the latest released tag (e.g. v0.1.0 now, v0.1.1 later)
+          default-landing-page: latest-tag
+
+          # What appears in the Versions dropdown:
+          # - all vX.Y.Z tags
+          # - main branch
+          branches-or-tags-to-list: '^main$|^v[0-9]+\\.[0-9]+\\.[0-9]+$'
+
+          # Order in dropdown: newest release first (latest-tag), then main
+          refs-order: 'latest-tag main'
 

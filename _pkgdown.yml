@@ -40,4 +40,8 @@ reference:
       - normalize_scholid
       - scholid_types
       - detect_scholid_type
+      
+development:
+  mode: auto
+
 

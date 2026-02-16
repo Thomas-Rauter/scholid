@@ -3,12 +3,15 @@
 
 [![R-CMD-check](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
-coverage](https://app.codecov.io/gh/Thomas-Rauter/scholid/branch/main/graph/badge.svg)](https://app.codecov.io/gh/Thomas-Rauter/scholid)
+coverage](https://img.shields.io/codecov/c/github/Thomas-Rauter/scholid?branch=main&logo=codecov)](https://app.codecov.io/gh/Thomas-Rauter/scholid)
 
 `scholid` provides lightweight, dependency-free utilities for working
 with scholarly identifiers in R. The package is designed as a small,
 well-tested foundation that can be safely reused by other packages and
 data workflows.
+
+See the full documentation at the [scholid
+website](https://thomas-rauter.github.io/scholid/).
 
 ## Installation
 
@@ -109,11 +112,9 @@ scholid::detect_scholid_type(
 )
 ```
 
-    ## [1] "doi"   NA      "arxiv" NA
+    ## [1] "doi"   "orcid" "arxiv" NA
 
-For more detailed usage patterns, including extraction from text and
-classification of mixed identifier columns, see the **Get started**
-vignette.
+For more detailed usage patterns check out the **Get started** vignette.
 
 ## License
 

@@ -30,83 +30,27 @@ jobs:
           extra-packages: any::pkgdown, local::.
           needs: website
 
-      - name: Build site
-        run: |
-          Rscript -e 'pkgdown::build_site(dest_dir = "site", new_process = FALSE)'
+      - name: Build site (to docs/)
+        run: pkgdown::build_site_github_pages(new_process = FALSE)
+        shell: Rscript {0}
 
-      - name: Determine target folder
-        id: ref
-        shell: bash
-        run: |
-          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            echo "folder=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
-            echo "is_tag=true" >> $GITHUB_OUTPUT
-          else
-            echo "folder=dev" >> $GITHUB_OUTPUT
-            echo "is_tag=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Checkout gh-pages branch
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages
-        continue-on-error: true
-
-      - name: Init gh-pages if missing
-        shell: bash
-        run: |
-          if [ ! -d gh-pages ]; then
-            mkdir -p gh-pages
-          fi
-          touch gh-pages/.nojekyll
-
-      - name: Deploy this build into folder
-        shell: bash
-        run: |
-          mkdir -p "gh-pages/${{ steps.ref.outputs.folder }}"
-          rsync -a --delete site/ "gh-pages/${{ steps.ref.outputs.folder }}/"
-
-          # If it's a tag build, also update the root (latest release at /)
-          if [[ "${{ steps.ref.outputs.is_tag }}" == "true" ]]; then
-            rsync -a --delete site/ gh-pages/
-          fi
-
-      - name: Update doc-versions.json
-        shell: bash
-        run: |
-          base="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPOSITORY_NAME}/"
-
-          # Collect release folders (vX.Y.Z)
-          releases=$(ls -1 gh-pages 2>/dev/null | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -Vr || true)
-
-          {
-            echo '['
-            echo "  {\"text\":\"Latest\",\"url\":\"${base}\"},"
-            echo "  {\"text\":\"Dev\",\"url\":\"${base}dev/\"}"
-
-            if [[ -n "${releases}" ]]; then
-              echo '  ,"---"'
-              echo '  ,"Releases"'
-              first=1
-              while read -r r; do
-                [[ -z "$r" ]] && continue
-                if [[ $first -eq 1 ]]; then
-                  echo "  ,{\"text\":\"${r}\",\"url\":\"${base}${r}/\"}"
-                  first=0
-                else
-                  echo "  ,{\"text\":\"${r}\",\"url\":\"${base}${r}/\"}"
-                fi
-              done <<< "${releases}"
-            fi
-
-            echo ']'
-          } > gh-pages/doc-versions.json
-
-      - name: Publish to gh-pages
+      # Push to main -> deploy into /dev (without touching root)
+      - name: Deploy dev site to gh-pages/dev
+        if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: gh-pages
-          clean: false
+          folder: docs
+          target-folder: dev
+          clean: true
+
+      # Push tag v* -> deploy to root (but preserve /dev)
+      - name: Deploy release site to gh-pages root
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: docs
+          clean: true
+          clean-exclude: dev
 

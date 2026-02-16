@@ -1,7 +1,5 @@
 template:
   bootstrap: 5
-  includes:
-  after_body: pkgdown/after-body.html
 
 url: https://thomas-rauter.github.io/scholid/
 

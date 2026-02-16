@@ -1,15 +1,14 @@
+name: pkgdown
+
 on:
   push:
     branches: [main]
     tags: ["v*"]
   workflow_dispatch:
 
-name: pkgdown
-
 jobs:
   pkgdown:
     runs-on: ubuntu-latest
-
     permissions:
       contents: write
 
@@ -19,36 +18,95 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Pandoc
-        uses: r-lib/actions/setup-pandoc@v2
+      - uses: r-lib/actions/setup-pandoc@v2
 
-      - name: Setup R
-        uses: r-lib/actions/setup-r@v2
+      - uses: r-lib/actions/setup-r@v2
         with:
           r-version: "release"
           use-public-rspm: true
 
-      - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+      - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
 
-      - name: Build pkgdown site
-        run: pkgdown::build_site(new_process = FALSE)
-        shell: Rscript {0}
+      - name: Build site
+        run: |
+          Rscript -e 'pkgdown::build_site(dest_dir = "site", new_process = FALSE)'
 
-      - name: Deploy multi-version site (with dropdown)
-        uses: insightsengineering/r-pkgdown-multiversion@v3
+      - name: Determine target folder
+        id: ref
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            echo "folder=${GITHUB_REF_NAME}" >> $GITHUB_OUTPUT
+            echo "is_tag=true" >> $GITHUB_OUTPUT
+          else
+            echo "folder=dev" >> $GITHUB_OUTPUT
+            echo "is_tag=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
         with:
-          # Root URL shows the latest released tag (e.g. v0.1.0 now, v0.1.1 later)
-          default-landing-page: latest-tag
+          ref: gh-pages
+          path: gh-pages
+        continue-on-error: true
 
-          # What appears in the Versions dropdown:
-          # - all vX.Y.Z tags
-          # - main branch
-          branches-or-tags-to-list: '^main$|^v[0-9]+\\.[0-9]+\\.[0-9]+$'
+      - name: Init gh-pages if missing
+        shell: bash
+        run: |
+          if [ ! -d gh-pages ]; then
+            mkdir -p gh-pages
+          fi
+          touch gh-pages/.nojekyll
 
-          # Order in dropdown: newest release first (latest-tag), then main
-          refs-order: 'latest-tag main'
+      - name: Deploy this build into folder
+        shell: bash
+        run: |
+          mkdir -p "gh-pages/${{ steps.ref.outputs.folder }}"
+          rsync -a --delete site/ "gh-pages/${{ steps.ref.outputs.folder }}/"
+
+          # If it's a tag build, also update the root (latest release at /)
+          if [[ "${{ steps.ref.outputs.is_tag }}" == "true" ]]; then
+            rsync -a --delete site/ gh-pages/
+          fi
+
+      - name: Update doc-versions.json
+        shell: bash
+        run: |
+          base="https://${GITHUB_REPOSITORY_OWNER}.github.io/${GITHUB_EVENT_REPOSITORY_NAME}/"
+
+          # Collect release folders (vX.Y.Z)
+          releases=$(ls -1 gh-pages 2>/dev/null | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -Vr || true)
+
+          {
+            echo '['
+            echo "  {\"text\":\"Latest\",\"url\":\"${base}\"},"
+            echo "  {\"text\":\"Dev\",\"url\":\"${base}dev/\"}"
+
+            if [[ -n "${releases}" ]]; then
+              echo '  ,"---"'
+              echo '  ,"Releases"'
+              first=1
+              while read -r r; do
+                [[ -z "$r" ]] && continue
+                if [[ $first -eq 1 ]]; then
+                  echo "  ,{\"text\":\"${r}\",\"url\":\"${base}${r}/\"}"
+                  first=0
+                else
+                  echo "  ,{\"text\":\"${r}\",\"url\":\"${base}${r}/\"}"
+                fi
+              done <<< "${releases}"
+            fi
+
+            echo ']'
+          } > gh-pages/doc-versions.json
+
+      - name: Publish to gh-pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: gh-pages
+          clean: false
 

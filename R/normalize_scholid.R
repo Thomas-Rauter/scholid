@@ -179,12 +179,25 @@ normalize_issn <- function(x) {
     ok <- !is.na(x)
     y <- trimws(x[ok])
 
-    y <- sub("^ISSN\\s*", "", y, ignore.case = TRUE)
-    y <- toupper(gsub("[^0-9X]", "", y))
+    # Remove only an optional ISSN label at the beginning
+    y <- sub("^ISSN\\s*:?[[:space:]]*", "", y, ignore.case = TRUE)
 
-    pat <- "^\\d{7}[0-9X]$"
-    y[!grepl(pat, y)] <- NA_character_
+    # Accept only full-string ISSN forms:
+    # - hyphenated: NNNN-NNNN
+    # - compact:    NNNNNNNN
+    is_hyph <- grepl("^\\d{4}-\\d{3}[0-9Xx]$", y)
+    is_comp <- grepl("^\\d{7}[0-9Xx]$", y)
 
+    y[!(is_hyph | is_comp)] <- NA_character_
+
+    # Canonicalize to compact uppercase form first
+    y <- ifelse(
+        is.na(y),
+        NA_character_,
+        toupper(gsub("-", "", y))
+    )
+
+    # Reinsert canonical hyphen
     y <- ifelse(
         is.na(y),
         NA_character_,

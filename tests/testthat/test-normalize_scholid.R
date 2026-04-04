@@ -69,7 +69,8 @@ testthat::test_that("normalize_isbn removes separators and uppercases X", {
     testthat::expect_identical(got, exp)
 })
 
-testthat::test_that("normalize_issn strips prefix and enforces NNNN-NNNN", {
+testthat::test_that(
+    "normalize_issn strips ISSN prefix + accepts only compact/hyph. forms", {
     x <- c(
         "0317-8471",
         "ISSN 0317-8471",
@@ -84,7 +85,7 @@ testthat::test_that("normalize_issn strips prefix and enforces NNNN-NNNN", {
         "0317-8471",
         "0317-8471",
         "0317-8471",
-        "0317-8471",
+        NA_character_,
         NA_character_,
         NA_character_
     )

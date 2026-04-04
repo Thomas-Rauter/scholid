@@ -1,19 +1,24 @@
 Package: scholid
 Type: Package
+<<<<<<< HEAD
 Title: Tools for Scholarly and Academic Identifiers
 Version: 0.1.0
+=======
+Title: Scholarly and Academic Identifier Utilities
+Version: 0.1.1.9000
+>>>>>>> 7ece62b (Fix incorrect ISSN normalization that caused false positives in type)
 Language: en-US
 Authors@R:
     person("Thomas", "Rauter",
            email = "rauterthomas0@gmail.com",
            role = c("aut", "cre", "fnd"),
            comment = c(ORCID = "0009-0004-5578-3628"))
-Description: Tools for detecting, normalizing, classifying, and extracting
-    scholarly identifier strings. The package provides lightweight,
-    dependency-free helpers for common identifier systems such as DOIs,
-    ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers.
-    Functions are designed to be vectorized, predictable, and suitable as
-    low-level building blocks for other R packages and data workflows.
+Description: Detects, normalizes, classifies, and extracts scholarly identifier
+    strings. Provides lightweight, dependency-free helpers for common
+    identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv
+    identifiers, and PubMed identifiers. Functions are vectorized,
+    predictable, and suitable as low-level building blocks for other R
+    packages and data workflows.
 License: MIT + file LICENSE
 URL: https://thomas-rauter.github.io/scholid/
 BugReports: https://github.com/Thomas-Rauter/scholid/issues
@@ -28,4 +33,3 @@ RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
-

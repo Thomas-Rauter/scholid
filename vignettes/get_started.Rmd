@@ -225,9 +225,3 @@ predictable, while preserving strict validation where needed.
   `extract_*()` helpers.
 - The package is designed to be a low-level building block for other
   packages and for workflows.
-
-## Session information
-
-```{r session info}
-sessionInfo()
-```

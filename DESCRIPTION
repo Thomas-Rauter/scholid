@@ -1,12 +1,7 @@
 Package: scholid
 Type: Package
-<<<<<<< HEAD
-Title: Tools for Scholarly and Academic Identifiers
-Version: 0.1.0
-=======
 Title: Scholarly and Academic Identifier Utilities
 Version: 0.1.1.9000
->>>>>>> 7ece62b (Fix incorrect ISSN normalization that caused false positives in type)
 Language: en-US
 Authors@R:
     person("Thomas", "Rauter",

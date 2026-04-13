@@ -7,8 +7,10 @@
 #' character vector of matches (possibly length 0). `NA` inputs yield an empty
 #' character vector.
 #'
-#' Matches are returned as found in the text; use `normalize_scholid()` to
-#' convert identifiers to canonical form.
+#' Matches are returned as extracted identifier tokens from the text.
+#' Surrounding prose punctuation or markup fragments may be removed where
+#' necessary to isolate the identifier. Use `normalize_scholid()` to convert
+#' identifiers to canonical form.
 #'
 #' @param text A character vector of text.
 #' @param type A single string giving the identifier type. See
@@ -60,17 +62,39 @@ extract_scholid <- function(
 #' @description
 #' Extracts Digital Object Identifiers (DOIs) from free text or URLs.
 #'
+#' Extracted DOI candidates are cleaned to remove surrounding prose punctuation
+#' or markup tails where necessary to isolate the DOI token, and only cleaned
+#' candidates that satisfy DOI structure rules are returned.
+#'
 #' @param text A character vector of text.
 #'
 #' @return A list of character vectors of extracted DOIs.
 #'
 #' @noRd
 extract_doi <- function(text) {
-    pat <- "(10\\.[0-9]{4,9}/[^\\s\"<>]+)"
-    .extract_with_pattern(
+    pat <- "(?<![[:alnum:]_])(10\\.[0-9]{4,9}/\\S+)"
+    out <- .extract_with_pattern(
         text = text,
         pat  = pat
     )
+
+    lapply(out, function(hits) {
+        if (!length(hits)) {
+            return(character(0))
+        }
+
+        cleaned <- vapply(
+            hits,
+            .clean_extracted_doi,
+            character(1),
+            USE.NAMES = FALSE
+        )
+
+        cleaned <- cleaned[nzchar(cleaned)]
+        cleaned <- cleaned[!is.na(cleaned)]
+        cleaned <- cleaned[is_doi(cleaned)]
+        cleaned
+    })
 }
 
 
@@ -226,4 +250,137 @@ extract_pmcid <- function(text) {
     }
 
     out
+}
+
+
+#' Clean an extracted DOI candidate
+#'
+#' @description
+#' Removes obvious surrounding markup tails and trailing prose delimiters from
+#' a DOI candidate extracted from free text, while preserving valid DOI-internal
+#' punctuation where possible.
+#'
+#' @param x A single extracted DOI candidate.
+#'
+#' @return A cleaned DOI candidate string, or "" if empty.
+#'
+#' @noRd
+.clean_extracted_doi <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- .strip_doi_markup_tail(x)
+
+    repeat {
+        old <- x
+
+        # Strip terminal prose punctuation and quotes
+        x <- sub("[.,;:!?\"']+$", "", x, perl = TRUE)
+
+        # Strip unmatched closing delimiters at the end
+        x <- .strip_unmatched_trailing_closer(x, "\\)", "\\(")
+        x <- .strip_unmatched_trailing_closer(x, "\\]", "\\[")
+        x <- .strip_unmatched_trailing_closer(x, "\\}", "\\{")
+        x <- .strip_unmatched_trailing_closer(x, ">", "<")
+
+        if (identical(x, old)) {
+            break
+        }
+    }
+
+    # Final safeguard: trim back to the longest valid DOI prefix
+    x <- .truncate_to_valid_doi_prefix(x)
+
+    x
+}
+
+
+# Level 3 functions (functions called by level 2 functions) definitions --------
+
+
+#' Strip obvious markup tails from an extracted DOI candidate
+#'
+#' @description
+#' Removes trailing HTML or attribute fragments that may be captured when a DOI
+#' appears inside markup such as an anchor tag or quoted URL attribute.
+#'
+#' @param x A single extracted DOI candidate.
+#'
+#' @return A character string.
+#'
+#' @noRd
+.strip_doi_markup_tail <- function(x) {
+    # Example:
+    #   10.1000/182">paper</a>
+    # becomes:
+    #   10.1000/182
+    x <- sub("([\"']>.*)$", "", x, perl = TRUE)
+
+    # Example:
+    #   10.1000/182</a>
+    # becomes:
+    #   10.1000/182
+    x <- sub("(</[[:alnum:]][^[:space:]]*)$", "", x, perl = TRUE)
+
+    x
+}
+
+#' Count regex matches in a single string
+#'
+#' @param x A single character string.
+#' @param pat A single regular expression.
+#'
+#' @return An integer count.
+#'
+#' @noRd
+.count_matches <- function(x, pat) {
+    m <- gregexpr(pat, x, perl = TRUE)[[1]]
+    if (identical(m[1], -1L)) {
+        0L
+    } else {
+        length(m)
+    }
+}
+
+
+#' Strip one unmatched trailing closer if present
+#'
+#' @param x A single character string.
+#' @param closer Closing delimiter regex, e.g. "\\)".
+#' @param opener Opening delimiter regex, e.g. "\\(".
+#'
+#' @return A character string.
+#'
+#' @noRd
+.strip_unmatched_trailing_closer <- function(
+        x,
+        closer,
+        opener
+) {
+    if (grepl(paste0(closer, "$"), x, perl = TRUE) &&
+        .count_matches(x, closer) > .count_matches(x, opener)) {
+        x <- sub(paste0(closer, "$"), "", x, perl = TRUE)
+    }
+    x
+}
+
+
+#' Truncate an extracted DOI candidate to its longest valid DOI prefix
+#'
+#' @param x A single extracted DOI candidate.
+#'
+#' @return A cleaned DOI candidate string, or "" if no valid DOI prefix exists.
+#'
+#' @noRd
+.truncate_to_valid_doi_prefix <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    while (nzchar(x) && !is_doi(x)) {
+        x <- substr(x, 1L, nchar(x) - 1L)
+    }
+
+    x
 }

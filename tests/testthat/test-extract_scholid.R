@@ -462,3 +462,119 @@ testthat::test_that(
         testthat::expect_true(length(got[[2]]) >= 1L)
     }
 )
+
+
+test_that("extract_doi removes trailing prose punctuation", {
+    txt <- c(
+        "See doi:10.1000/182.",
+        "See (10.1000/182).",
+        "See 10.1000/182, and then more text.",
+        "Quoted DOI: '10.1000/182'; end.",
+        "Markdown link: [paper](https://doi.org/10.1000/182).",
+        "Nested punctuation ((10.1000/182)).",
+        "Square bracket [10.1000/182],",
+        "Curly brace {10.1000/182}.",
+        "Double quote \"10.1000/182\".",
+        "Single quote '10.1000/182'."
+    )
+
+    expected <- list(
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182"
+    )
+
+    expect_identical(extract_doi(txt), expected)
+})
+
+
+test_that("extract_doi handles multiple matches and missing values", {
+    txt <- c(
+        "Two DOIs: 10.1000/182; 10.5555/12345678.",
+        "No DOI here.",
+        NA_character_
+    )
+
+    expected <- list(
+        c("10.1000/182", "10.5555/12345678"),
+        character(0),
+        character(0)
+    )
+
+    expect_identical(extract_doi(txt), expected)
+})
+
+
+test_that("extract_doi preserves valid DOI-internal punctuation", {
+    txt <- c(
+        paste0(
+            "Potentially tricky DOI: ",
+            "10.1002/(SICI)1097-4571(199205)43:4<284::AID-ASI5>3.0.CO;2-0."
+        ),
+        "Another punctuation-heavy DOI: 10.1207/s15327965pli1503_02.",
+        "DOI inside URL: https://doi.org/10.1207/s15327965pli1503_02.",
+        "DOI with query-like tail in prose: 10.1000/abc_def-ghi.jkl;",
+        "Parenthetical context: (10.1207/s15327965pli1503_02)."
+    )
+
+    expected <- list(
+        "10.1002/(SICI)1097-4571(199205)43:4<284::AID-ASI5>3.0.CO;2-0",
+        "10.1207/s15327965pli1503_02",
+        "10.1207/s15327965pli1503_02",
+        "10.1000/abc_def-ghi.jkl",
+        "10.1207/s15327965pli1503_02"
+    )
+
+    expect_identical(extract_doi(txt), expected)
+})
+
+
+test_that("extract_doi removes simple markup wrappers", {
+    txt <- c(
+        "<https://doi.org/10.1000/182>",
+        "Angle wrapped DOI: <10.1000/182>.",
+        "Mixed wrapper: (<10.1000/182>).",
+        "[doi](https://doi.org/10.1000/182)",
+        "href='https://doi.org/10.1000/182'",
+        "href=\"https://doi.org/10.1000/182\"",
+        "<a href=\"https://doi.org/10.1000/182\">paper</a>"
+    )
+
+    expected <- list(
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182",
+        "10.1000/182"
+    )
+
+    expect_identical(extract_doi(txt), expected)
+})
+
+
+test_that("extract_doi does not start matching inside larger tokens", {
+    txt <- c(
+        "Messy text: xx10.1000/182yy",
+        "Messy text: xx_10.1000/182yy",
+        "Messy text: xx 10.1000/182 yy",
+        "Messy text: (10.1000/182)yy"
+    )
+
+    out <- extract_doi(txt)
+
+    expect_identical(out[[1]], character(0))
+    expect_identical(out[[2]], character(0))
+    expect_identical(out[[3]], "10.1000/182")
+    expect_identical(out[[4]], "10.1000/182")
+})
+
+

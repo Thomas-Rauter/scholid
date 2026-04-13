@@ -22,8 +22,10 @@ The result is a list with one element per input element. Each element is a
 character vector of matches (possibly length 0). \code{NA} inputs yield an empty
 character vector.
 
-Matches are returned as found in the text; use \code{normalize_scholid()} to
-convert identifiers to canonical form.
+Matches are returned as extracted identifier tokens from the text.
+Surrounding prose punctuation or markup fragments may be removed where
+necessary to isolate the identifier. Use \code{normalize_scholid()} to convert
+identifiers to canonical form.
 }
 \examples{
 extract_scholid("See https://doi.org/10.1000/182.", "doi")

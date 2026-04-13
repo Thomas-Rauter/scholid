@@ -15,8 +15,7 @@ is_doi <- function(x) {
     x <- as.character(x)
     out <- rep(NA, length(x))
     ok <- !is.na(x)
-    pat <- .scholid_registry()[["doi"]]$pat
-    out[ok] <- grepl(pat, x[ok], perl = TRUE)
+    out[ok] <- vapply(x[ok], .is_doi_strict, logical(1))
     out
 }
 
@@ -191,4 +190,51 @@ is_pmcid <- function(x) {
     pat <- .scholid_registry()[["pmcid"]]$pat
     out[ok] <- grepl(pat, x[ok], perl = TRUE)
     out
+}
+
+
+# Level 2 functions (functions called by level 1 functions) definitions --------
+
+
+#' Strict DOI validator
+#'
+#' @param x A single character string.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_doi_strict <- function(x) {
+    if (!nzchar(x)) {
+        return(FALSE)
+    }
+
+    # Broad DOI structure
+    pat <- .scholid_registry()[["doi"]]$pat
+    if (!grepl(pat, x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    # Reject obvious markup contamination
+    if (grepl("[\"']", x, perl = TRUE)) {
+        return(FALSE)
+    }
+    if (grepl("</", x, perl = TRUE)) {
+        return(FALSE)
+    }
+    if (grepl(">[^[:space:]]*<", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    # Reject obvious trailing wrapper characters
+    if (grepl("[<>()\\[\\]{}]$", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    # Reject a DOI immediately followed by letters after an unmatched closer,
+    # e.g. 10.1000/182)yy
+    if (grepl("[)\\]}>][[:alpha:]]+$", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    TRUE
 }

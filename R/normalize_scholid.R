@@ -149,14 +149,24 @@ normalize_isbn <- function(x) {
     out <- rep(NA_character_, length(x))
 
     ok <- !is.na(x)
-    y <- toupper(gsub("[^0-9Xx]", "", x[ok]))
 
-    is10 <- grepl("^\\d{9}[0-9X]$", y)
-    is13 <- grepl("^\\d{13}$", y)
+    out[ok] <- vapply(x[ok], function(s) {
+        if (!.isbn_format_ok(s)) {
+            return(NA_character_)
+        }
 
-    y[!(is10 | is13)] <- NA_character_
+        y <- toupper(gsub("[- ]", "", s))
 
-    out[ok] <- y
+        is10 <- grepl("^\\d{9}[0-9X]$", y)
+        is13 <- grepl("^\\d{13}$", y)
+
+        if (!(is10 || is13)) {
+            return(NA_character_)
+        }
+
+        y
+    }, character(1))
+
     out
 }
 

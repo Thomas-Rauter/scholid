@@ -529,3 +529,20 @@ testthat::test_that(
     }
 )
 
+
+testthat::test_that(
+    "isbn validation rejects malformed grouped forms",
+    {
+        testthat::expect_false(is_isbn("1234 5678 9X"))
+        testthat::expect_false(is_isbn("97-80-306-40615-7"))
+
+        testthat::expect_identical(
+            normalize_scholid("1234 5678 9X", "isbn"),
+            NA_character_
+        )
+        testthat::expect_identical(
+            normalize_scholid("97-80-306-40615-7", "isbn"),
+            NA_character_
+        )
+    }
+)

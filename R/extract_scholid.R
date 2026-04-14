@@ -128,11 +128,29 @@ extract_orcid <- function(text) {
 #'
 #' @noRd
 extract_isbn <- function(text) {
-    pat <- "([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])"
-    .extract_with_pattern(
+    pat <- "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_])"
+    out <- .extract_with_pattern(
         text = text,
         pat  = pat
     )
+
+    lapply(out, function(hits) {
+        if (!length(hits)) {
+            return(character(0))
+        }
+
+        cleaned <- vapply(
+            hits,
+            .clean_extracted_isbn,
+            character(1),
+            USE.NAMES = FALSE
+        )
+
+        cleaned <- cleaned[nzchar(cleaned)]
+        cleaned <- cleaned[!is.na(cleaned)]
+        cleaned <- cleaned[is_isbn(cleaned)]
+        cleaned
+    })
 }
 
 
@@ -292,6 +310,28 @@ extract_pmcid <- function(text) {
     # Final safeguard: trim back to the longest valid DOI prefix
     x <- .truncate_to_valid_doi_prefix(x)
 
+    x
+}
+
+
+#' Clean an extracted ISBN candidate
+#'
+#' @description
+#' Removes trailing punctuation and surrounding whitespace from an extracted
+#' ISBN candidate.
+#'
+#' @param x A single extracted ISBN candidate.
+#'
+#' @return A cleaned ISBN candidate string, or `""` if empty.
+#'
+#' @noRd
+.clean_extracted_isbn <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
+    x <- trimws(x)
     x
 }
 

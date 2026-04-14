@@ -464,7 +464,7 @@ testthat::test_that(
 )
 
 
-test_that("extract_doi removes trailing prose punctuation", {
+testthat::test_that("extract_doi removes trailing prose punctuation", {
     txt <- c(
         "See doi:10.1000/182.",
         "See (10.1000/182).",
@@ -491,11 +491,11 @@ test_that("extract_doi removes trailing prose punctuation", {
         "10.1000/182"
     )
 
-    expect_identical(extract_doi(txt), expected)
+    testthat::expect_identical(extract_doi(txt), expected)
 })
 
 
-test_that("extract_doi handles multiple matches and missing values", {
+testthat::test_that("extract_doi handles multiple matches and missing values", {
     txt <- c(
         "Two DOIs: 10.1000/182; 10.5555/12345678.",
         "No DOI here.",
@@ -508,11 +508,11 @@ test_that("extract_doi handles multiple matches and missing values", {
         character(0)
     )
 
-    expect_identical(extract_doi(txt), expected)
+    testthat::expect_identical(extract_doi(txt), expected)
 })
 
 
-test_that("extract_doi preserves valid DOI-internal punctuation", {
+testthat::test_that("extract_doi preserves valid DOI-internal punctuation", {
     txt <- c(
         paste0(
             "Potentially tricky DOI: ",
@@ -532,11 +532,11 @@ test_that("extract_doi preserves valid DOI-internal punctuation", {
         "10.1207/s15327965pli1503_02"
     )
 
-    expect_identical(extract_doi(txt), expected)
+    testthat::expect_identical(extract_doi(txt), expected)
 })
 
 
-test_that("extract_doi removes simple markup wrappers", {
+testthat::test_that("extract_doi removes simple markup wrappers", {
     txt <- c(
         "<https://doi.org/10.1000/182>",
         "Angle wrapped DOI: <10.1000/182>.",
@@ -557,11 +557,12 @@ test_that("extract_doi removes simple markup wrappers", {
         "10.1000/182"
     )
 
-    expect_identical(extract_doi(txt), expected)
+    testthat::expect_identical(extract_doi(txt), expected)
 })
 
 
-test_that("extract_doi does not start matching inside larger tokens", {
+testthat::test_that(
+    "extract_doi does not start matching inside larger tokens", {
     txt <- c(
         "Messy text: xx10.1000/182yy",
         "Messy text: xx_10.1000/182yy",
@@ -571,10 +572,106 @@ test_that("extract_doi does not start matching inside larger tokens", {
 
     out <- extract_doi(txt)
 
-    expect_identical(out[[1]], character(0))
-    expect_identical(out[[2]], character(0))
-    expect_identical(out[[3]], "10.1000/182")
-    expect_identical(out[[4]], "10.1000/182")
+    testthat::expect_identical(out[[1]], character(0))
+    testthat::expect_identical(out[[2]], character(0))
+    testthat::expect_identical(out[[3]], "10.1000/182")
+    testthat::expect_identical(out[[4]], "10.1000/182")
 })
 
 
+testthat::test_that(
+    "extract_isbn filters false positives via ISBN validation", {
+    txt <- c(
+        "ISBN 978-0-306-40615-7",
+        "ISBN 0-306-40615-2",
+        "Order number 12-3456-7890",
+        "Phone: 0043 123 4567890",
+        "Random digits 1234 5678 90X",
+        "Code 978 0 306 40615 7",
+        "Noise: abc 0-306-40615-2 xyz"
+    )
+
+    got <- extract_scholid(txt, "isbn")
+
+    testthat::expect_identical(got[[1]], "978-0-306-40615-7")
+    testthat::expect_identical(got[[2]], "0-306-40615-2")
+    testthat::expect_identical(got[[3]], character(0))
+    testthat::expect_identical(got[[4]], character(0))
+    testthat::expect_identical(got[[5]], character(0))
+    testthat::expect_identical(got[[6]], "978 0 306 40615 7")
+    testthat::expect_identical(got[[7]], "0-306-40615-2")
+})
+
+
+testthat::test_that(
+    "extract_isbn rejects false positives and token-internal matches",
+    {
+        txt <- c(
+            "Order number 12-3456-7890",
+            "Phone: 0043 123 4567890",
+            "Random digits 1234 5678 90X",
+            "Prefix noise xx978-0-306-40615-7",
+            "Suffix noise 978-0-306-40615-7yy"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "isbn"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[2]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[5]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_isbn keeps valid forms and strips surrounding punctuation",
+    {
+        txt <- c(
+            "ISBN 978-0-306-40615-7.",
+            "Wrapped (0-306-40615-2).",
+            "Code 978 0 306 40615 7",
+            "Noise: abc 0-306-40615-2 xyz"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "isbn"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            "978-0-306-40615-7"
+        )
+        testthat::expect_identical(
+            got[[2]],
+            "0-306-40615-2"
+        )
+        testthat::expect_identical(
+            got[[3]],
+            "978 0 306 40615 7"
+        )
+        testthat::expect_identical(
+            got[[4]],
+            "0-306-40615-2"
+        )
+    }
+)

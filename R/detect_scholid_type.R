@@ -64,8 +64,19 @@ detect_scholid_type <- function(x) {
     types <- scholid_types()
 
     for (type in types) {
+        vals <- x_trim[rem]
+
+        if (identical(type, "isbn")) {
+            vals <- sub(
+                "^(?i:isbn(?:-1[03])?)\\s*:?\\s*",
+                "",
+                vals,
+                perl = TRUE
+            )
+        }
+
         norm <- normalize_scholid(
-            x    = x_trim[rem],
+            x    = vals,
             type = type
         )
 

@@ -67,10 +67,10 @@ is_orcid <- function(x) {
 #'
 #' @noRd
 is_isbn <- function(x) {
-    x <- toupper(gsub("[^0-9Xx]", "", as.character(x)))
-    out <- rep(NA, length(x))
+    raw <- as.character(x)
+    out <- rep(NA, length(raw))
 
-    ok <- !is.na(x)
+    ok <- !is.na(raw)
 
     is10 <- function(s) {
         if (!grepl("^\\d{9}[0-9X]$", s)) return(FALSE)
@@ -92,11 +92,14 @@ is_isbn <- function(x) {
         cd == d[13]
     }
 
-    out[ok] <- vapply(
-        x[ok],
-        function(s) is10(s) || is13(s),
-        logical(1)
-    )
+    out[ok] <- vapply(raw[ok], function(s) {
+        if (!.isbn_format_ok(s)) {
+            return(FALSE)
+        }
+
+        compact <- toupper(gsub("[- ]", "", s))
+        is10(compact) || is13(compact)
+    }, logical(1))
 
     out
 }
@@ -237,4 +240,54 @@ is_pmcid <- function(x) {
     }
 
     TRUE
+}
+
+
+#' Check whether an ISBN string has an acceptable input format
+#'
+#' @description
+#' Returns `TRUE` for compact ISBN-10 and ISBN-13 strings, and for grouped
+#' forms that use single spaces or hyphens in acceptable positions.
+#'
+#' This check validates input formatting only. It does not verify the ISBN
+#' checksum.
+#'
+#' @param x A single candidate ISBN string.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.isbn_format_ok <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    # compact forms
+    if (grepl("^\\d{9}[0-9Xx]$", x) || grepl("^\\d{13}$", x)) {
+        return(TRUE)
+    }
+
+    # formatted forms: digits/X separated by single spaces or hyphens,
+    # with 10 or 13 ISBN characters total after stripping separators
+    if (!grepl("^[0-9Xx -]+$", x)) {
+        return(FALSE)
+    }
+    if (grepl("(^[- ]|[- ]$|[- ]{2,}|[- ]{2,})", x)) {
+        return(FALSE)
+    }
+
+    compact <- gsub("[- ]", "", x)
+    n <- nchar(compact)
+
+    if (n == 10) {
+        # ISBN-10: must consist of 4 groups if separators are present
+        return(grepl("^[0-9]+([ -][0-9]+){2}[ -][0-9Xx]$", x))
+    }
+
+    if (n == 13) {
+        # ISBN-13: grouped form must start with 978 or 979
+        return(grepl("^97[89]([ -][0-9]+){4}$", x))
+    }
+
+    FALSE
 }

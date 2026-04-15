@@ -214,6 +214,9 @@ normalize_issn <- function(x) {
         paste0(substr(y, 1, 4), "-", substr(y, 5, 8))
     )
 
+    # Keep only checksum-valid ISSNs
+    y[!is.na(y) & !is_issn(y)] <- NA_character_
+
     out[ok] <- y
     out
 }

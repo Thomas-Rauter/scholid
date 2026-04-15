@@ -235,3 +235,29 @@ testthat::test_that(
         )
     }
 )
+
+
+testthat::test_that(
+    "issn normalization rejects invalid values and canonicalizes valid ones",
+    {
+        testthat::expect_false(is_issn("9999-9999"))
+        testthat::expect_false(is_issn("2434-561X-90"))
+
+        testthat::expect_identical(
+            normalize_scholid("9999-9999", "issn"),
+            NA_character_
+        )
+        testthat::expect_identical(
+            normalize_scholid("2434-561X-90", "issn"),
+            NA_character_
+        )
+        testthat::expect_identical(
+            normalize_scholid("2434561X", "issn"),
+            "2434-561X"
+        )
+        testthat::expect_identical(
+            normalize_scholid("2434-561x", "issn"),
+            "2434-561X"
+        )
+    }
+)

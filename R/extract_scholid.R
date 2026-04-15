@@ -165,11 +165,29 @@ extract_isbn <- function(text) {
 #'
 #' @noRd
 extract_issn <- function(text) {
-    pat <- "(\\d{4}-\\d{3}[0-9X])"
-    .extract_with_pattern(
+    pat <- "(?<![[:alnum:]_\\-])(\\d{4}-\\d{3}[0-9Xx])(?![[:alnum:]_\\-])"
+    out <- .extract_with_pattern(
         text = text,
         pat  = pat
     )
+
+    lapply(out, function(hits) {
+        if (!length(hits)) {
+            return(character(0))
+        }
+
+        cleaned <- vapply(
+            hits,
+            .clean_extracted_issn,
+            character(1),
+            USE.NAMES = FALSE
+        )
+
+        cleaned <- cleaned[nzchar(cleaned)]
+        cleaned <- cleaned[!is.na(cleaned)]
+        cleaned <- cleaned[is_issn(cleaned)]
+        cleaned
+    })
 }
 
 
@@ -326,6 +344,28 @@ extract_pmcid <- function(text) {
 #'
 #' @noRd
 .clean_extracted_isbn <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x
+}
+
+
+#' Clean an extracted ISSN candidate
+#'
+#' @description
+#' Removes trailing punctuation and surrounding whitespace from an extracted
+#' ISSN candidate.
+#'
+#' @param x A single extracted ISSN candidate.
+#'
+#' @return A cleaned ISSN candidate string, or `""` if empty.
+#'
+#' @noRd
+.clean_extracted_issn <- function(x) {
     if (is.na(x) || !nzchar(x)) {
         return("")
     }

@@ -264,7 +264,7 @@ testthat::test_that(
     "extract_issn finds ISSN with X and ignores non-matches",
     {
         txt <- c(
-            "ISSN 1234-567X",
+            "ISSN 2434-561X",
             "no issn here"
         )
 
@@ -273,7 +273,7 @@ testthat::test_that(
             "issn"
         )
 
-        testthat::expect_true(any(got[[1]] == "1234-567X"))
+        testthat::expect_true(any(got[[1]] == "2434-561X"))
         testthat::expect_identical(
             got[[2]],
             character(0)
@@ -351,7 +351,7 @@ testthat::test_that(
             "arXiv:2101.00001v2",
             "PMCID: PMC12345",
             "PMID 1234567",
-            "ISSN 1234-567X",
+            "ISSN 2434-561X",
             "ISBN 0-306-40615-2"
         )
 
@@ -672,6 +672,82 @@ testthat::test_that(
         testthat::expect_identical(
             got[[4]],
             "0-306-40615-2"
+        )
+    }
+)
+
+
+testthat::test_that(
+    "extract_issn respects token boundaries and wrappers",
+    {
+        txt <- c(
+            "ISSN 2434-561X",
+            "Quoted '2434-561X'.",
+            "Wrapped (2434-561X).",
+            "Noise: abc 2434-561X xyz",
+            "Phone-like 2434-561X-90",
+            "Double token 2434-561X-0378-5955",
+            "Prefix hyphen abc-2434-561X",
+            "Surrounded by spaces 2434-561X okay"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "issn"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            "2434-561X"
+        )
+        testthat::expect_identical(
+            got[[2]],
+            "2434-561X"
+        )
+        testthat::expect_identical(
+            got[[3]],
+            "2434-561X"
+        )
+        testthat::expect_identical(
+            got[[4]],
+            "2434-561X"
+        )
+        testthat::expect_identical(
+            got[[5]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[6]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[7]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[8]],
+            "2434-561X"
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped issn values",
+    {
+        x <- c(
+            "2434-561X",
+            "0378-5955",
+            "ISSN 2434-561X",
+            "issn: 0378-5955",
+            "2434-561x",
+            "not an issn"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("issn", "issn", "issn", "issn", "issn", NA_character_)
         )
     }
 )

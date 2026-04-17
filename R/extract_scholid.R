@@ -290,11 +290,29 @@ extract_pmid <- function(text) {
 #'
 #' @noRd
 extract_pmcid <- function(text) {
-    pat <- "(PMC\\d+)"
-    .extract_with_pattern(
+    pat <- "(?<![[:alnum:]_./-])PMC\\d+(?![[:alnum:]_]|[-/.][[:alnum:]_])"
+    out <- .extract_with_pattern(
         text = text,
         pat  = pat
+    )
+
+    lapply(out, function(hits) {
+        if (!length(hits)) {
+            return(character(0))
+        }
+
+        cleaned <- vapply(
+            hits,
+            .clean_extracted_pmcid,
+            character(1),
+            USE.NAMES = FALSE
         )
+
+        cleaned <- cleaned[nzchar(cleaned)]
+        cleaned <- cleaned[!is.na(cleaned)]
+        cleaned <- cleaned[is_pmcid(cleaned)]
+        cleaned
+    })
 }
 
 
@@ -460,6 +478,28 @@ extract_pmcid <- function(text) {
 #'
 #' @noRd
 .clean_extracted_pmid <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x
+}
+
+
+#' Clean an extracted PMCID candidate
+#'
+#' @description
+#' Removes trailing punctuation and surrounding whitespace from an extracted
+#' PMCID candidate.
+#'
+#' @param x A single extracted PMCID candidate.
+#'
+#' @return A cleaned PMCID candidate string, or `""` if empty.
+#'
+#' @noRd
+.clean_extracted_pmcid <- function(x) {
     if (is.na(x) || !nzchar(x)) {
         return("")
     }

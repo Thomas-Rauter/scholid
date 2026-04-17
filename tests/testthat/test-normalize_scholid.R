@@ -139,6 +139,43 @@ testthat::test_that("normalize_pmid strips label and requires digits", {
     testthat::expect_identical(got, exp)
 })
 
+testthat::test_that(
+    "normalize_pmcid accepts labeled forms with or without a colon",
+    {
+        testthat::expect_identical(
+            normalize_scholid("PMCID: PMC1234567", "pmcid"),
+            "PMC1234567"
+        )
+        testthat::expect_identical(
+            normalize_scholid("PMCID PMC1234567", "pmcid"),
+            "PMC1234567"
+        )
+        testthat::expect_identical(
+            normalize_scholid("pmcid PMC7654321", "pmcid"),
+            "PMC7654321"
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects labeled pmcid values",
+    {
+        x <- c(
+            "PMCID: PMC1234567",
+            "PMCID PMC1234567",
+            "pmcid PMC7654321",
+            "12345678"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("pmcid", "pmcid", "pmcid", "pmid")
+        )
+    }
+)
+
 testthat::test_that("normalize_pmcid strips label and enforces PMC prefix", {
     x <- c(
         "PMC12345",

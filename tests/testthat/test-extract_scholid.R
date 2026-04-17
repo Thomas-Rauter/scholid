@@ -507,6 +507,104 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_pmcid rejects embedded and adjacent false positives",
+    {
+        txt <- c(
+            "xPMC1234567y",
+            "prefix_PMC1234567",
+            "suffix PMC1234567_extra",
+            "mixed APMC1234567",
+            "phone-like PMC1234567-90",
+            "slash tail PMC1234567/extra",
+            "double token PMC1234567-PMC7654321",
+            "path /PMC1234567/",
+            "PMC12x345",
+            "surrounded by spaces PMC1234567 okay"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "pmcid"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[2]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[5]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[6]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[7]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[8]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[9]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[10]],
+            "PMC1234567"
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_pmcid keeps wrapped and sentence-final valid values",
+    {
+        txt <- c(
+            "PMCID: PMC1234567.",
+            "Wrapped (PMC7654321).",
+            "Noise: abc PMC9999999 xyz",
+            "PMID 12345678"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "pmcid"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            "PMC1234567"
+        )
+        testthat::expect_identical(
+            got[[2]],
+            "PMC7654321"
+        )
+        testthat::expect_identical(
+            got[[3]],
+            "PMC9999999"
+        )
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
     "extract_pmid does not treat PMCID digits as PMID",
     {
         txt <- c(

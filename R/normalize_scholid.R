@@ -297,7 +297,7 @@ normalize_pmcid <- function(x) {
     ok <- !is.na(x)
     y <- trimws(x[ok])
 
-    y <- sub("^PMCID:\\s*", "", y, ignore.case = TRUE)
+    y <- sub("^PMCID\\s*:?[[:space:]]*", "", y, ignore.case = TRUE)
     y <- toupper(y)
     pat <- .scholid_registry()[["pmcid"]]$pat
     y[!grepl(pat, y, perl = TRUE)] <- NA_character_

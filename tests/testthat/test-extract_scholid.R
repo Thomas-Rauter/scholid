@@ -282,6 +282,94 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_arxiv rejects partial matches inside larger tokens",
+    {
+        txt <- c(
+            "bad modern 21011.12345",
+            "bad version 2101.12345v",
+            "bad version hep-th/9901001v",
+            "phone-like 2101.12345-90",
+            "slash tail 2101.12345/extra",
+            "arXiv:2101.12345v2",
+            "legacy hep-th/9901001v3"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "arxiv"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[2]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[5]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[6]],
+            "2101.12345v2"
+        )
+        testthat::expect_identical(
+            got[[7]],
+            "hep-th/9901001v3"
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_arxiv handles wrappers and multiple valid matches",
+    {
+        txt <- c(
+            "Quoted '2101.12345'.",
+            "Wrapped (2101.12345v2).",
+            "Two IDs: 2101.12345 and hep-th/9901001v2.",
+            "[hep-th/9901001]",
+            "{math/0303001}."
+        )
+
+        got <- extract_scholid(
+            txt,
+            "arxiv"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            "2101.12345"
+        )
+        testthat::expect_identical(
+            got[[2]],
+            "2101.12345v2"
+        )
+        testthat::expect_identical(
+            got[[3]],
+            c("2101.12345", "hep-th/9901001v2")
+        )
+        testthat::expect_identical(
+            got[[4]],
+            "hep-th/9901001"
+        )
+        testthat::expect_identical(
+            got[[5]],
+            "math/0303001"
+        )
+    }
+)
+
+testthat::test_that(
     "extract_arxiv finds modern and legacy arXiv identifiers",
     {
         txt <- c(

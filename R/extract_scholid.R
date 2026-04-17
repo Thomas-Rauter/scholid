@@ -128,7 +128,7 @@ extract_orcid <- function(text) {
 #'
 #' @noRd
 extract_isbn <- function(text) {
-    pat <- "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_])"
+    pat <- "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
     out <- .extract_with_pattern(
         text = text,
         pat  = pat
@@ -202,11 +202,38 @@ extract_issn <- function(text) {
 #'
 #' @noRd
 extract_arxiv <- function(text) {
-    pat <- "(\\d{4}\\.\\d{4,5}(v\\d+)?|[a-z\\-]+/\\d{7}(v\\d+)?)"
-    .extract_with_pattern(
+    pat <- paste0(
+        "(?<![[:alnum:]_\\./-])",
+        "(",
+        "\\d{4}\\.\\d{4,5}(v\\d+)?",
+        "|",
+        "[a-z\\-]+/\\d{7}(v\\d+)?",
+        ")",
+        "(?![[:alnum:]_\\-/])"
+    )
+
+    out <- .extract_with_pattern(
         text = text,
         pat  = pat
     )
+
+    lapply(out, function(hits) {
+        if (!length(hits)) {
+            return(character(0))
+        }
+
+        cleaned <- vapply(
+            hits,
+            .clean_extracted_arxiv,
+            character(1),
+            USE.NAMES = FALSE
+        )
+
+        cleaned <- cleaned[nzchar(cleaned)]
+        cleaned <- cleaned[!is.na(cleaned)]
+        cleaned <- cleaned[is_arxiv(cleaned)]
+        cleaned
+    })
 }
 
 
@@ -366,6 +393,28 @@ extract_pmcid <- function(text) {
 #'
 #' @noRd
 .clean_extracted_issn <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x
+}
+
+
+#' Clean an extracted arXiv candidate
+#'
+#' @description
+#' Removes trailing punctuation and surrounding whitespace from an extracted
+#' arXiv candidate.
+#'
+#' @param x A single extracted arXiv candidate.
+#'
+#' @return A cleaned arXiv candidate string, or `""` if empty.
+#'
+#' @noRd
+.clean_extracted_arxiv <- function(x) {
     if (is.na(x) || !nzchar(x)) {
         return("")
     }

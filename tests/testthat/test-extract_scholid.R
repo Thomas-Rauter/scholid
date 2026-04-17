@@ -409,6 +409,104 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_pmid rejects hyphen slash and decimal false positives",
+    {
+        txt <- c(
+            "phone-like 12345678-90",
+            "slash tail 12345678/extra",
+            "double token 12345678-87654321",
+            "path /12345678/",
+            "decimal 1234.5678",
+            "PMID: 12345678.",
+            "Wrapped (7654321).",
+            "Noise: abc 3456789 xyz",
+            "PMCID PMC1234567"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "pmid"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[2]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[5]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[6]],
+            "12345678"
+        )
+        testthat::expect_identical(
+            got[[7]],
+            "7654321"
+        )
+        testthat::expect_identical(
+            got[[8]],
+            "3456789"
+        )
+        testthat::expect_identical(
+            got[[9]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_pmid respects token boundaries in mixed text",
+    {
+        txt <- c(
+            "x12345678y",
+            "prefix_12345678",
+            "suffix 12345678_extra",
+            "mixed A12345678",
+            "surrounded by spaces 12345678 okay"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "pmid"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[2]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got[[5]],
+            "12345678"
+        )
+    }
+)
+
+testthat::test_that(
     "extract_pmid does not treat PMCID digits as PMID",
     {
         txt <- c(

@@ -84,8 +84,8 @@ normalize_doi <- function(x) {
     y <- sub("^https?://(dx\\.)?doi\\.org/", "", y, ignore.case = TRUE)
     y <- sub("[[:punct:]]+$", "", y)
 
-    pat <- .scholid_registry()[["doi"]]$pat
-    y[!grepl(pat, y, perl = TRUE)] <- NA_character_
+    keep <- vapply(y, .is_doi_strict, logical(1))
+    y[!keep] <- NA_character_
 
     out[ok] <- y
     out

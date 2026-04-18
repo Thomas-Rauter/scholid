@@ -21,6 +21,93 @@ testthat::test_that("normalize_doi strips wrappers and trailing punctuation", {
     testthat::expect_identical(got, exp)
 })
 
+testthat::test_that(
+    "DOI normalization keeps valid inputs canonical",
+    {
+        testthat::expect_equal(
+            normalize_scholid(
+                c(
+                    "10.1000/182",
+                    "doi:10.1000/182",
+                    "https://doi.org/10.1000/182",
+                    "10.1000/182."
+                ),
+                "doi"
+            ),
+            c(
+                "10.1000/182",
+                "10.1000/182",
+                "10.1000/182",
+                "10.1000/182"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "DOI normalization rejects contaminated DOI-like inputs",
+    {
+        testthat::expect_equal(
+            normalize_scholid(
+                c(
+                    "10.1000/182</a>",
+                    "10.1000/182'foo",
+                    "10.1000/182>abc<",
+                    "10.1000/182)yy"
+                ),
+                "doi"
+            ),
+            c(
+                NA_character_,
+                NA_character_,
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized DOI outputs are valid DOIs and classify as doi",
+    {
+        x <- normalize_scholid(
+            c(
+                "10.1000/182",
+                "doi:10.1000/182",
+                "https://doi.org/10.1000/182",
+                "10.1000/182."
+            ),
+            "doi"
+        )
+
+        testthat::expect_true(all(is_scholid(x, "doi")))
+        testthat::expect_true(all(classify_scholid(x) == "doi"))
+    }
+)
+
+testthat::test_that(
+    "DOI normalization drops wrapped forms it cannot cleanly recover",
+    {
+        testthat::expect_equal(
+            normalize_scholid(
+                c(
+                    "(10.1000/182)",
+                    "[10.1000/182]",
+                    "{10.1000/182}",
+                    "<10.1000/182>"
+                ),
+                "doi"
+            ),
+            c(
+                NA_character_,
+                NA_character_,
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
 testthat::test_that("normalize_orcid removes wrappers and enforces grouping", {
     x <- c(
         "0000-0002-1825-0097",

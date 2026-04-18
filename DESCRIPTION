@@ -13,9 +13,11 @@ Description: Detects, normalizes, classifies, and extracts scholarly identifier
     identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv
     identifiers, and PubMed identifiers. Functions are vectorized,
     predictable, and suitable as low-level building blocks for other R
-    packages and data workflows.
+    packages and data workflows. For online lookup, conversion, metadata
+    retrieval, and linked identifier discovery, see 'scholidonline'.
 License: MIT + file LICENSE
-URL: https://thomas-rauter.github.io/scholid/
+URL: https://thomas-rauter.github.io/scholid/,
+    https://thomas-rauter.github.io/scholidonline/
 BugReports: https://github.com/Thomas-Rauter/scholid/issues
 Depends: R (>= 3.5.0)
 Suggests:

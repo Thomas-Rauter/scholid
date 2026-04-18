@@ -270,7 +270,12 @@ normalize_pmid <- function(x) {
     ok <- !is.na(x)
     y <- trimws(x[ok])
 
-    y <- sub("^PMID:\\s*", "", y, ignore.case = TRUE)
+    y <- sub(
+        "^PMID(?:[[:space:]]*:[[:space:]]*|[[:space:]]+)",
+        "",
+        y,
+        ignore.case = TRUE
+    )
 
     pat <- .scholid_registry()[["pmid"]]$pat
     y[!grepl(pat, y, perl = TRUE)] <- NA_character_

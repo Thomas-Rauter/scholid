@@ -118,6 +118,47 @@ testthat::test_that("normalize_arxiv strips wrappers and preserves versions", {
     testthat::expect_identical(got, exp)
 })
 
+testthat::test_that(
+    "normalize_pmid accepts labeled forms with or without a colon",
+    {
+        x <- c(
+            "PMID: 12345678",
+            "PMID 12345678",
+            "pmid 7654321",
+            "pmid: 7654321",
+            "  PMID 12345678  ",
+            "PMID12345678",
+            "not a pmid"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "pmid"),
+            c(
+                "12345678",
+                "12345678",
+                "7654321",
+                "7654321",
+                "12345678",
+                NA_character_,
+                NA_character_
+            )
+        )
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            c(
+                "pmid",
+                "pmid",
+                "pmid",
+                "pmid",
+                "pmid",
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
 testthat::test_that("normalize_pmid strips label and requires digits", {
     x <- c(
         "12345",

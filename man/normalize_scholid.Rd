@@ -13,20 +13,20 @@ normalize_scholid(x, type)
 \code{\link[=scholid_types]{scholid_types()}} for supported values.}
 }
 \value{
-A character vector with the same length as \code{x}. Invalid or
-structurally non-matching inputs yield \code{NA_character_}.
+A character vector with the same length as \code{x}. Invalid, checksum-
+failing, or structurally non-matching inputs yield \code{NA_character_}.
 }
 \description{
 Vectorized normalizer that converts supported scholarly identifier values
 to a canonical form (e.g., removing URL prefixes, labels, or separators).
 
-Normalization is structural: inputs that conform to the expected identifier
-syntax are converted to a canonical representation. Inputs that do not match
-the required structure yield \code{NA_character_}.
+Normalization requires that inputs match the expected identifier structure.
+For identifier types with checksum algorithms, normalization also requires
+checksum-valid values. Inputs that do not meet these requirements yield
+\code{NA_character_}.
 
-For identifier types with checksum algorithms (e.g., ORCID, ISBN, ISSN),
-normalization does not verify checksum correctness. It only enforces
-structural plausibility and canonical formatting.
+Normalized outputs are canonical, type-specific representations of valid
+identifiers.
 
 Use \code{\link[=is_scholid]{is_scholid()}} to test whether values are fully valid identifiers,
 including checksum verification where applicable.

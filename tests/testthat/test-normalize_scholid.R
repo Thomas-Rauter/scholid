@@ -44,6 +44,42 @@ testthat::test_that("normalize_orcid removes wrappers and enforces grouping", {
     testthat::expect_identical(got, exp)
 })
 
+testthat::test_that("ISBN normalization keeps valid inputs canonical", {
+    testthat::expect_equal(
+        normalize_scholid(
+            c("978-0-306-40615-7", "0306406152"),
+            "isbn"
+        ),
+        c("9780306406157", "0306406152")
+    )
+})
+
+testthat::test_that(
+    "ISBN normalization rejects checksum-invalid ISBN-like inputs",
+    {
+        testthat::expect_equal(
+            normalize_scholid(
+                c("1234567890123", "030640615X"),
+                "isbn"
+            ),
+            c(NA_character_, NA_character_)
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized ISBN outputs are valid ISBNs and classify as isbn",
+    {
+        x <- normalize_scholid(
+            c("9780306406157", "0306406152"),
+            "isbn"
+        )
+
+        testthat::expect_true(all(is_scholid(x, "isbn")))
+        testthat::expect_true(all(classify_scholid(x) == "isbn"))
+    }
+)
+
 testthat::test_that("normalize_isbn removes separators and uppercases X", {
     x <- c(
         "0-306-40615-2",
@@ -61,7 +97,7 @@ testthat::test_that("normalize_isbn removes separators and uppercases X", {
         "0306406152",
         "9780306406157",
         "9780306406157",
-        "030640615X",
+        NA_character_,
         NA_character_,
         NA_character_
     )

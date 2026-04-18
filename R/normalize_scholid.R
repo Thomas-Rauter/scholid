@@ -4,13 +4,13 @@
 #' Vectorized normalizer that converts supported scholarly identifier values
 #' to a canonical form (e.g., removing URL prefixes, labels, or separators).
 #'
-#' Normalization is structural: inputs that conform to the expected identifier
-#' syntax are converted to a canonical representation. Inputs that do not match
-#' the required structure yield `NA_character_`.
+#' Normalization requires that inputs match the expected identifier structure.
+#' For identifier types with checksum algorithms, normalization also requires
+#' checksum-valid values. Inputs that do not meet these requirements yield
+#' `NA_character_`.
 #'
-#' For identifier types with checksum algorithms (e.g., ORCID, ISBN, ISSN),
-#' normalization does not verify checksum correctness. It only enforces
-#' structural plausibility and canonical formatting.
+#' Normalized outputs are canonical, type-specific representations of valid
+#' identifiers.
 #'
 #' Use [is_scholid()] to test whether values are fully valid identifiers,
 #' including checksum verification where applicable.
@@ -19,8 +19,8 @@
 #' @param type A single string giving the identifier type. See
 #'   [scholid_types()] for supported values.
 #'
-#' @return A character vector with the same length as `x`. Invalid or
-#'   structurally non-matching inputs yield `NA_character_`.
+#' @return A character vector with the same length as `x`. Invalid, checksum-
+#'   failing, or structurally non-matching inputs yield `NA_character_`.
 #'
 #' @examples
 #' normalize_scholid("https://doi.org/10.1000/182", "doi")
@@ -161,6 +161,10 @@ normalize_isbn <- function(x) {
         is13 <- grepl("^\\d{13}$", y)
 
         if (!(is10 || is13)) {
+            return(NA_character_)
+        }
+
+        if (!is_isbn(y)) {
             return(NA_character_)
         }
 

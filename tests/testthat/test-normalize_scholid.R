@@ -275,6 +275,61 @@ testthat::test_that("normalize_pmcid strips label and enforces PMC prefix", {
 })
 
 testthat::test_that(
+    "ORCID normalization keeps valid inputs canonical",
+    {
+        testthat::expect_equal(
+            normalize_scholid(
+                c(
+                    "0000-0002-1825-0097",
+                    "0000000218250097",
+                    "https://orcid.org/0000-0002-1825-0097"
+                ),
+                "orcid"
+            ),
+            c(
+                "0000-0002-1825-0097",
+                "0000-0002-1825-0097",
+                "0000-0002-1825-0097"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "ORCID normalization rejects checksum-invalid ORCID-like inputs",
+    {
+        testthat::expect_equal(
+            normalize_scholid(
+                c(
+                    "0000-0002-1825-009X",
+                    "000000021825009X",
+                    "https://orcid.org/0000-0002-1825-009X"
+                ),
+                "orcid"
+            ),
+            c(NA_character_, NA_character_, NA_character_)
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized ORCID outputs are valid ORCIDs and classify as orcid",
+    {
+        x <- normalize_scholid(
+            c(
+                "0000-0002-1825-0097",
+                "0000000218250097",
+                "orcid:0000-0002-1825-0097"
+            ),
+            "orcid"
+        )
+
+        testthat::expect_true(all(is_scholid(x, "orcid")))
+        testthat::expect_true(all(classify_scholid(x) == "orcid"))
+    }
+)
+
+testthat::test_that(
     "normalize_orcid drops lowercase x and returns NA",
     {
         x <- c(

@@ -95,12 +95,13 @@ normalize_doi <- function(x) {
 #' Normalize ORCID identifiers
 #'
 #' @description
-#' Normalizes ORCID iDs by removing URL prefixes and enforcing canonical
-#' hyphenated grouping.
+#' Normalizes ORCID iDs by removing URL prefixes, enforcing canonical
+#' hyphenated grouping, and requiring checksum-valid identifiers.
 #'
 #' @param x A vector of ORCID values.
 #'
-#' @return A character vector of normalized ORCID iDs.
+#' @return A character vector of normalized ORCID iDs. Invalid or
+#'   checksum-failing inputs yield `NA_character_`.
 #'
 #' @noRd
 normalize_orcid <- function(x) {
@@ -127,6 +128,8 @@ normalize_orcid <- function(x) {
             sep = "-"
         )
     )
+
+    y[!is.na(y) & !is_orcid(y)] <- NA_character_
 
     out[ok] <- y
     out

@@ -34,8 +34,8 @@ is_orcid <- function(x) {
     out <- rep(NA, length(x))
 
     ok <- !is.na(x)
-    pat <- "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X]$"
-    y <- x[ok]
+    pat <- "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx]$"
+    y <- toupper(x[ok])
 
     valid <- grepl(pat, y)
     res <- rep(FALSE, length(y))

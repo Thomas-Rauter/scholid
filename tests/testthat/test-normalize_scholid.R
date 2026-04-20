@@ -417,7 +417,7 @@ testthat::test_that(
 )
 
 testthat::test_that(
-    "normalize_orcid drops lowercase x and returns NA",
+    "normalize_orcid canonicalizes valid lowercase x to uppercase X",
     {
         x <- c(
             "0000-0002-1694-233x",
@@ -428,7 +428,10 @@ testthat::test_that(
 
         testthat::expect_identical(
             got,
-            c(NA_character_, NA_character_)
+            c(
+                "0000-0002-1694-233X",
+                NA_character_
+            )
         )
     }
 )

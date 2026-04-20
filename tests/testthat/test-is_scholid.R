@@ -132,6 +132,79 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_orcid accepts canonical valid ORCIDs including lowercase x",
+    {
+        x <- c(
+            "0000-0002-1825-0097",
+            "0000-0000-0000-001X",
+            "0000-0000-0000-001x"
+        )
+
+        testthat::expect_identical(
+            is_orcid(x),
+            c(TRUE, TRUE, TRUE)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_orcid rejects canonical checksum-invalid ORCIDs",
+    {
+        x <- c(
+            "0000-0002-1825-009X",
+            "0000-0000-0000-0017",
+            "0000-0000-0000-0010"
+        )
+
+        testthat::expect_identical(
+            is_orcid(x),
+            c(FALSE, FALSE, FALSE)
+        )
+    }
+)
+
+testthat::test_that(
+    "ORCID normalization canonicalizes valid non-canonical inputs",
+    {
+        x <- c(
+            "0000000218250097",
+            "000000000000001x",
+            "https://orcid.org/0000-0002-1825-0097",
+            "orcid:0000-0000-0000-001x"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "orcid"),
+            c(
+                "0000-0002-1825-0097",
+                "0000-0000-0000-001X",
+                "0000-0002-1825-0097",
+                "0000-0000-0000-001X"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized ORCID outputs validate and classify as orcid",
+    {
+        x <- normalize_scholid(
+            c(
+                "0000000218250097",
+                "000000000000001x",
+                "https://orcid.org/0000-0002-1825-0097",
+                "orcid:0000-0000-0000-001x"
+            ),
+            "orcid"
+        )
+
+        testthat::expect_true(all(is_orcid(x)))
+        testthat::expect_true(all(is_scholid(x, "orcid")))
+        testthat::expect_true(all(classify_scholid(x) == "orcid"))
+    }
+)
+
+testthat::test_that(
     "is_orcid validates checksum and allows X check digit",
     {
         x <- c(

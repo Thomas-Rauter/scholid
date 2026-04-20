@@ -112,7 +112,7 @@ normalize_orcid <- function(x) {
     y <- trimws(x[ok])
 
     y <- sub("^https?://orcid\\.org/", "", y, ignore.case = TRUE)
-    y <- gsub("[^0-9X]", "", y)
+    y <- toupper(gsub("[^0-9Xx]", "", y))
 
     pat <- "^\\d{15}[0-9X]$"
     y[!grepl(pat, y)] <- NA_character_

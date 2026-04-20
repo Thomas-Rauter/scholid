@@ -160,7 +160,9 @@ is_arxiv <- function(x) {
 
 #' Check PubMed identifiers
 #'
-#' Tests whether values are valid PubMed identifiers (PMIDs).
+#' Tests whether values are structurally plausible PubMed identifiers
+#' (PMIDs). PMID checks are based on digit-only syntax, with exclusion of
+#' values that are valid ISBNs to reduce cross-type false positives.
 #'
 #' @param x A vector of values to check.
 #'
@@ -170,9 +172,16 @@ is_arxiv <- function(x) {
 is_pmid <- function(x) {
     x <- as.character(x)
     out <- rep(NA, length(x))
+
     ok <- !is.na(x)
+    y <- x[ok]
+
     pat <- .scholid_registry()[["pmid"]]$pat
-    out[ok] <- grepl(pat, x[ok], perl = TRUE)
+    res <- grepl(pat, y, perl = TRUE)
+
+    res[res] <- !is_isbn(y[res])
+
+    out[ok] <- res
     out
 }
 

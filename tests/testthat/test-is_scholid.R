@@ -300,6 +300,52 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_scholid does not treat valid ISBNs as PMIDs",
+    {
+        x <- c(
+            "9780306406157",
+            "0306406152"
+        )
+
+        testthat::expect_identical(
+            is_scholid(x, "pmid"),
+            c(FALSE, FALSE)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid still accepts ordinary digit-only PMIDs",
+    {
+        x <- c(
+            "12345678",
+            "20493630",
+            "1234567890123"
+        )
+
+        testthat::expect_identical(
+            is_scholid(x, "pmid"),
+            c(TRUE, TRUE, TRUE)
+        )
+    }
+)
+
+testthat::test_that(
+    "classify_scholid keeps digit-only valid ISBNs as isbn",
+    {
+        x <- c(
+            "9780306406157",
+            "0306406152"
+        )
+
+        testthat::expect_identical(
+            classify_scholid(x),
+            c("isbn", "isbn")
+        )
+    }
+)
+
+testthat::test_that(
     "is_pmid accepts digits only",
     {
         x <- c(

@@ -118,3 +118,32 @@ testthat::test_that(
         testthat::expect_true(all(is.na(got)))
     }
 )
+
+testthat::test_that(
+    "detect and normalize agree on labeled ISBN inputs",
+    {
+        x <- c(
+            "ISBN 9780306406157",
+            "isbn:9780306406157",
+            "ISBN-13: 9780306406157",
+            "ISBN 0306406152",
+            "isbn:0306406152"
+        )
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            c("isbn", "isbn", "isbn", "isbn", "isbn")
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "isbn"),
+            c(
+                "9780306406157",
+                "9780306406157",
+                "9780306406157",
+                "0306406152",
+                "0306406152"
+            )
+        )
+    }
+)

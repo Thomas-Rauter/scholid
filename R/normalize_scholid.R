@@ -139,12 +139,14 @@ normalize_orcid <- function(x) {
 #' Normalize ISBN identifiers
 #'
 #' @description
-#' Normalizes ISBN-10 and ISBN-13 values by removing separators and
-#' validating length.
+#' Normalizes ISBN-10 and ISBN-13 values by removing optional `ISBN`,
+#' `ISBN-10`, or `ISBN-13` labels, stripping separators, enforcing compact
+#' canonical form, and requiring checksum-valid identifiers.
 #'
 #' @param x A vector of ISBN values.
 #'
-#' @return A character vector of normalized ISBNs.
+#' @return A character vector of normalized ISBNs. Invalid or
+#'   checksum-failing inputs yield `NA_character_`.
 #'
 #' @noRd
 normalize_isbn <- function(x) {
@@ -154,6 +156,14 @@ normalize_isbn <- function(x) {
     ok <- !is.na(x)
 
     out[ok] <- vapply(x[ok], function(s) {
+        s <- trimws(s)
+        s <- sub(
+            "^(?i:isbn(?:-1[03])?)\\s*:?\\s*",
+            "",
+            s,
+            perl = TRUE
+        )
+
         if (!.isbn_format_ok(s)) {
             return(NA_character_)
         }

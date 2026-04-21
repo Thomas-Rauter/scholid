@@ -520,3 +520,59 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "arXiv normalization accepts dotted old-style identifiers",
+    {
+        x <- c(
+            "math.GT/0309136",
+            "math.GT/0309136v1",
+            "cs.CL/0501001"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "arxiv"),
+            c(
+                "math.GT/0309136",
+                "math.GT/0309136v1",
+                "cs.CL/0501001"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "arXiv normalization handles wrapped dotted old-style identifiers",
+    {
+        x <- c(
+            "arXiv:math.GT/0309136",
+            "https://arxiv.org/abs/math.GT/0309136"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "arxiv"),
+            c(
+                "math.GT/0309136",
+                "math.GT/0309136"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "dotted old-style arXiv identifiers validate and classify as arxiv",
+    {
+        x <- normalize_scholid(
+            c(
+                "math.GT/0309136",
+                "math.GT/0309136v1",
+                "cs.CL/0501001",
+                "arXiv:math.GT/0309136"
+            ),
+            "arxiv"
+        )
+
+        testthat::expect_true(all(is_scholid(x, "arxiv")))
+        testthat::expect_true(all(classify_scholid(x) == "arxiv"))
+    }
+)

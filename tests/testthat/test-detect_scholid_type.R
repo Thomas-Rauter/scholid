@@ -147,3 +147,35 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "detect_scholid_type prefers specific normalized types over pmid",
+    {
+        x <- c(
+            "0000000218250097",
+            "20493630",
+            "9780306406157",
+            "12345678"
+        )
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            c("orcid", "issn", "isbn", "pmid")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type keeps PMID as fallback for plain numeric inputs",
+    {
+        x <- c(
+            "12345678",
+            "PMID: 12345678"
+        )
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            c("pmid", "pmid")
+        )
+    }
+)

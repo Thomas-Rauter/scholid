@@ -51,19 +51,24 @@ detect_scholid_type <- function(x) {
         return(out)
     }
 
-    # 1) strict canonical classification (after trimming)
     x_trim <- trimws(x)
+
+    # 1) strict canonical classification
     out[idx] <- classify_scholid(x_trim[idx])
 
+    types <- scholid_types()
+
     # 2) best-effort detection via per-type normalization
-    rem <- idx[is.na(out[idx])]
+    #    for values still unresolved, and for provisional PMID hits
+    rem <- idx[is.na(out[idx]) | out[idx] == "pmid"]
     if (!length(rem)) {
         return(out)
     }
 
-    types <- scholid_types()
+    # Prefer more-specific types before PMID fallback
+    detect_types <- setdiff(types, "pmid")
 
-    for (type in types) {
+    for (type in detect_types) {
         vals <- x_trim[rem]
 
         if (identical(type, "isbn")) {
@@ -76,13 +81,23 @@ detect_scholid_type <- function(x) {
         }
 
         norm <- normalize_scholid(
-            x    = vals,
+            x = vals,
             type = type
         )
 
         hit <- !is.na(norm)
-        fill <- is.na(out[rem]) & hit
+        fill <- hit & (is.na(out[rem]) | out[rem] == "pmid")
         out[rem[fill]] <- type
+    }
+
+    # 3) final PMID fallback for anything still unresolved
+    rem2 <- idx[is.na(out[idx])]
+    if (length(rem2)) {
+        norm <- normalize_scholid(
+            x = x_trim[rem2],
+            type = "pmid"
+        )
+        out[rem2[!is.na(norm)]] <- "pmid"
     }
 
     out

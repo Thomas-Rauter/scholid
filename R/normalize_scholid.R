@@ -95,13 +95,19 @@ normalize_doi <- function(x) {
 #' Normalize ORCID identifiers
 #'
 #' @description
-#' Normalizes ORCID iDs by removing URL prefixes, enforcing canonical
-#' hyphenated grouping, and requiring checksum-valid identifiers.
+#' Normalizes ORCID iDs from canonical hyphenated, compact, space-separated,
+#' URL-prefixed, or `orcid:`-prefixed forms to canonical hyphenated form.
+#'
+#' Only plausible ORCID input formats are accepted. Inputs with arbitrary
+#' surrounding text, malformed separators, or other unsupported wrapping
+#' yield `NA_character_`.
+#'
+#' Normalization requires checksum-valid identifiers.
 #'
 #' @param x A vector of ORCID values.
 #'
-#' @return A character vector of normalized ORCID iDs. Invalid or
-#'   checksum-failing inputs yield `NA_character_`.
+#' @return A character vector of normalized ORCID iDs. Invalid,
+#'   unsupported, or checksum-failing inputs yield `NA_character_`.
 #'
 #' @noRd
 normalize_orcid <- function(x) {
@@ -112,10 +118,19 @@ normalize_orcid <- function(x) {
     y <- trimws(x[ok])
 
     y <- sub("^https?://orcid\\.org/", "", y, ignore.case = TRUE)
-    y <- toupper(gsub("[^0-9Xx]", "", y))
+    y <- sub("^orcid\\s*:\\s*", "", y, ignore.case = TRUE)
 
-    pat <- "^\\d{15}[0-9X]$"
-    y[!grepl(pat, y)] <- NA_character_
+    is_hyph <- grepl("^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx]$", y)
+    is_comp <- grepl("^\\d{15}[0-9Xx]$", y)
+    is_spac <- grepl("^\\d{4} \\d{4} \\d{4} \\d{3}[0-9Xx]$", y)
+
+    y[!(is_hyph | is_comp | is_spac)] <- NA_character_
+
+    y <- ifelse(
+        is.na(y),
+        NA_character_,
+        toupper(gsub("[- ]", "", y))
+    )
 
     y <- ifelse(
         is.na(y),

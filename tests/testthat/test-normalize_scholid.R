@@ -576,3 +576,53 @@ testthat::test_that(
         testthat::expect_true(all(classify_scholid(x) == "arxiv"))
     }
 )
+
+testthat::test_that(
+    "ORCID normalization accepts plausible input forms",
+    {
+        x <- c(
+            "0000-0002-1825-0097",
+            "0000 0002 1825 0097",
+            "https://orcid.org/0000-0002-1825-0097",
+            "orcid:0000-0002-1825-0097"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "orcid"),
+            c(
+                "0000-0002-1825-0097",
+                "0000-0002-1825-0097",
+                "0000-0002-1825-0097",
+                "0000-0002-1825-0097"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "ORCID normalization rejects noisy or malformed inputs",
+    {
+        x <- c(
+            "0000_0002_1825_0097",
+            "(0000-0002-1825-0097)",
+            "0000-0002-1825-0097.",
+            "abc0000-0002-1825-0097",
+            "0000-0002-1825-0097xyz",
+            "0000/0002/1825/0097",
+            "0000--0002--1825--0097"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "orcid"),
+            c(
+                NA_character_,
+                NA_character_,
+                NA_character_,
+                NA_character_,
+                NA_character_,
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)

@@ -626,3 +626,58 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "PMCID normalization restores missing PMC prefix after PMCID label",
+    {
+        x <- c(
+            "PMCID:123456",
+            "PMCID 123456",
+            "pmcid: 123456"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "pmcid"),
+            c(
+                "PMC123456",
+                "PMC123456",
+                "PMC123456"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "PMCID normalization keeps unlabeled numeric forms invalid",
+    {
+        x <- c(
+            "PMC 123456",
+            "123456"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "pmcid"),
+            c(
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized PMCID outputs validate and classify as pmcid",
+    {
+        x <- normalize_scholid(
+            c(
+                "PMCID: PMC123456",
+                "PMCID:123456",
+                "pmcid: 123456"
+            ),
+            "pmcid"
+        )
+
+        testthat::expect_true(all(is_scholid(x, "pmcid")))
+        testthat::expect_true(all(classify_scholid(x) == "pmcid"))
+    }
+)

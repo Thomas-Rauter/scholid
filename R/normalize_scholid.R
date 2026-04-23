@@ -320,11 +320,17 @@ normalize_pmid <- function(x) {
 #' Normalize PubMed Central identifiers
 #'
 #' @description
-#' Normalizes PMCID values by removing labels and enforcing `PMC` prefix.
+#' Normalizes PMCID values by removing optional `PMCID` labels and enforcing
+#' canonical `PMC`-prefixed form.
+#'
+#' When a `PMCID` label is present, digit-only values are interpreted as the
+#' numeric part of a PMCID and normalized by restoring the missing `PMC`
+#' prefix.
 #'
 #' @param x A vector of PubMed Central identifier values.
 #'
-#' @return A character vector of normalized PMCIDs.
+#' @return A character vector of normalized PMCIDs. Invalid or unsupported
+#'   inputs yield `NA_character_`.
 #'
 #' @noRd
 normalize_pmcid <- function(x) {
@@ -334,8 +340,24 @@ normalize_pmcid <- function(x) {
     ok <- !is.na(x)
     y <- trimws(x[ok])
 
-    y <- sub("^PMCID\\s*:?[[:space:]]*", "", y, ignore.case = TRUE)
+    had_label <- grepl(
+        "^PMCID\\s*:?[[:space:]]*",
+        y,
+        ignore.case = TRUE
+    )
+
+    y <- sub(
+        "^PMCID\\s*:?[[:space:]]*",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+
     y <- toupper(y)
+
+    needs_prefix <- had_label & grepl("^\\d+$", y)
+    y[needs_prefix] <- paste0("PMC", y[needs_prefix])
+
     pat <- .scholid_registry()[["pmcid"]]$pat
     y[!grepl(pat, y, perl = TRUE)] <- NA_character_
 

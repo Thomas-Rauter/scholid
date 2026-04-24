@@ -5,14 +5,14 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Tools for Scholarly and Academic Identifiers • scholid</title>
+<title>Scholarly and Academic Identifier Utilities • scholid</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Tools for Scholarly and Academic Identifiers">
-<meta name="description" content="Tools for detecting, normalizing, classifying, and extracting scholarly identifier strings. The package provides lightweight, dependency-free helpers for common identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers. Functions are designed to be vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows.">
-<meta property="og:description" content="Tools for detecting, normalizing, classifying, and extracting scholarly identifier strings. The package provides lightweight, dependency-free helpers for common identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers. Functions are designed to be vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Scholarly and Academic Identifier Utilities">
+<meta name="description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings. Provides lightweight, dependency-free helpers for common identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers. Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
+<meta property="og:description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings. Provides lightweight, dependency-free helpers for common identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers. Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">scholid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,9 +51,10 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="scholid">scholid<a class="anchor" aria-label="anchor" href="#scholid"></a>
 </h1></div>
-<p><a href="https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/Thomas-Rauter/scholid" class="external-link"><img src="https://img.shields.io/codecov/c/github/Thomas-Rauter/scholid?branch=main&amp;logo=codecov" alt="Codecov test coverage"></a></p>
+<p><a href="https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/Thomas-Rauter/scholid" class="external-link"><img src="https://img.shields.io/codecov/c/github/Thomas-Rauter/scholid?branch=main&amp;logo=codecov" alt="Codecov test coverage"></a> <a href="https://CRAN.R-project.org/package=scholid" class="external-link"><img src="https://img.shields.io/badge/CRAN%20since-Feb%202026-blue" alt="CRAN since"></a> <a href="https://CRAN.R-project.org/package=scholid" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/scholid" alt="CRAN downloads"></a> <a href="https://CRAN.R-project.org/package=scholid" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/last-month/scholid" alt="CRAN downloads"></a></p>
 <p><code>scholid</code> provides lightweight, dependency-free utilities for working with scholarly identifiers in R. The package is designed as a small, well-tested foundation that can be safely reused by other packages and data workflows.</p>
 <p>See the full documentation at the <a href="https://thomas-rauter.github.io/scholid/">scholid website</a>.</p>
+<p>For online lookup, conversion, metadata retrieval, and linked identifier discovery, see <a href="https://thomas-rauter.github.io/scholidonline/"><code>scholidonline</code></a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>

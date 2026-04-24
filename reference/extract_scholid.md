@@ -6,7 +6,9 @@ The result is a list with one element per input element. Each element is
 a character vector of matches (possibly length 0). `NA` inputs yield an
 empty character vector.
 
-Matches are returned as found in the text; use
+Matches are returned as extracted identifier tokens from the text.
+Surrounding prose punctuation or markup fragments may be removed where
+necessary to isolate the identifier. Use
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
 to convert identifiers to canonical form.
 
@@ -37,7 +39,7 @@ A list of character vectors of extracted identifiers.
 ``` r
 extract_scholid("See https://doi.org/10.1000/182.", "doi")
 #> [[1]]
-#> [1] "10.1000/182."
+#> [1] "10.1000/182"
 #> 
 extract_scholid("ORCID 0000-0002-1825-0097", "orcid")
 #> [[1]]

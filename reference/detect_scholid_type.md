@@ -55,5 +55,5 @@ detect_scholid_type(c(
   "PMCID: PMC1234567",
   "not an id"
 ))
-#> [1] "doi"   "doi"   "orcid" "arxiv" "issn"  "pmcid" NA     
+#> [1] "doi"   "doi"   "orcid" "arxiv" "pmid"  "pmcid" NA     
 ```

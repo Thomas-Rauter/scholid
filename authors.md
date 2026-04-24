@@ -8,16 +8,15 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/Thomas-Rauter/scholid/blob/v0.1.0/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/Thomas-Rauter/scholid/blob/v0.1.1/DESCRIPTION)
 
-Rauter T (2026). *scholid: Tools for Scholarly and Academic
-Identifiers*. R package version 0.1.0,
-<https://thomas-rauter.github.io/scholid/>.
+Rauter T (2026). *scholid: Scholarly and Academic Identifier Utilities*.
+R package version 0.1.1, <https://thomas-rauter.github.io/scholid/>.
 
     @Manual{,
-      title = {scholid: Tools for Scholarly and Academic Identifiers},
+      title = {scholid: Scholarly and Academic Identifier Utilities},
       author = {Thomas Rauter},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.1},
       url = {https://thomas-rauter.github.io/scholid/},
     }

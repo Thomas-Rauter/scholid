@@ -3,6 +3,12 @@
 [![R-CMD-check](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml)
 [![Codecov test
 coverage](https://img.shields.io/codecov/c/github/Thomas-Rauter/scholid?branch=main&logo=codecov)](https://app.codecov.io/gh/Thomas-Rauter/scholid)
+[![CRAN
+since](https://img.shields.io/badge/CRAN%20since-Feb%202026-blue)](https://CRAN.R-project.org/package=scholid)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/grand-total/scholid)](https://CRAN.R-project.org/package=scholid)
+[![CRAN
+downloads](https://cranlogs.r-pkg.org/badges/last-month/scholid)](https://CRAN.R-project.org/package=scholid)
 
 `scholid` provides lightweight, dependency-free utilities for working
 with scholarly identifiers in R. The package is designed as a small,
@@ -11,6 +17,10 @@ data workflows.
 
 See the full documentation at the [scholid
 website](https://thomas-rauter.github.io/scholid/).
+
+For online lookup, conversion, metadata retrieval, and linked identifier
+discovery, see
+[`scholidonline`](https://thomas-rauter.github.io/scholidonline/).
 
 ## Installation
 

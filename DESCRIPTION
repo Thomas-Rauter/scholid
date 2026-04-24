@@ -1,7 +1,7 @@
 Package: scholid
 Type: Package
 Title: Scholarly and Academic Identifier Utilities
-Version: 0.1.1.9000
+Version: 0.1.1
 Language: en-US
 Authors@R:
     person("Thomas", "Rauter",

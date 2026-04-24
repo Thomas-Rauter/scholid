@@ -1,5 +1,6 @@
 CMD
 Codecov
+arXiv
 ORCID
 PMID
 PMCID
@@ -16,3 +17,8 @@ EAN
 pre
 regexes
 Unhyphenated
+canonicalization
+DOIs
+scholidonline
+vectorized
+Vectorized

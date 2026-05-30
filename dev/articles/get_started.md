@@ -11,6 +11,7 @@ messy identifier data.
 ## Installation
 
 ``` r
+
 install.packages("scholid")
 ```
 
@@ -35,18 +36,26 @@ implementations such as `is_doi()`, `normalize_orcid()`, and
 ## Supported identifier types
 
 ``` r
+
 scholid::scholid_types()
 ```
 
-    ## [1] "arxiv" "doi"   "isbn"  "issn"  "orcid" "pmcid" "pmid"
+    ## [1] "doi"   "arxiv" "orcid" "isbn"  "issn"  "pmcid" "pmid"
 
 ## Detect: `is_scholid()`
 
 [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
-checks whether each value matches a specific identifier type. It is
-vectorized and preserves missing values.
+checks whether each value is a valid identifier of a specific type. It
+expects canonical (or near-canonical) input; wrapped forms such as URLs
+should be normalized first. For checksum-based types (ORCID, ISBN,
+ISSN), both
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+and
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+verify the checksum. It is vectorized and preserves missing values.
 
 ``` r
+
 x <- c(
     "10.1000/182",
     "not a doi",
@@ -67,6 +76,7 @@ representation. This is particularly useful when identifiers are stored
 as URLs or prefixed labels.
 
 ``` r
+
 x <- c(
   "https://doi.org/10.1000/182.",
   "doi:10.1000/182",
@@ -84,6 +94,7 @@ For ORCID iDs, normalization removes URL prefixes and enforces
 hyphenated grouping.
 
 ``` r
+
 x <- c(
   "https://orcid.org/0000-0002-1825-0097",
   "0000000218250097"
@@ -106,6 +117,7 @@ result is a list with one element per input element. Each element is a
 character vector of matches (possibly empty).
 
 ``` r
+
 txt <- c(
   "See https://doi.org/10.1000/182 and doi:10.5555/12345678.",
   "No identifier here.",
@@ -138,6 +150,7 @@ checks and the precedence order defined by
 [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md).
 
 ``` r
+
 x <- c(
   "10.1000/182",
   "0000-0002-1825-0097",
@@ -162,6 +175,7 @@ is:
 3.  Classify and/or validate.
 
 ``` r
+
 txt <- "Read https://doi.org/10.1000/182 (and ORCID 0000-0002-1825-0097)."
 dois <- scholid::extract_scholid(txt, "doi")[[1]]
 orcids <- scholid::extract_scholid(txt, "orcid")[[1]]
@@ -175,12 +189,14 @@ scholid::classify_scholid(c(dois_n, orcids_n))
     ## [1] "doi"   "orcid"
 
 ``` r
+
 scholid::is_scholid(dois_n, "doi")
 ```
 
     ## [1] TRUE
 
 ``` r
+
 scholid::is_scholid(orcids_n, "orcid")
 ```
 
@@ -201,6 +217,7 @@ yet be normalized.
 For example, wrapped identifiers are not classified strictly:
 
 ``` r
+
 x <- c(
   "https://doi.org/10.1000/182",
   "ORCID: 0000-0002-1825-0097",
@@ -216,6 +233,7 @@ scholid::classify_scholid(x)
 However, they can be detected directly:
 
 ``` r
+
 scholid::detect_scholid_type(x)
 ```
 
@@ -225,6 +243,7 @@ Whitespace and minor formatting irregularities are handled
 conservatively:
 
 ``` r
+
 scholid::detect_scholid_type(
   c(
     " 0000-0002-1825-0097 ",
@@ -239,9 +258,10 @@ scholid::detect_scholid_type(
 [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
 does not modify values. Once the identifier type is known, use
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
-to convert to canonical form and
+to convert wrapped input to canonical form and
 [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
-for strict validation.
+to validate already-canonical values. Both apply checksum verification
+where applicable.
 
 A typical workflow for messy data is:
 
@@ -249,8 +269,9 @@ A typical workflow for messy data is:
 2.  Normalize by detected type.
 3.  Validate canonical identifiers.
 
-This separation keeps detection permissive and normalization
-predictable, while preserving strict validation where needed.
+This separation keeps detection permissive, normalization focused on
+canonicalization of wrapped input, and validation available for
+already-canonical strings.
 
 ## Design notes
 

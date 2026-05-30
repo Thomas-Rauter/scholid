@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Scholarly and Academic Identifier Utilities • scholid</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Scholarly and Academic Identifier Utilities">
 <meta name="description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings. Provides lightweight, dependency-free helpers for common identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers. Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
@@ -85,32 +85,32 @@
 <col width="50%">
 <col width="50%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Function</th>
 <th>Purpose</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code><a href="reference/scholid_types.html">scholid_types()</a></code></td>
 <td>List supported scholarly identifier types</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>is_scholid(x, type)</code></td>
 <td>Test whether values conform to a given identifier type</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>normalize_scholid(x, type)</code></td>
 <td>Normalize identifiers to canonical form</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>extract_scholid(text, type)</code></td>
 <td>Extract identifiers of a given type from free text</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>classify_scholid(x)</code></td>
 <td>Guess the identifier type of each input value</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>detect_scholid_type(x)</code></td>
 <td>Detect identifier types from canonical or wrapped input values</td>
 </tr>

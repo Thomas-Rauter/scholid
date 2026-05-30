@@ -1,10 +1,10 @@
-pandoc: 3.1.11
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   get_started: get_started.html
   scholid_definitions: scholid_definitions.html
-last_built: 2026-04-24T12:46Z
+last_built: 2026-05-30T21:43Z
 urls:
   reference: https://thomas-rauter.github.io/scholid/reference
   article: https://thomas-rauter.github.io/scholid/articles

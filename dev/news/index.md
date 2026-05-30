@@ -2,6 +2,8 @@
 
 ## scholid 0.1.1
 
+CRAN release: 2026-04-24
+
 ### Bug fixes
 
 - Tightened normalization and validation behavior for checksum-based

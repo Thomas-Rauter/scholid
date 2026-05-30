@@ -27,6 +27,7 @@ discovery, see
 Install the released version from CRAN:
 
 ``` r
+
 install.packages("scholid")
 ```
 
@@ -47,18 +48,19 @@ communication:
 
 User-available functions:
 
-| Function                                                                                | Purpose                                                        |
-|-----------------------------------------------------------------------------------------|----------------------------------------------------------------|
-| [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md) | List supported scholarly identifier types                      |
-| `is_scholid(x, type)`                                                                   | Test whether values conform to a given identifier type         |
-| `normalize_scholid(x, type)`                                                            | Normalize identifiers to canonical form                        |
-| `extract_scholid(text, type)`                                                           | Extract identifiers of a given type from free text             |
-| `classify_scholid(x)`                                                                   | Guess the identifier type of each input value                  |
-| `detect_scholid_type(x)`                                                                | Detect identifier types from canonical or wrapped input values |
+| Function | Purpose |
+|----|----|
+| [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md) | List supported scholarly identifier types |
+| `is_scholid(x, type)` | Test whether values conform to a given identifier type |
+| `normalize_scholid(x, type)` | Normalize identifiers to canonical form |
+| `extract_scholid(text, type)` | Extract identifiers of a given type from free text |
+| `classify_scholid(x)` | Guess the identifier type of each input value |
+| `detect_scholid_type(x)` | Detect identifier types from canonical or wrapped input values |
 
 ## Examples
 
 ``` r
+
 # list supported scholarly identifier types
 scholid::scholid_types()
 ```
@@ -68,6 +70,7 @@ scholid::scholid_types()
 ```
 
 ``` r
+
 # test whether values match a given identifier type
 scholid::is_scholid(
   x    = "10.1000/182",
@@ -80,6 +83,7 @@ scholid::is_scholid(
 ```
 
 ``` r
+
 # normalize identifiers to canonical form
 scholid::normalize_scholid(
   x    = "https://doi.org/10.1000/182",
@@ -92,6 +96,7 @@ scholid::normalize_scholid(
 ```
 
 ``` r
+
 # extract identifiers of a given type from free text
 scholid::extract_scholid(
   text = "See https://doi.org/10.1000/182 for details.",
@@ -105,6 +110,7 @@ scholid::extract_scholid(
 ```
 
 ``` r
+
 # classify the identifier type of each input value
 scholid::classify_scholid(
   x = c(
@@ -120,6 +126,7 @@ scholid::classify_scholid(
 ```
 
 ``` r
+
 # detect identifier types from canonical or wrapped input values
 scholid::detect_scholid_type(
   x = c(

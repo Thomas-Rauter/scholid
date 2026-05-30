@@ -7,8 +7,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Getting started with scholid • scholid</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting started with scholid">
 </head>
@@ -106,14 +106,17 @@ implementations such as <code>is_doi()</code>,
 </h2>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/scholid_types.html">scholid_types</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] "arxiv" "doi"   "isbn"  "issn"  "orcid" "pmcid" "pmid"</span></span></code></pre>
+<pre><code><span><span class="co">## [1] "doi"   "arxiv" "orcid" "isbn"  "issn"  "pmcid" "pmid"</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="detect-is_scholid">Detect: <code>is_scholid()</code><a class="anchor" aria-label="anchor" href="#detect-is_scholid"></a>
 </h2>
-<p><code><a href="../reference/is_scholid.html">is_scholid()</a></code> checks whether each value matches a
-specific identifier type. It is vectorized and preserves missing
-values.</p>
+<p><code><a href="../reference/is_scholid.html">is_scholid()</a></code> checks whether each value is a valid
+identifier of a specific type. It expects canonical (or near-canonical)
+input; wrapped forms such as URLs should be normalized first. For
+checksum-based types (ORCID, ISBN, ISSN), both <code><a href="../reference/is_scholid.html">is_scholid()</a></code>
+and <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> verify the checksum. It is
+vectorized and preserves missing values.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">"10.1000/182"</span>,</span>
@@ -272,16 +275,18 @@ conservatively:</p>
 <pre><code><span><span class="co">## [1] "orcid" "doi"   "issn"</span></span></code></pre>
 <p><code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> does not modify values. Once the
 identifier type is known, use <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> to
-convert to canonical form and <code><a href="../reference/is_scholid.html">is_scholid()</a></code> for strict
-validation.</p>
+convert wrapped input to canonical form and <code><a href="../reference/is_scholid.html">is_scholid()</a></code> to
+validate already-canonical values. Both apply checksum verification
+where applicable.</p>
 <p>A typical workflow for messy data is:</p>
 <ol style="list-style-type: decimal">
 <li>Detect identifier types.</li>
 <li>Normalize by detected type.</li>
 <li>Validate canonical identifiers.</li>
 </ol>
-<p>This separation keeps detection permissive and normalization
-predictable, while preserving strict validation where needed.</p>
+<p>This separation keeps detection permissive, normalization focused on
+canonicalization of wrapped input, and validation available for
+already-canonical strings.</p>
 </div>
 <div class="section level2">
 <h2 id="design-notes">Design notes<a class="anchor" aria-label="anchor" href="#design-notes"></a>

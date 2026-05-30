@@ -13,9 +13,11 @@ between:
 - **Checksum validity** (does the control digit verify?)
 - **Registry validity** (does the identifier actually exist?)
 
-The functions in `scholid` operate at the **structural level**. The
-regexes shown below describe the structural form that an identifier must
-match.
+The functions in `scholid` validate identifiers at the **structural**
+level and verify checksums where defined (ORCID, ISBN, ISSN). They do
+not check registry or online existence. The regexes shown below describe
+the structural form that an identifier must match; checksum rules are
+documented separately for relevant types.
 
 ------------------------------------------------------------------------
 

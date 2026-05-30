@@ -14,8 +14,10 @@ identifiers.
 
 Use
 [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
-to test whether values are fully valid identifiers, including checksum
-verification where applicable.
+to test whether already-canonical values are valid identifiers of a
+given type. Both functions apply checksum verification where applicable;
+normalization additionally accepts wrapped input forms and returns
+canonical strings.
 
 ## Usage
 

@@ -56,19 +56,19 @@ detect_scholid_type <- function(x) {
     # 1) strict canonical classification
     out[idx] <- classify_scholid(x_trim[idx])
 
-    types <- scholid_types()
+    primary_types <- .scholid_detect_primary_types()
+    fallback_types <- .scholid_detect_last_types()
 
     # 2) best-effort detection via per-type normalization
-    #    for values still unresolved, and for provisional PMID hits
-    rem <- idx[is.na(out[idx]) | out[idx] == "pmid"]
+    #    for values still unresolved, and for provisional fallback hits
+    rem <- idx[
+        is.na(out[idx]) | out[idx] %in% fallback_types
+    ]
     if (!length(rem)) {
         return(out)
     }
 
-    # Prefer more-specific types before PMID fallback
-    detect_types <- setdiff(types, "pmid")
-
-    for (type in detect_types) {
+    for (type in primary_types) {
         vals <- x_trim[rem]
 
         if (identical(type, "isbn")) {
@@ -81,18 +81,25 @@ detect_scholid_type <- function(x) {
         )
 
         hit <- !is.na(norm)
-        fill <- hit & (is.na(out[rem]) | out[rem] == "pmid")
+        fill <- hit & (is.na(out[rem]) | out[rem] %in% fallback_types)
         out[rem[fill]] <- type
     }
 
-    # 3) final PMID fallback for anything still unresolved
+    # 3) final fallback for deferred detection types
     rem2 <- idx[is.na(out[idx])]
-    if (length(rem2)) {
-        norm <- normalize_scholid(
-            x = x_trim[rem2],
-            type = "pmid"
-        )
-        out[rem2[!is.na(norm)]] <- "pmid"
+    if (length(rem2) && length(fallback_types)) {
+        for (type in fallback_types) {
+            still_na <- rem2[is.na(out[rem2])]
+            if (!length(still_na)) {
+                break
+            }
+
+            norm <- normalize_scholid(
+                x = x_trim[still_na],
+                type = type
+            )
+            out[still_na[!is.na(norm)]] <- type
+        }
     }
 
     out

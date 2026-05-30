@@ -10,7 +10,8 @@ scholid_types()
 A character vector of supported identifier type strings.
 }
 \description{
-Returns the set of identifier types supported by the scholid package.
+Returns the set of identifier types supported by the scholid package in
+classification priority order (most specific first).
 }
 \examples{
 scholid_types()

@@ -8,7 +8,10 @@ testthat::test_that(
         testthat::expect_false(anyNA(x))
 
         testthat::expect_identical(x, unique(x))
-        testthat::expect_identical(x, sort(x))
+        testthat::expect_identical(
+            x,
+            c("doi", "arxiv", "orcid", "isbn", "issn", "pmcid", "pmid")
+        )
 
         testthat::expect_true(all(nzchar(x)))
         testthat::expect_true(all(grepl("^[a-z0-9]+$", x)))

@@ -5,31 +5,105 @@
 #'
 #' @description
 #' Internal helper that defines the supported identifier types for scholid.
-#' This is the single source of truth for type names used by exported helpers.
+#' This is the single source of truth for type names, classification order,
+#' and per-type metadata.
 #'
-#' @return A named list. Names are identifier types; values are reserved for
-#'   per-type metadata.
+#' Each entry must include an `order` field. Lower values are checked first
+#' during classification and detection. Optional `detect_last = TRUE` marks
+#' fallback types that are deferred during best-effort detection.
+#'
+#' @return A named list. Names are identifier types; values are per-type
+#'   metadata lists.
 #' @noRd
 .scholid_registry <- function() {
-    reg <- list(
-        arxiv = list(
-            pat1 = "^\\d{4}\\.\\d{4,5}(v\\d+)?$",       # post 2007
-            # pre 2007
-            pat2 = "^[a-z]+(?:-[a-z]+)*(?:\\.[A-Z]{2})?/\\d{7}(v\\d+)?$"
-        ),
+    list(
         doi = list(
-            pat = "^10\\.[0-9]{4,9}/\\S+$"
+            order = 10L,
+            pat   = "^10\\.[0-9]{4,9}/\\S+$"
         ),
-        isbn = list(),  # checksum-based validation; no single shared pattern
-        issn = list(),  # checksum-based validation; normaliz. uses compact form
-        orcid = list(), # checksum-based validation; normaliz. uses compact form
+        arxiv = list(
+            order = 20L,
+            pat1  = "^\\d{4}\\.\\d{4,5}(v\\d+)?$",       # post 2007
+            # pre 2007
+            pat2  = "^[a-z]+(?:-[a-z]+)*(?:\\.[A-Z]{2})?/\\d{7}(v\\d+)?$"
+        ),
+        orcid = list(
+            order = 30L
+        ),
+        isbn = list(
+            order = 40L
+        ),
+        issn = list(
+            order = 50L
+        ),
         pmcid = list(
-            pat = "^PMC\\d+$"
+            order = 60L,
+            pat   = "^PMC\\d+$"
         ),
         pmid = list(
-            pat = "^\\d+$"
+            order       = 90L,
+            detect_last = TRUE,
+            pat         = "^\\d+$"
         )
     )
+}
 
-    reg[order(names(reg))]
+
+#' Return scholid identifier types in classification priority order
+#'
+#' @description
+#' Internal helper that returns supported identifier types sorted by registry
+#' `order`, with type names as a tie-breaker.
+#'
+#' @return A character vector of identifier type names.
+#'
+#' @noRd
+.scholid_types_ordered <- function() {
+    reg <- .scholid_registry()
+    ord <- vapply(
+        reg,
+        function(entry) entry$order,
+        integer(1)
+    )
+    names(reg)[order(ord, names(reg))]
+}
+
+
+#' Return identifier types marked for deferred detection
+#'
+#' @description
+#' Internal helper that returns registry types with `detect_last = TRUE`, in
+#' classification priority order.
+#'
+#' @return A character vector of identifier type names.
+#'
+#' @noRd
+.scholid_detect_last_types <- function() {
+    reg <- .scholid_registry()
+    types <- .scholid_types_ordered()
+    types[vapply(
+        reg[types],
+        function(entry) isTRUE(entry$detect_last),
+        logical(1)
+    )]
+}
+
+
+#' Return identifier types used for primary detection
+#'
+#' @description
+#' Internal helper that returns registry types without `detect_last`, in
+#' classification priority order.
+#'
+#' @return A character vector of identifier type names.
+#'
+#' @noRd
+.scholid_detect_primary_types <- function() {
+    reg <- .scholid_registry()
+    types <- .scholid_types_ordered()
+    types[!vapply(
+        reg[types],
+        function(entry) isTRUE(entry$detect_last),
+        logical(1)
+    )]
 }

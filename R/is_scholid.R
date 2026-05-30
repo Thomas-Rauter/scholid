@@ -4,14 +4,16 @@
 #' Vectorized predicate that tests whether values are valid scholarly
 #' identifiers of a given supported type.
 #'
-#' Validation is stricter than normalization. Values must conform to the
-#' canonical identifier syntax, and for identifier types with checksum
-#' algorithms (e.g., ORCID, ISBN, ISSN), checksum correctness is verified.
+#' For identifier types with checksum algorithms (e.g., ORCID, ISBN, ISSN),
+#' checksum correctness is verified. The same checksum rules apply to
+#' [normalize_scholid()].
+#'
+#' The main difference from normalization is input form: `is_scholid()`
+#' expects values in canonical (or near-canonical) form. Wrapped values
+#' such as URLs or prefixed labels should be normalized first with
+#' [normalize_scholid()].
 #'
 #' Inputs that are `NA` yield `NA`. Non-matching values return `FALSE`.
-#'
-#' Use [normalize_scholid()] to convert structurally plausible identifiers
-#' to canonical form without performing checksum validation.
 #'
 #' @param x A vector of values to test.
 #' @param type A single string giving the identifier type. See

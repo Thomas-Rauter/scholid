@@ -45,8 +45,11 @@ scholid::scholid_types()
 
 ## Detect: `is_scholid()`
 
-`is_scholid()` checks whether each value matches a specific identifier
-type. It is vectorized and preserves missing values.
+`is_scholid()` checks whether each value is a valid identifier of a
+specific type. It expects canonical (or near-canonical) input; wrapped
+forms such as URLs should be normalized first. For checksum-based types
+(ORCID, ISBN, ISSN), both `is_scholid()` and `normalize_scholid()`
+verify the checksum. It is vectorized and preserves missing values.
 
 ```{r check if DOI}
 x <- c(
@@ -202,8 +205,9 @@ scholid::detect_scholid_type(
 ```
 
 `detect_scholid_type()` does not modify values. Once the identifier
-type is known, use `normalize_scholid()` to convert to canonical form
-and `is_scholid()` for strict validation.
+type is known, use `normalize_scholid()` to convert wrapped input to
+canonical form and `is_scholid()` to validate already-canonical values.
+Both apply checksum verification where applicable.
 
 A typical workflow for messy data is:
 
@@ -211,8 +215,9 @@ A typical workflow for messy data is:
 2. Normalize by detected type.
 3. Validate canonical identifiers.
 
-This separation keeps detection permissive and normalization
-predictable, while preserving strict validation where needed.
+This separation keeps detection permissive, normalization focused on
+canonicalization of wrapped input, and validation available for
+already-canonical strings.
 
 
 ## Design notes

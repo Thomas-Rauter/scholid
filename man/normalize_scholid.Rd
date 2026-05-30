@@ -28,8 +28,10 @@ checksum-valid values. Inputs that do not meet these requirements yield
 Normalized outputs are canonical, type-specific representations of valid
 identifiers.
 
-Use \code{\link[=is_scholid]{is_scholid()}} to test whether values are fully valid identifiers,
-including checksum verification where applicable.
+Use \code{\link[=is_scholid]{is_scholid()}} to test whether already-canonical values are valid
+identifiers of a given type. Both functions apply checksum verification
+where applicable; normalization additionally accepts wrapped input forms
+and returns canonical strings.
 }
 \examples{
 normalize_scholid("https://doi.org/10.1000/182", "doi")

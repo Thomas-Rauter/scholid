@@ -20,14 +20,16 @@ each element is a valid identifier of the specified type.
 Vectorized predicate that tests whether values are valid scholarly
 identifiers of a given supported type.
 
-Validation is stricter than normalization. Values must conform to the
-canonical identifier syntax, and for identifier types with checksum
-algorithms (e.g., ORCID, ISBN, ISSN), checksum correctness is verified.
+For identifier types with checksum algorithms (e.g., ORCID, ISBN, ISSN),
+checksum correctness is verified. The same checksum rules apply to
+\code{\link[=normalize_scholid]{normalize_scholid()}}.
+
+The main difference from normalization is input form: \code{is_scholid()}
+expects values in canonical (or near-canonical) form. Wrapped values
+such as URLs or prefixed labels should be normalized first with
+\code{\link[=normalize_scholid]{normalize_scholid()}}.
 
 Inputs that are \code{NA} yield \code{NA}. Non-matching values return \code{FALSE}.
-
-Use \code{\link[=normalize_scholid]{normalize_scholid()}} to convert structurally plausible identifiers
-to canonical form without performing checksum validation.
 }
 \examples{
 is_scholid("10.1000/182", "doi")

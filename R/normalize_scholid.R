@@ -12,8 +12,10 @@
 #' Normalized outputs are canonical, type-specific representations of valid
 #' identifiers.
 #'
-#' Use [is_scholid()] to test whether values are fully valid identifiers,
-#' including checksum verification where applicable.
+#' Use [is_scholid()] to test whether already-canonical values are valid
+#' identifiers of a given type. Both functions apply checksum verification
+#' where applicable; normalization additionally accepts wrapped input forms
+#' and returns canonical strings.
 #'
 #' @param x A vector of values to normalize.
 #' @param type A single string giving the identifier type. See

@@ -38,23 +38,11 @@ normalize_scholid <- function(
         )
     type <- .scholid_match_type(type)
 
-    fun_name <- paste0(
-        "normalize_",
-        type
-        )
-    fun <- get0(
-        fun_name,
-        mode = "function",
-        inherits = TRUE
-        )
-
-    # nocov start
-    if (is.null(fun)) {
-        stop("Missing implementation: ", fun_name, "().", call. = FALSE)
-    }
-    # nocov end
-
-    fun(x)
+    .scholid_dispatch(
+        type   = type,
+        prefix = "normalize_",
+        x      = x
+    )
 }
 
 
@@ -74,11 +62,8 @@ normalize_scholid <- function(
 #'
 #' @noRd
 normalize_doi <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA_character_, length(x))
-
-    ok <- !is.na(x)
-    y <- trimws(x[ok])
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
 
     y <- sub("^doi:\\s*", "", y, ignore.case = TRUE)
     y <- sub("^https?://(dx\\.)?doi\\.org/", "", y, ignore.case = TRUE)
@@ -87,8 +72,8 @@ normalize_doi <- function(x) {
     keep <- vapply(y, .is_doi_strict, logical(1))
     y[!keep] <- NA_character_
 
-    out[ok] <- y
-    out
+    init$out[init$ok] <- y
+    init$out
 }
 
 
@@ -111,11 +96,8 @@ normalize_doi <- function(x) {
 #'
 #' @noRd
 normalize_orcid <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA_character_, length(x))
-
-    ok <- !is.na(x)
-    y <- trimws(x[ok])
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
 
     y <- sub("^https?://orcid\\.org/", "", y, ignore.case = TRUE)
     y <- sub("^orcid\\s*:\\s*", "", y, ignore.case = TRUE)
@@ -146,8 +128,8 @@ normalize_orcid <- function(x) {
 
     y[!is.na(y) & !is_orcid(y)] <- NA_character_
 
-    out[ok] <- y
-    out
+    init$out[init$ok] <- y
+    init$out
 }
 
 
@@ -165,19 +147,11 @@ normalize_orcid <- function(x) {
 #'
 #' @noRd
 normalize_isbn <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA_character_, length(x))
+    init <- .scholid_init_na_character(x)
 
-    ok <- !is.na(x)
-
-    out[ok] <- vapply(x[ok], function(s) {
+    init$out[init$ok] <- vapply(init$x[init$ok], function(s) {
         s <- trimws(s)
-        s <- sub(
-            "^(?i:isbn(?:-1[03])?)\\s*:?\\s*",
-            "",
-            s,
-            perl = TRUE
-        )
+        s <- .strip_isbn_label(s)
 
         if (!.isbn_format_ok(s)) {
             return(NA_character_)
@@ -199,7 +173,7 @@ normalize_isbn <- function(x) {
         y
     }, character(1))
 
-    out
+    init$out
 }
 
 
@@ -215,11 +189,8 @@ normalize_isbn <- function(x) {
 #'
 #' @noRd
 normalize_issn <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA_character_, length(x))
-
-    ok <- !is.na(x)
-    y <- trimws(x[ok])
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
 
     # Remove only an optional ISSN label at the beginning
     y <- sub("^ISSN\\s*:?[[:space:]]*", "", y, ignore.case = TRUE)
@@ -249,8 +220,8 @@ normalize_issn <- function(x) {
     # Keep only checksum-valid ISSNs
     y[!is.na(y) & !is_issn(y)] <- NA_character_
 
-    out[ok] <- y
-    out
+    init$out[init$ok] <- y
+    init$out
 }
 
 
@@ -265,11 +236,8 @@ normalize_issn <- function(x) {
 #'
 #' @noRd
 normalize_arxiv <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA_character_, length(x))
-
-    ok <- !is.na(x)
-    y <- trimws(x[ok])
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
 
     y <- sub("^arXiv:\\s*", "", y, ignore.case = TRUE)
     y <- sub("^https?://arxiv\\.org/abs/", "", y, ignore.case = TRUE)
@@ -280,8 +248,8 @@ normalize_arxiv <- function(x) {
 
     y[!(grepl(pat1, y) | grepl(pat2, y))] <- NA_character_
 
-    out[ok] <- y
-    out
+    init$out[init$ok] <- y
+    init$out
 }
 
 
@@ -296,11 +264,8 @@ normalize_arxiv <- function(x) {
 #'
 #' @noRd
 normalize_pmid <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA_character_, length(x))
-
-    ok <- !is.na(x)
-    y <- trimws(x[ok])
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
 
     y <- sub(
         "^PMID(?:[[:space:]]*:[[:space:]]*|[[:space:]]+)",
@@ -312,8 +277,8 @@ normalize_pmid <- function(x) {
     pat <- .scholid_registry()[["pmid"]]$pat
     y[!grepl(pat, y, perl = TRUE)] <- NA_character_
 
-    out[ok] <- y
-    out
+    init$out[init$ok] <- y
+    init$out
 }
 
 
@@ -334,11 +299,8 @@ normalize_pmid <- function(x) {
 #'
 #' @noRd
 normalize_pmcid <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA_character_, length(x))
-
-    ok <- !is.na(x)
-    y <- trimws(x[ok])
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
 
     had_label <- grepl(
         "^PMCID\\s*:?[[:space:]]*",
@@ -361,6 +323,6 @@ normalize_pmcid <- function(x) {
     pat <- .scholid_registry()[["pmcid"]]$pat
     y[!grepl(pat, y, perl = TRUE)] <- NA_character_
 
-    out[ok] <- y
-    out
+    init$out[init$ok] <- y
+    init$out
 }

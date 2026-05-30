@@ -81,6 +81,44 @@
 }
 
 
+#' Dispatch to a per-type scholid implementation function
+#'
+#' @description
+#' Internal helper that resolves and calls a type-specific implementation
+#' function by name prefix and validated type.
+#'
+#' @param type A validated identifier type string.
+#' @param prefix Function name prefix, e.g. `"is_"` or `"normalize_"`.
+#' @param x Input passed to the resolved implementation function.
+#'
+#' @return The result of the resolved implementation function.
+#'
+#' @noRd
+.scholid_dispatch <- function(
+        type,
+        prefix,
+        x
+) {
+    fun_name <- paste0(
+        prefix,
+        type
+    )
+    fun <- get0(
+        fun_name,
+        mode = "function",
+        inherits = TRUE
+    )
+
+    # nocov start
+    if (is.null(fun)) {
+        stop("Missing implementation: ", fun_name, "().", call. = FALSE)
+    }
+    # nocov end
+
+    fun(x)
+}
+
+
 # Level 2 function (functions called by lvl 1 functions) definitions -----------
 
 
@@ -129,4 +167,47 @@
     }
 
     x
+}
+
+
+#' Initialize a logical output vector with NA for non-missing inputs
+#'
+#' @description
+#' Internal helper for vectorized validators. Coerces input to character and
+#' prepares a logical output vector with `NA` for missing values.
+#'
+#' @param x A vector of values to validate.
+#'
+#' @return A list with elements `x`, `out`, and `ok`.
+#'
+#' @noRd
+.scholid_init_na_logical <- function(x) {
+    x <- as.character(x)
+    list(
+        x   = x,
+        out = rep(NA, length(x)),
+        ok  = !is.na(x)
+    )
+}
+
+
+#' Initialize a character output vector with NA for non-missing inputs
+#'
+#' @description
+#' Internal helper for vectorized normalizers. Coerces input to character and
+#' prepares a character output vector with `NA_character_` for missing
+#' values.
+#'
+#' @param x A vector of values to normalize.
+#'
+#' @return A list with elements `x`, `out`, and `ok`.
+#'
+#' @noRd
+.scholid_init_na_character <- function(x) {
+    x <- as.character(x)
+    list(
+        x   = x,
+        out = rep(NA_character_, length(x)),
+        ok  = !is.na(x)
+    )
 }

@@ -12,11 +12,9 @@
 #'
 #' @noRd
 is_doi <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA, length(x))
-    ok <- !is.na(x)
-    out[ok] <- vapply(x[ok], .is_doi_strict, logical(1))
-    out
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(init$x[init$ok], .is_doi_strict, logical(1))
+    init$out
 }
 
 
@@ -30,12 +28,10 @@ is_doi <- function(x) {
 #'
 #' @noRd
 is_orcid <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA, length(x))
+    init <- .scholid_init_na_logical(x)
 
-    ok <- !is.na(x)
     pat <- "^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx]$"
-    y <- toupper(x[ok])
+    y <- toupper(init$x[init$ok])
 
     valid <- grepl(pat, y)
     res <- rep(FALSE, length(y))
@@ -52,8 +48,8 @@ is_orcid <- function(x) {
     }
 
     res[valid] <- vapply(y[valid], chk, logical(1))
-    out[ok] <- res
-    out
+    init$out[init$ok] <- res
+    init$out
 }
 
 
@@ -67,10 +63,7 @@ is_orcid <- function(x) {
 #'
 #' @noRd
 is_isbn <- function(x) {
-    raw <- as.character(x)
-    out <- rep(NA, length(raw))
-
-    ok <- !is.na(raw)
+    init <- .scholid_init_na_logical(x)
 
     is10 <- function(s) {
         if (!grepl("^\\d{9}[0-9X]$", s)) return(FALSE)
@@ -92,7 +85,7 @@ is_isbn <- function(x) {
         cd == d[13]
     }
 
-    out[ok] <- vapply(raw[ok], function(s) {
+    init$out[init$ok] <- vapply(init$x[init$ok], function(s) {
         if (!.isbn_format_ok(s)) {
             return(FALSE)
         }
@@ -101,7 +94,7 @@ is_isbn <- function(x) {
         is10(compact) || is13(compact)
     }, logical(1))
 
-    out
+    init$out
 }
 
 
@@ -115,12 +108,10 @@ is_isbn <- function(x) {
 #'
 #' @noRd
 is_issn <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA, length(x))
+    init <- .scholid_init_na_logical(x)
 
-    ok <- !is.na(x)
     pat <- "^\\d{4}-\\d{3}[0-9X]$"
-    y <- x[ok]
+    y <- init$x[init$ok]
 
     chk <- function(s) {
         d <- strsplit(gsub("-", "", s), "")[[1]]
@@ -132,8 +123,8 @@ is_issn <- function(x) {
 
     res <- grepl(pat, y)
     res[res] <- vapply(y[res], chk, logical(1))
-    out[ok] <- res
-    out
+    init$out[init$ok] <- res
+    init$out
 }
 
 
@@ -147,14 +138,13 @@ is_issn <- function(x) {
 #'
 #' @noRd
 is_arxiv <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA, length(x))
-    ok <- !is.na(x)
+    init <- .scholid_init_na_logical(x)
     reg <- .scholid_registry()[["arxiv"]]
     pat1 <- reg$pat1
     pat2 <- reg$pat2
-    out[ok] <- grepl(pat1, x[ok], perl = TRUE) | grepl(pat2, x[ok], perl = TRUE)
-    out
+    init$out[init$ok] <- grepl(pat1, init$x[init$ok], perl = TRUE) |
+        grepl(pat2, init$x[init$ok], perl = TRUE)
+    init$out
 }
 
 
@@ -170,19 +160,16 @@ is_arxiv <- function(x) {
 #'
 #' @noRd
 is_pmid <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA, length(x))
-
-    ok <- !is.na(x)
-    y <- x[ok]
+    init <- .scholid_init_na_logical(x)
+    y <- init$x[init$ok]
 
     pat <- .scholid_registry()[["pmid"]]$pat
     res <- grepl(pat, y, perl = TRUE)
 
     res[res] <- !is_isbn(y[res])
 
-    out[ok] <- res
-    out
+    init$out[init$ok] <- res
+    init$out
 }
 
 
@@ -196,16 +183,35 @@ is_pmid <- function(x) {
 #'
 #' @noRd
 is_pmcid <- function(x) {
-    x <- as.character(x)
-    out <- rep(NA, length(x))
-    ok <- !is.na(x)
+    init <- .scholid_init_na_logical(x)
     pat <- .scholid_registry()[["pmcid"]]$pat
-    out[ok] <- grepl(pat, x[ok], perl = TRUE)
-    out
+    init$out[init$ok] <- grepl(pat, init$x[init$ok], perl = TRUE)
+    init$out
 }
 
 
 # Level 2 functions (functions called by level 1 functions) definitions --------
+
+
+#' Strip optional ISBN labels from identifier strings
+#'
+#' @description
+#' Removes optional `ISBN`, `ISBN-10`, or `ISBN-13` labels from the
+#' beginning of identifier strings.
+#'
+#' @param x A character vector of candidate ISBN strings.
+#'
+#' @return A character vector with labels removed.
+#'
+#' @noRd
+.strip_isbn_label <- function(x) {
+    sub(
+        "^(?i:isbn(?:-1[03])?)\\s*:?\\s*",
+        "",
+        x,
+        perl = TRUE
+    )
+}
 
 
 #' Strict DOI validator

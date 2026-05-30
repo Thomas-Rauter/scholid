@@ -36,21 +36,9 @@ is_scholid <- function(
         )
     type <- .scholid_match_type(type)
 
-    fun_name <- paste0(
-        "is_",
-        type
-        )
-    fun <- get0(
-        fun_name,
-        mode = "function",
-        inherits = TRUE
-        )
-
-    # nocov start
-    if (is.null(fun)) {
-        stop("Missing implementation: ", fun_name, "().", call. = FALSE)
-    }
-    # nocov end
-
-    fun(x)
+    .scholid_dispatch(
+        type   = type,
+        prefix = "is_",
+        x      = x
+    )
 }

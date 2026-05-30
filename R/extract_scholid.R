@@ -33,23 +33,11 @@ extract_scholid <- function(
         )
     type <- .scholid_match_type(type)
 
-    fun_name <- paste0(
-        "extract_",
-        type
-        )
-    fun <- get0(
-        fun_name,
-        mode = "function",
-        inherits = TRUE
-        )
-
-    # nocov start
-    if (is.null(fun)) {
-        stop("Missing implementation: ", fun_name, "().", call. = FALSE)
-    }
-    # nocov end
-
-    fun(text)
+    .scholid_dispatch(
+        type   = type,
+        prefix = "extract_",
+        x      = text
+    )
 }
 
 
@@ -78,23 +66,11 @@ extract_doi <- function(text) {
         pat  = pat
     )
 
-    lapply(out, function(hits) {
-        if (!length(hits)) {
-            return(character(0))
-        }
-
-        cleaned <- vapply(
-            hits,
-            .clean_extracted_doi,
-            character(1),
-            USE.NAMES = FALSE
-        )
-
-        cleaned <- cleaned[nzchar(cleaned)]
-        cleaned <- cleaned[!is.na(cleaned)]
-        cleaned <- cleaned[is_doi(cleaned)]
-        cleaned
-    })
+    .extract_filter_validate(
+        out          = out,
+        clean_fn     = .clean_extracted_doi,
+        validate_fn  = is_doi
+    )
 }
 
 
@@ -134,23 +110,11 @@ extract_isbn <- function(text) {
         pat  = pat
     )
 
-    lapply(out, function(hits) {
-        if (!length(hits)) {
-            return(character(0))
-        }
-
-        cleaned <- vapply(
-            hits,
-            .clean_extracted_isbn,
-            character(1),
-            USE.NAMES = FALSE
-        )
-
-        cleaned <- cleaned[nzchar(cleaned)]
-        cleaned <- cleaned[!is.na(cleaned)]
-        cleaned <- cleaned[is_isbn(cleaned)]
-        cleaned
-    })
+    .extract_filter_validate(
+        out          = out,
+        clean_fn     = .clean_extracted_trailing_punct,
+        validate_fn  = is_isbn
+    )
 }
 
 
@@ -171,23 +135,11 @@ extract_issn <- function(text) {
         pat  = pat
     )
 
-    lapply(out, function(hits) {
-        if (!length(hits)) {
-            return(character(0))
-        }
-
-        cleaned <- vapply(
-            hits,
-            .clean_extracted_issn,
-            character(1),
-            USE.NAMES = FALSE
-        )
-
-        cleaned <- cleaned[nzchar(cleaned)]
-        cleaned <- cleaned[!is.na(cleaned)]
-        cleaned <- cleaned[is_issn(cleaned)]
-        cleaned
-    })
+    .extract_filter_validate(
+        out          = out,
+        clean_fn     = .clean_extracted_trailing_punct,
+        validate_fn  = is_issn
+    )
 }
 
 
@@ -217,23 +169,11 @@ extract_arxiv <- function(text) {
         pat  = pat
     )
 
-    lapply(out, function(hits) {
-        if (!length(hits)) {
-            return(character(0))
-        }
-
-        cleaned <- vapply(
-            hits,
-            .clean_extracted_arxiv,
-            character(1),
-            USE.NAMES = FALSE
-        )
-
-        cleaned <- cleaned[nzchar(cleaned)]
-        cleaned <- cleaned[!is.na(cleaned)]
-        cleaned <- cleaned[is_arxiv(cleaned)]
-        cleaned
-    })
+    .extract_filter_validate(
+        out          = out,
+        clean_fn     = .clean_extracted_trailing_punct,
+        validate_fn  = is_arxiv
+    )
 }
 
 
@@ -259,23 +199,11 @@ extract_pmid <- function(text) {
         pat  = pat
     )
 
-    lapply(out, function(hits) {
-        if (!length(hits)) {
-            return(character(0))
-        }
-
-        cleaned <- vapply(
-            hits,
-            .clean_extracted_pmid,
-            character(1),
-            USE.NAMES = FALSE
-        )
-
-        cleaned <- cleaned[nzchar(cleaned)]
-        cleaned <- cleaned[!is.na(cleaned)]
-        cleaned <- cleaned[is_pmid(cleaned)]
-        cleaned
-    })
+    .extract_filter_validate(
+        out          = out,
+        clean_fn     = .clean_extracted_trailing_punct,
+        validate_fn  = is_pmid
+    )
 }
 
 
@@ -296,23 +224,11 @@ extract_pmcid <- function(text) {
         pat  = pat
     )
 
-    lapply(out, function(hits) {
-        if (!length(hits)) {
-            return(character(0))
-        }
-
-        cleaned <- vapply(
-            hits,
-            .clean_extracted_pmcid,
-            character(1),
-            USE.NAMES = FALSE
-        )
-
-        cleaned <- cleaned[nzchar(cleaned)]
-        cleaned <- cleaned[!is.na(cleaned)]
-        cleaned <- cleaned[is_pmcid(cleaned)]
-        cleaned
-    })
+    .extract_filter_validate(
+        out          = out,
+        clean_fn     = .clean_extracted_trailing_punct,
+        validate_fn  = is_pmcid
+    )
 }
 
 
@@ -354,6 +270,45 @@ extract_pmcid <- function(text) {
     }
 
     out
+}
+
+
+#' Clean, filter, and validate extracted identifier candidates
+#'
+#' @description
+#' Internal helper that post-processes regex extraction results. Each list
+#' element is cleaned with `clean_fn`, then filtered to non-empty values and
+#' validated with `validate_fn`.
+#'
+#' @param out A list of character vectors of raw regex matches.
+#' @param clean_fn Function applied to each raw match.
+#' @param validate_fn Vectorized validator returning logical values.
+#'
+#' @return A list of character vectors of validated identifiers.
+#'
+#' @noRd
+.extract_filter_validate <- function(
+        out,
+        clean_fn,
+        validate_fn
+) {
+    lapply(out, function(hits) {
+        if (!length(hits)) {
+            return(character(0))
+        }
+
+        cleaned <- vapply(
+            hits,
+            clean_fn,
+            character(1),
+            USE.NAMES = FALSE
+        )
+
+        cleaned <- cleaned[nzchar(cleaned)]
+        cleaned <- cleaned[!is.na(cleaned)]
+        cleaned <- cleaned[validate_fn(cleaned)]
+        cleaned
+    })
 }
 
 
@@ -400,106 +355,18 @@ extract_pmcid <- function(text) {
 }
 
 
-#' Clean an extracted ISBN candidate
+#' Clean trailing punctuation and whitespace from an extracted candidate
 #'
 #' @description
 #' Removes trailing punctuation and surrounding whitespace from an extracted
-#' ISBN candidate.
+#' identifier candidate.
 #'
-#' @param x A single extracted ISBN candidate.
+#' @param x A single extracted identifier candidate.
 #'
-#' @return A cleaned ISBN candidate string, or `""` if empty.
-#'
-#' @noRd
-.clean_extracted_isbn <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
-    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
-    x <- trimws(x)
-    x
-}
-
-
-#' Clean an extracted ISSN candidate
-#'
-#' @description
-#' Removes trailing punctuation and surrounding whitespace from an extracted
-#' ISSN candidate.
-#'
-#' @param x A single extracted ISSN candidate.
-#'
-#' @return A cleaned ISSN candidate string, or `""` if empty.
+#' @return A cleaned candidate string, or `""` if empty.
 #'
 #' @noRd
-.clean_extracted_issn <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
-    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
-    x <- trimws(x)
-    x
-}
-
-
-#' Clean an extracted arXiv candidate
-#'
-#' @description
-#' Removes trailing punctuation and surrounding whitespace from an extracted
-#' arXiv candidate.
-#'
-#' @param x A single extracted arXiv candidate.
-#'
-#' @return A cleaned arXiv candidate string, or `""` if empty.
-#'
-#' @noRd
-.clean_extracted_arxiv <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
-    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
-    x <- trimws(x)
-    x
-}
-
-
-#' Clean an extracted PMID candidate
-#'
-#' @description
-#' Removes trailing punctuation and surrounding whitespace from an extracted
-#' PMID candidate.
-#'
-#' @param x A single extracted PMID candidate.
-#'
-#' @return A cleaned PMID candidate string, or `""` if empty.
-#'
-#' @noRd
-.clean_extracted_pmid <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
-    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
-    x <- trimws(x)
-    x
-}
-
-
-#' Clean an extracted PMCID candidate
-#'
-#' @description
-#' Removes trailing punctuation and surrounding whitespace from an extracted
-#' PMCID candidate.
-#'
-#' @param x A single extracted PMCID candidate.
-#'
-#' @return A cleaned PMCID candidate string, or `""` if empty.
-#'
-#' @noRd
-.clean_extracted_pmcid <- function(x) {
+.clean_extracted_trailing_punct <- function(x) {
     if (is.na(x) || !nzchar(x)) {
         return("")
     }

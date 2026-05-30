@@ -72,12 +72,7 @@ detect_scholid_type <- function(x) {
         vals <- x_trim[rem]
 
         if (identical(type, "isbn")) {
-            vals <- sub(
-                "^(?i:isbn(?:-1[03])?)\\s*:?\\s*",
-                "",
-                vals,
-                perl = TRUE
-            )
+            vals <- .strip_isbn_label(vals)
         }
 
         norm <- normalize_scholid(

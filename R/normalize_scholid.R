@@ -242,11 +242,7 @@ normalize_arxiv <- function(x) {
     y <- sub("^arXiv:\\s*", "", y, ignore.case = TRUE)
     y <- sub("^https?://arxiv\\.org/abs/", "", y, ignore.case = TRUE)
 
-    reg <- .scholid_registry()[["arxiv"]]
-    pat1 <- reg$pat1
-    pat2 <- reg$pat2
-
-    y[!(grepl(pat1, y) | grepl(pat2, y))] <- NA_character_
+    y[!is.na(y) & !is_arxiv(y)] <- NA_character_
 
     init$out[init$ok] <- y
     init$out
@@ -274,8 +270,7 @@ normalize_pmid <- function(x) {
         ignore.case = TRUE
     )
 
-    pat <- .scholid_registry()[["pmid"]]$pat
-    y[!grepl(pat, y, perl = TRUE)] <- NA_character_
+    y[!is.na(y) & !is_pmid(y)] <- NA_character_
 
     init$out[init$ok] <- y
     init$out
@@ -320,8 +315,7 @@ normalize_pmcid <- function(x) {
     needs_prefix <- had_label & grepl("^\\d+$", y)
     y[needs_prefix] <- paste0("PMC", y[needs_prefix])
 
-    pat <- .scholid_registry()[["pmcid"]]$pat
-    y[!grepl(pat, y, perl = TRUE)] <- NA_character_
+    y[!is.na(y) & !is_pmcid(y)] <- NA_character_
 
     init$out[init$ok] <- y
     init$out

@@ -79,16 +79,25 @@ extract_doi <- function(text) {
 #' @description
 #' Extracts ORCID iDs from free text or URLs.
 #'
+#' Extracted ORCID candidates are cleaned to remove trailing prose punctuation
+#' where necessary, and only checksum-valid ORCID iDs are returned.
+#'
 #' @param text A character vector of text.
 #'
 #' @return A list of character vectors of extracted ORCID iDs.
 #'
 #' @noRd
 extract_orcid <- function(text) {
-    pat <- "(\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9X])"
-    .extract_with_pattern(
+    pat <- "(\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"
+    out <- .extract_with_pattern(
         text = text,
         pat  = pat
+    )
+
+    .extract_filter_validate(
+        out          = out,
+        clean_fn     = .clean_extracted_trailing_punct,
+        validate_fn  = is_orcid
     )
 }
 

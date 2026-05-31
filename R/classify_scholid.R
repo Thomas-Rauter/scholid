@@ -55,6 +55,10 @@ classify_scholid <- function(x) {
 
         fill <- is.na(out[idx]) & hit
         out[idx[fill]] <- type
+
+        if (!any(is.na(out[idx]))) {
+            break
+        }
     }
 
     out

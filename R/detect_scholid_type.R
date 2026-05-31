@@ -61,15 +61,19 @@ detect_scholid_type <- function(x) {
 
     # 2) best-effort detection via per-type normalization
     #    for values still unresolved, and for provisional fallback hits
-    rem <- idx[
+    still <- idx[
         is.na(out[idx]) | out[idx] %in% fallback_types
     ]
-    if (!length(rem)) {
+    if (!length(still)) {
         return(out)
     }
 
     for (type in primary_types) {
-        vals <- x_trim[rem]
+        if (!length(still)) {
+            break
+        }
+
+        vals <- x_trim[still]
 
         if (identical(type, "isbn")) {
             vals <- .strip_isbn_label(vals)
@@ -81,24 +85,26 @@ detect_scholid_type <- function(x) {
         )
 
         hit <- !is.na(norm)
-        fill <- hit & (is.na(out[rem]) | out[rem] %in% fallback_types)
-        out[rem[fill]] <- type
+        fill <- hit & (is.na(out[still]) | out[still] %in% fallback_types)
+        out[still[fill]] <- type
+        still <- still[!fill]
     }
 
     # 3) final fallback for deferred detection types
-    rem2 <- idx[is.na(out[idx])]
-    if (length(rem2) && length(fallback_types)) {
+    still <- idx[is.na(out[idx])]
+    if (length(still) && length(fallback_types)) {
         for (type in fallback_types) {
-            still_na <- rem2[is.na(out[rem2])]
-            if (!length(still_na)) {
+            if (!length(still)) {
                 break
             }
 
             norm <- normalize_scholid(
-                x = x_trim[still_na],
+                x = x_trim[still],
                 type = type
             )
-            out[still_na[!is.na(norm)]] <- type
+            hit <- !is.na(norm)
+            out[still[hit]] <- type
+            still <- still[!hit]
         }
     }
 

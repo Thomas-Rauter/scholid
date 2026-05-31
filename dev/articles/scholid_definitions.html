@@ -212,6 +212,48 @@ seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 </div>
 </div>
 <div class="section level2">
+<h2 id="rrid-research-resource-identifier">RRID (Research Resource Identifier)<a class="anchor" aria-label="anchor" href="#rrid-research-resource-identifier"></a>
+</h2>
+<p><strong>Governing body:</strong> Resource Identification Initiative
+(SciCrunch)<br><strong>Documentation:</strong> <a href="https://rrid.site/about/guidelines" class="external-link">RRID guidelines</a></p>
+<div class="section level3">
+<h3 id="structure-3">Structure<a class="anchor" aria-label="anchor" href="#structure-3"></a>
+</h3>
+<p>A RRID cites a research resource such as an antibody, cell line,
+model organism, software tool, or plasmid. The canonical form includes
+the literal <code>RRID:</code> prefix followed by an authority-specific
+accession:</p>
+<pre><code><span><span class="va">RRID</span><span class="op">:</span><span class="va">AB_262044</span></span>
+<span><span class="va">RRID</span><span class="op">:</span><span class="va">CVCL_2260</span></span>
+<span><span class="va">RRID</span><span class="op">:</span><span class="va">SCR_007358</span></span>
+<span><span class="va">RRID</span><span class="op">:</span><span class="va">IMSR_JAX</span><span class="op">:</span><span class="fl">000664</span></span>
+<span><span class="va">RRID</span><span class="op">:</span><span class="va">MGI</span><span class="op">:</span><span class="fl">3840442</span></span>
+<span><span class="va">RRID</span><span class="op">:</span><span class="va">Addgene_80088</span></span></code></pre>
+<p>Preferred resolver URLs include:</p>
+<pre><code>https://scicrunch.org/resolver/RRID:AB_262044</code></pre>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid"></a>
+</h3>
+<p>RRID validation is <strong>structural only</strong>. There is no
+checksum algorithm, and registry existence is not checked.</p>
+<p>To limit false positives, <code>scholid</code> accepts only canonical
+<code>RRID:</code>-prefixed forms and validates the accession body
+against a conservative allowlist of known RRID authority prefixes (for
+example <code>AB</code>, <code>CVCL</code>, <code>SCR</code>,
+<code>IMSR</code>, <code>MGI</code>, <code>Addgene</code>). Bare local
+IDs such as <code>AB_262044</code> without the <code>RRID:</code> prefix
+are rejected.</p>
+</div>
+<div class="section level3">
+<h3 id="structural-regex-3">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-3"></a>
+</h3>
+<p>Canonical form (authority body validated separately):</p>
+<pre><code>^RRID:.+$</code></pre>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="isbn-international-standard-book-number">ISBN (International Standard Book Number)<a class="anchor" aria-label="anchor" href="#isbn-international-standard-book-number"></a>
 </h2>
 <p><strong>Governing body:</strong> International ISBN Agency<br><strong>Standard:</strong> ISO 2108</p>
@@ -243,7 +285,7 @@ seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 </div>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-3">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-3"></a>
+<h3 id="structural-regex-4">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-4"></a>
 </h3>
 <p>ISBN-10:</p>
 <pre><code>^\d{9}[\dX]$</code></pre>
@@ -257,7 +299,7 @@ seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 </h2>
 <p><strong>Governing body:</strong> ISSN International Centre<br><strong>Standard:</strong> ISO 3297</p>
 <div class="section level3">
-<h3 id="structure-3">Structure<a class="anchor" aria-label="anchor" href="#structure-3"></a>
+<h3 id="structure-4">Structure<a class="anchor" aria-label="anchor" href="#structure-4"></a>
 </h3>
 <p>An ISSN has 8 characters:</p>
 <pre><code>1234-567X</code></pre>
@@ -274,7 +316,7 @@ seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 </div>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-4">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-4"></a>
+<h3 id="structural-regex-5">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-5"></a>
 </h3>
 <p>Hyphenated:</p>
 <pre><code>^\d{4}-\d{3}[\dX]$</code></pre>
@@ -316,11 +358,61 @@ seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 </div>
 </div>
 <div class="section level2">
+<h2 id="swhid-software-hash-identifier">SWHID (SoftWare Hash IDentifier)<a class="anchor" aria-label="anchor" href="#swhid-software-hash-identifier"></a>
+</h2>
+<p><strong>Governing body:</strong> Software Heritage<br><strong>Standard:</strong> ISO/IEC 18670<br><strong>Documentation:</strong> <a href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html" class="external-link">SWHID
+specification</a></p>
+<div class="section level3">
+<h3 id="structure-5">Structure<a class="anchor" aria-label="anchor" href="#structure-5"></a>
+</h3>
+<p>A SWHID identifies a software artifact archived by Software Heritage.
+The core identifier has four colon-separated fields:</p>
+<pre><code>swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></pre>
+<p>Where:</p>
+<ul>
+<li>
+<code>swh</code> is the scheme prefix</li>
+<li>
+<code>1</code> is the scheme version</li>
+<li>
+<code>cnt</code> is the object type (<code>cnt</code>,
+<code>dir</code>, <code>rev</code>, <code>rel</code>, or
+<code>snp</code>)</li>
+<li>the final field is a 40-character lowercase hex SHA-1 intrinsic
+identifier</li>
+</ul>
+<p>Optional qualifiers may follow, separated by semicolons:</p>
+<pre><code>swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;origin=https://example.org/repo.git;path=/src/main.c;lines=9-15</code></pre>
+<p>Resolver URLs include:</p>
+<pre><code>https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></pre>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid-1">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-1"></a>
+</h3>
+<p>SWHID validation is <strong>structural only</strong>. The embedded
+hash is an intrinsic content identifier, but verifying that it matches
+the referenced artifact requires access to the artifact itself and is
+not performed by <code>scholid</code>.</p>
+<p>To limit false positives, <code>scholid</code> requires the explicit
+<code>swh:</code> prefix and rejects bare 40-character hex strings (for
+example Git commit hashes). Known qualifier keys (<code>origin</code>,
+<code>visit</code>, <code>anchor</code>, <code>path</code>,
+<code>lines</code>) are validated conservatively when present.</p>
+</div>
+<div class="section level3">
+<h3 id="structural-regex-6">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-6"></a>
+</h3>
+<p>Core form:</p>
+<pre><code>^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$</code></pre>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="pmid-pubmed-identifier">PMID (PubMed Identifier)<a class="anchor" aria-label="anchor" href="#pmid-pubmed-identifier"></a>
 </h2>
 <p><strong>Authority:</strong> U.S. National Library of Medicine</p>
 <div class="section level3">
-<h3 id="structure-4">Structure<a class="anchor" aria-label="anchor" href="#structure-4"></a>
+<h3 id="structure-6">Structure<a class="anchor" aria-label="anchor" href="#structure-6"></a>
 </h3>
 <ul>
 <li>Pure integer</li>
@@ -339,7 +431,7 @@ seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 </h2>
 <p><strong>Authority:</strong> PubMed Central</p>
 <div class="section level3">
-<h3 id="structure-5">Structure<a class="anchor" aria-label="anchor" href="#structure-5"></a>
+<h3 id="structure-7">Structure<a class="anchor" aria-label="anchor" href="#structure-7"></a>
 </h3>
 <pre><code><span><span class="va">PMC1234567</span></span></code></pre>
 <p>Components: - Literal prefix <code>PMC</code> - One or more

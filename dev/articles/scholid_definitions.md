@@ -142,6 +142,47 @@ Compact form:
 
 ------------------------------------------------------------------------
 
+## RRID (Research Resource Identifier)
+
+**Governing body:** Resource Identification Initiative (SciCrunch)  
+**Documentation:** [RRID guidelines](https://rrid.site/about/guidelines)
+
+### Structure
+
+A RRID cites a research resource such as an antibody, cell line, model
+organism, software tool, or plasmid. The canonical form includes the
+literal `RRID:` prefix followed by an authority-specific accession:
+
+    RRID:AB_262044
+    RRID:CVCL_2260
+    RRID:SCR_007358
+    RRID:IMSR_JAX:000664
+    RRID:MGI:3840442
+    RRID:Addgene_80088
+
+Preferred resolver URLs include:
+
+    https://scicrunch.org/resolver/RRID:AB_262044
+
+### Validation in scholid
+
+RRID validation is **structural only**. There is no checksum algorithm,
+and registry existence is not checked.
+
+To limit false positives, `scholid` accepts only canonical
+`RRID:`-prefixed forms and validates the accession body against a
+conservative allowlist of known RRID authority prefixes (for example
+`AB`, `CVCL`, `SCR`, `IMSR`, `MGI`, `Addgene`). Bare local IDs such as
+`AB_262044` without the `RRID:` prefix are rejected.
+
+### Structural Regex
+
+Canonical form (authority body validated separately):
+
+    ^RRID:.+$
+
+------------------------------------------------------------------------
+
 ## ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  
@@ -249,6 +290,56 @@ Example:
 Structural regex:
 
     ^[a-z\-]+/\d{7}(v\d+)?$
+
+------------------------------------------------------------------------
+
+## SWHID (SoftWare Hash IDentifier)
+
+**Governing body:** Software Heritage  
+**Standard:** ISO/IEC 18670  
+**Documentation:** [SWHID
+specification](https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html)
+
+### Structure
+
+A SWHID identifies a software artifact archived by Software Heritage.
+The core identifier has four colon-separated fields:
+
+    swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
+
+Where:
+
+- `swh` is the scheme prefix
+- `1` is the scheme version
+- `cnt` is the object type (`cnt`, `dir`, `rev`, `rel`, or `snp`)
+- the final field is a 40-character lowercase hex SHA-1 intrinsic
+  identifier
+
+Optional qualifiers may follow, separated by semicolons:
+
+    swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;origin=https://example.org/repo.git;path=/src/main.c;lines=9-15
+
+Resolver URLs include:
+
+    https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
+
+### Validation in scholid
+
+SWHID validation is **structural only**. The embedded hash is an
+intrinsic content identifier, but verifying that it matches the
+referenced artifact requires access to the artifact itself and is not
+performed by `scholid`.
+
+To limit false positives, `scholid` requires the explicit `swh:` prefix
+and rejects bare 40-character hex strings (for example Git commit
+hashes). Known qualifier keys (`origin`, `visit`, `anchor`, `path`,
+`lines`) are validated conservatively when present.
+
+### Structural Regex
+
+Core form:
+
+    ^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$
 
 ------------------------------------------------------------------------
 

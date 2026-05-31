@@ -60,16 +60,11 @@ extract_scholid <- function(
 #'
 #' @noRd
 extract_doi <- function(text) {
-    pat <- "(?<![[:alnum:]_])(10\\.[0-9]{4,9}/\\S+)"
-    out <- .extract_with_pattern(
-        text = text,
-        pat  = pat
-    )
-
-    .extract_filter_validate(
-        out          = out,
-        clean_fn     = .clean_extracted_doi,
-        validate_fn  = is_doi
+    .scholid_extract_validated(
+        text        = text,
+        type        = "doi",
+        clean_fn    = .clean_extracted_doi,
+        validate_fn = is_doi
     )
 }
 
@@ -88,16 +83,11 @@ extract_doi <- function(text) {
 #'
 #' @noRd
 extract_orcid <- function(text) {
-    pat <- "(\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"
-    out <- .extract_with_pattern(
-        text = text,
-        pat  = pat
-    )
-
-    .extract_filter_validate(
-        out          = out,
-        clean_fn     = .clean_extracted_trailing_punct,
-        validate_fn  = is_orcid
+    .scholid_extract_validated(
+        text        = text,
+        type        = "orcid",
+        clean_fn    = .clean_extracted_trailing_punct,
+        validate_fn = is_orcid
     )
 }
 
@@ -113,16 +103,11 @@ extract_orcid <- function(text) {
 #'
 #' @noRd
 extract_isbn <- function(text) {
-    pat <- "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
-    out <- .extract_with_pattern(
-        text = text,
-        pat  = pat
-    )
-
-    .extract_filter_validate(
-        out          = out,
-        clean_fn     = .clean_extracted_trailing_punct,
-        validate_fn  = is_isbn
+    .scholid_extract_validated(
+        text        = text,
+        type        = "isbn",
+        clean_fn    = .clean_extracted_trailing_punct,
+        validate_fn = is_isbn
     )
 }
 
@@ -138,16 +123,11 @@ extract_isbn <- function(text) {
 #'
 #' @noRd
 extract_issn <- function(text) {
-    pat <- "(?<![[:alnum:]_\\-])(\\d{4}-\\d{3}[0-9Xx])(?![[:alnum:]_\\-])"
-    out <- .extract_with_pattern(
-        text = text,
-        pat  = pat
-    )
-
-    .extract_filter_validate(
-        out          = out,
-        clean_fn     = .clean_extracted_trailing_punct,
-        validate_fn  = is_issn
+    .scholid_extract_validated(
+        text        = text,
+        type        = "issn",
+        clean_fn    = .clean_extracted_trailing_punct,
+        validate_fn = is_issn
     )
 }
 
@@ -163,25 +143,11 @@ extract_issn <- function(text) {
 #'
 #' @noRd
 extract_arxiv <- function(text) {
-    pat <- paste0(
-        "(?<![[:alnum:]_\\./-])",
-        "(",
-        "\\d{4}\\.\\d{4,5}(v\\d+)?",
-        "|",
-        "[a-z\\-]+/\\d{7}(v\\d+)?",
-        ")",
-        "(?![[:alnum:]_\\-/])"
-    )
-
-    out <- .extract_with_pattern(
-        text = text,
-        pat  = pat
-    )
-
-    .extract_filter_validate(
-        out          = out,
-        clean_fn     = .clean_extracted_trailing_punct,
-        validate_fn  = is_arxiv
+    .scholid_extract_validated(
+        text        = text,
+        type        = "arxiv",
+        clean_fn    = .clean_extracted_trailing_punct,
+        validate_fn = is_arxiv
     )
 }
 
@@ -197,21 +163,11 @@ extract_arxiv <- function(text) {
 #'
 #' @noRd
 extract_pmid <- function(text) {
-    pat <- paste0(
-        "(?<![[:alnum:]_./-]|PMC)",
-        "\\d{4,9}",
-        "(?![[:alnum:]_]|[-/.][[:alnum:]_])"
-    )
-
-    out <- .extract_with_pattern(
-        text = text,
-        pat  = pat
-    )
-
-    .extract_filter_validate(
-        out          = out,
-        clean_fn     = .clean_extracted_trailing_punct,
-        validate_fn  = is_pmid
+    .scholid_extract_validated(
+        text        = text,
+        type        = "pmid",
+        clean_fn    = .clean_extracted_trailing_punct,
+        validate_fn = is_pmid
     )
 }
 
@@ -227,16 +183,11 @@ extract_pmid <- function(text) {
 #'
 #' @noRd
 extract_pmcid <- function(text) {
-    pat <- "(?<![[:alnum:]_./-])PMC\\d+(?![[:alnum:]_]|[-/.][[:alnum:]_])"
-    out <- .extract_with_pattern(
-        text = text,
-        pat  = pat
-    )
-
-    .extract_filter_validate(
-        out          = out,
-        clean_fn     = .clean_extracted_trailing_punct,
-        validate_fn  = is_pmcid
+    .scholid_extract_validated(
+        text        = text,
+        type        = "pmcid",
+        clean_fn    = .clean_extracted_trailing_punct,
+        validate_fn = is_pmcid
     )
 }
 
@@ -318,6 +269,39 @@ extract_pmcid <- function(text) {
         cleaned <- cleaned[validate_fn(cleaned)]
         cleaned
     })
+}
+
+
+#' Extract and validate identifiers using registry patterns
+#'
+#' @description
+#' Internal helper that extracts identifier candidates from free text using
+#' the registry `extract_pat` for a type, then cleans and validates matches.
+#'
+#' @param text A character vector of text.
+#' @param type A validated identifier type string.
+#' @param clean_fn Function applied to each raw match.
+#' @param validate_fn Vectorized validator returning logical values.
+#'
+#' @return A list of character vectors of validated identifiers.
+#'
+#' @noRd
+.scholid_extract_validated <- function(
+        text,
+        type,
+        clean_fn,
+        validate_fn
+) {
+    out <- .extract_with_pattern(
+        text = text,
+        pat  = .scholid_registry_extract_pat(type)
+    )
+
+    .extract_filter_validate(
+        out         = out,
+        clean_fn    = clean_fn,
+        validate_fn = validate_fn
+    )
 }
 
 

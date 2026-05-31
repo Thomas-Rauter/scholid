@@ -18,32 +18,51 @@
 .scholid_registry <- function() {
     list(
         doi = list(
-            order = 10L,
-            pat   = "^10\\.[0-9]{4,9}/\\S+$"
+            order       = 10L,
+            pat         = "^10\\.[0-9]{4,9}/\\S+$",
+            extract_pat = "(?<![[:alnum:]_])(10\\.[0-9]{4,9}/\\S+)"
         ),
         arxiv = list(
             order = 20L,
             pat1  = "^\\d{4}\\.\\d{4,5}(v\\d+)?$",       # post 2007
             # pre 2007
-            pat2  = "^[a-z]+(?:-[a-z]+)*(?:\\.[A-Z]{2})?/\\d{7}(v\\d+)?$"
+            pat2  = "^[a-z]+(?:-[a-z]+)*(?:\\.[A-Z]{2})?/\\d{7}(v\\d+)?$",
+            extract_pat = paste0(
+                "(?<![[:alnum:]_\\./-])",
+                "(",
+                "\\d{4}\\.\\d{4,5}(v\\d+)?",
+                "|",
+                "[a-z\\-]+/\\d{7}(v\\d+)?",
+                ")",
+                "(?![[:alnum:]_\\-/])"
+            )
         ),
         orcid = list(
-            order = 30L
+            order       = 30L,
+            extract_pat = "(\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"
         ),
         isbn = list(
-            order = 40L
+            order       = 40L,
+            extract_pat = "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
         ),
         issn = list(
-            order = 50L
+            order       = 50L,
+            extract_pat = "(?<![[:alnum:]_\\-])(\\d{4}-\\d{3}[0-9Xx])(?![[:alnum:]_\\-])"
         ),
         pmcid = list(
-            order = 60L,
-            pat   = "^PMC\\d+$"
+            order       = 60L,
+            pat         = "^PMC\\d+$",
+            extract_pat = "(?<![[:alnum:]_./-])PMC\\d+(?![[:alnum:]_]|[-/.][[:alnum:]_])"
         ),
         pmid = list(
             order       = 90L,
             detect_last = TRUE,
-            pat         = "^\\d+$"
+            pat         = "^\\d+$",
+            extract_pat = paste0(
+                "(?<![[:alnum:]_./-]|PMC)",
+                "\\d{4,9}",
+                "(?![[:alnum:]_]|[-/.][[:alnum:]_])"
+            )
         )
     )
 }
@@ -106,4 +125,30 @@
         function(entry) isTRUE(entry$detect_last),
         logical(1)
     )]
+}
+
+
+#' Return the free-text extraction pattern for an identifier type
+#'
+#' @description
+#' Internal helper that returns the registry `extract_pat` for a supported
+#' identifier type.
+#'
+#' @param type A validated identifier type string.
+#'
+#' @return A single regular expression pattern string.
+#'
+#' @noRd
+.scholid_registry_extract_pat <- function(type) {
+    entry <- .scholid_registry()[[type]]
+
+    if (is.null(entry) || is.null(entry$extract_pat)) {
+        stop(
+            "Missing extract_pat registry entry for type: ",
+            type,
+            call. = FALSE
+        )
+    }
+
+    entry$extract_pat
 }

@@ -81,6 +81,47 @@
 }
 
 
+#' Resolve a per-type scholid implementation function
+#'
+#' @description
+#' Internal helper that looks up a type-specific implementation function by
+#' name prefix and validated type.
+#'
+#' @param type A validated identifier type string.
+#' @param prefix Function name prefix, e.g. `"is_"` or `"normalize_"`.
+#' @param required If `TRUE`, stop when the implementation is missing.
+#'
+#' @return The resolved function, or `NULL` if missing and `required = FALSE`.
+#'
+#' @noRd
+.scholid_resolve_impl <- function(
+        type,
+        prefix,
+        required = TRUE
+) {
+    fun_name <- paste0(
+        prefix,
+        type
+    )
+    fun <- get0(
+        fun_name,
+        mode = "function",
+        inherits = TRUE
+    )
+
+    if (is.null(fun)) {
+        if (required) {
+            # nocov start
+            stop("Missing implementation: ", fun_name, "().", call. = FALSE)
+            # nocov end
+        }
+        return(NULL)
+    }
+
+    fun
+}
+
+
 #' Dispatch to a per-type scholid implementation function
 #'
 #' @description
@@ -99,22 +140,11 @@
         prefix,
         x
 ) {
-    fun_name <- paste0(
-        prefix,
-        type
+    fun <- .scholid_resolve_impl(
+        type     = type,
+        prefix   = prefix,
+        required = TRUE
     )
-    fun <- get0(
-        fun_name,
-        mode = "function",
-        inherits = TRUE
-    )
-
-    # nocov start
-    if (is.null(fun)) {
-        stop("Missing implementation: ", fun_name, "().", call. = FALSE)
-    }
-    # nocov end
-
     fun(x)
 }
 

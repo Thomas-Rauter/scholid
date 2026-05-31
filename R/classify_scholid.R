@@ -38,21 +38,17 @@ classify_scholid <- function(x) {
     }
 
     types <- scholid_types()
-    ns <- environment(classify_scholid)
 
     for (type in types) {
-        fun <- get0(
-            paste0("is_", type),
-            envir = ns,
-            mode = "function",
-            inherits = FALSE
+        fun <- .scholid_resolve_impl(
+            type     = type,
+            prefix   = "is_",
+            required = FALSE
         )
 
-        # nocov start
         if (is.null(fun)) {
             next
         }
-        # nocov end
 
         res <- fun(x[idx])
         hit <- !is.na(res) & res

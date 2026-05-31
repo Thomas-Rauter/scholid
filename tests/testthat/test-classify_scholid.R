@@ -57,11 +57,30 @@ testthat::test_that(
     }
 )
 
+testthat::test_that(
+    "classify_scholid classifies canonical RRIDs",
+    {
+        x <- c(
+            "RRID:AB_262044",
+            "RRID:SCR_007358",
+            "RRID:IMSR_JAX:000664"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("rrid", "rrid", "rrid")
+        )
+    }
+)
+
 testthat::test_that("classify_scholid does not classify wrapped identifiers", {
     x <- c(
         "https://doi.org/10.1000/182",
         "https://orcid.org/0000-0002-1825-0097",
         "https://ror.org/01an7q238",
+        "https://scicrunch.org/resolver/RRID:AB_262044",
         "arXiv:2101.00001",
         "ISSN 0317-8471",
         "PMID: 12345",
@@ -107,11 +126,44 @@ testthat::test_that("classify_scholid works after per-type normalization", {
 })
 
 testthat::test_that(
+    "classify_scholid works for RRIDs after normalization",
+    {
+        x <- c(
+            "https://scicrunch.org/resolver/RRID:AB_262044",
+            "RRID: SCR_007358"
+        )
+
+        x <- normalize_rrid(x)
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("rrid", "rrid")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid rejects checksum-invalid ROR iDs",
     {
         x <- c(
             "02mhbdp99",
             "not-a-ror"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
+    "classify_scholid rejects bare local IDs and unknown RRID authorities",
+    {
+        x <- c(
+            "AB_262044",
+            "RRID:UNKNOWN_123",
+            "not-a-rrid"
         )
 
         got <- classify_scholid(x)

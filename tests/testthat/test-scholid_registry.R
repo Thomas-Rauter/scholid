@@ -28,7 +28,15 @@ testthat::test_that(
 
         testthat::expect_identical(
             .scholid_detect_primary_types(),
-            c("doi", "arxiv", "orcid", "ror", "isbn", "issn", "pmcid")
+            c("doi",
+              "arxiv",
+              "orcid",
+              "ror",
+              "rrid",
+              "isbn",
+              "issn",
+              "pmcid"
+              )
         )
     }
 )

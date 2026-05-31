@@ -167,6 +167,53 @@ Compact form:
 
 ---
 
+# RRID (Research Resource Identifier)
+
+**Governing body:** Resource Identification Initiative (SciCrunch)  
+**Documentation:** [RRID guidelines](https://rrid.site/about/guidelines)
+
+## Structure
+
+A RRID cites a research resource such as an antibody, cell line, model
+organism, software tool, or plasmid. The canonical form includes the literal
+`RRID:` prefix followed by an authority-specific accession:
+
+```
+RRID:AB_262044
+RRID:CVCL_2260
+RRID:SCR_007358
+RRID:IMSR_JAX:000664
+RRID:MGI:3840442
+RRID:Addgene_80088
+```
+
+Preferred resolver URLs include:
+
+```
+https://scicrunch.org/resolver/RRID:AB_262044
+```
+
+## Validation in scholid
+
+RRID validation is **structural only**. There is no checksum algorithm, and
+registry existence is not checked.
+
+To limit false positives, `scholid` accepts only canonical `RRID:`-prefixed
+forms and validates the accession body against a conservative allowlist of
+known RRID authority prefixes (for example `AB`, `CVCL`, `SCR`, `IMSR`,
+`MGI`, `Addgene`). Bare local IDs such as `AB_262044` without the `RRID:`
+prefix are rejected.
+
+## Structural Regex
+
+Canonical form (authority body validated separately):
+
+```
+^RRID:.+$
+```
+
+---
+
 # ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  

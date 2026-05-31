@@ -10,16 +10,16 @@ testthat::test_that(
         testthat::expect_identical(x, unique(x))
         testthat::expect_identical(
             x,
-            c(
-                "doi",
-                "arxiv",
-                "orcid",
-                "ror",
-                "isbn",
-                "issn",
-                "pmcid",
-                "pmid"
-                )
+            c("doi",
+              "arxiv",
+              "orcid",
+              "ror",
+              "rrid",
+              "isbn",
+              "issn",
+              "pmcid",
+              "pmid"
+              )
         )
 
         testthat::expect_true(all(nzchar(x)))

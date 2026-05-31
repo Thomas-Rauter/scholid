@@ -313,6 +313,94 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_rrid accepts canonical RRIDs for known authorities",
+    {
+        x <- c(
+            "RRID:AB_262044",
+            "RRID:CVCL_2260",
+            "RRID:SCR_007358",
+            "RRID:IMSR_JAX:000664",
+            "RRID:MGI:3840442",
+            "RRID:Addgene_80088"
+        )
+
+        testthat::expect_identical(
+            is_rrid(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_rrid rejects bare local IDs and unknown authorities",
+    {
+        x <- c(
+            "RRID:AB_262044",
+            "AB_262044",
+            "RRID:UNKNOWN_123",
+            "not-a-rrid",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_rrid(x),
+            c(TRUE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_rrid for type rrid",
+    {
+        x <- c("RRID:AB_262044", "RRID:UNKNOWN_123", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "rrid"),
+            is_rrid(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "RRID normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "RRID:AB_262044",
+            "https://scicrunch.org/resolver/RRID:AB_262044",
+            "RRID: AB_262044",
+            "rrid:SCR_007358"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "rrid"),
+            c(
+                "RRID:AB_262044",
+                "RRID:AB_262044",
+                "RRID:AB_262044",
+                "RRID:SCR_007358"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized RRID outputs validate and classify as rrid",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://scicrunch.org/resolver/RRID:AB_262044",
+                "RRID: SCR_007358"
+            ),
+            "rrid"
+        )
+
+        testthat::expect_true(all(is_rrid(x)))
+        testthat::expect_true(all(is_scholid(x, "rrid")))
+        testthat::expect_true(all(classify_scholid(x) == "rrid"))
+    }
+)
+
+testthat::test_that(
     "is_isbn validates ISBN-10 and ISBN-13 checksums",
     {
         x <- c(

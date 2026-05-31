@@ -117,6 +117,58 @@ testthat::test_that(
     }
 )
 
+testthat::test_that(
+    "detect_scholid_type detects canonical RRIDs",
+    {
+        x <- c(
+            "RRID:AB_262044",
+            "RRID:SCR_007358",
+            "RRID:IMSR_JAX:000664"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("rrid", "rrid", "rrid")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped RRIDs",
+    {
+        x <- c(
+            "https://scicrunch.org/resolver/RRID:AB_262044",
+            "https://identifiers.org/RRID:SCR_007358",
+            "RRID: CVCL_2260",
+            "rrid:Addgene_80088"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("rrid", "rrid", "rrid", "rrid")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects bare local IDs and unknown RRID authorities",
+    {
+        x <- c(
+            "AB_262044",
+            "RRID:UNKNOWN_123",
+            "not-a-rrid"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
 testthat::test_that("detect_scholid_type trims whitespace before detection", {
     x <- c(
         " 0000-0002-1825-0097 ",

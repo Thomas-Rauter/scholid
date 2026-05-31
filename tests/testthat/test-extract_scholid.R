@@ -297,6 +297,82 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_rrid finds RRIDs in text and URLs",
+    {
+        txt <- c(
+            "Antibody RRID:AB_262044.",
+            "Tool https://scicrunch.org/resolver/RRID:SCR_007358",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "rrid"
+        )
+
+        testthat::expect_true(any(got[[1]] == "RRID:AB_262044"))
+        testthat::expect_true(any(got[[2]] == "RRID:SCR_007358"))
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_rrid returns multiple matches from one string",
+    {
+        txt <- paste(
+            "resources:",
+            "RRID:AB_262044",
+            "and RRID:SCR_007358"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "rrid"
+        )[[1]]
+
+        testthat::expect_true(any(got == "RRID:AB_262044"))
+        testthat::expect_true(any(got == "RRID:SCR_007358"))
+    }
+)
+
+testthat::test_that(
+    "extract_rrid rejects unknown authority candidates",
+    {
+        txt <- "see RRID:UNKNOWN_123 for details"
+
+        got <- extract_scholid(
+            txt,
+            "rrid"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_rrid does not extract bare local IDs without RRID label",
+    {
+        txt <- "antibody AB_262044 was used"
+
+        got <- extract_scholid(
+            txt,
+            "rrid"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
     "extract_isbn finds ISBN-10 and ISBN-13 with hyphens/spaces",
     {
         txt <- c(
@@ -688,34 +764,37 @@ testthat::test_that(
 testthat::test_that(
     "extract_scholid works across multiple ID types",
     {
-        txt <- c(
-            "doi:10.1000/182",
-            "ORCID 0000-0002-1825-0097",
-            "arXiv:2101.00001v2",
-            "PMCID: PMC12345",
-            "PMID 1234567",
-            "ISSN 2434-561X",
-            "ISBN 0-306-40615-2",
-            "ROR https://ror.org/01an7q238"
-        )
+    txt <- c(
+        "doi:10.1000/182",
+        "ORCID 0000-0002-1825-0097",
+        "arXiv:2101.00001v2",
+        "PMCID: PMC12345",
+        "PMID 1234567",
+        "ISSN 2434-561X",
+        "ISBN 0-306-40615-2",
+        "ROR https://ror.org/01an7q238",
+        "RRID:AB_262044"
+    )
 
-        got_doi <- extract_scholid(txt, "doi")
-        got_orc <- extract_scholid(txt, "orcid")
-        got_arx <- extract_scholid(txt, "arxiv")
-        got_pmc <- extract_scholid(txt, "pmcid")
-        got_pmi <- extract_scholid(txt, "pmid")
-        got_isn <- extract_scholid(txt, "issn")
-        got_isb <- extract_scholid(txt, "isbn")
-        got_ror <- extract_scholid(txt, "ror")
+    got_doi <- extract_scholid(txt, "doi")
+    got_orc <- extract_scholid(txt, "orcid")
+    got_arx <- extract_scholid(txt, "arxiv")
+    got_pmc <- extract_scholid(txt, "pmcid")
+    got_pmi <- extract_scholid(txt, "pmid")
+    got_isn <- extract_scholid(txt, "issn")
+    got_isb <- extract_scholid(txt, "isbn")
+    got_ror <- extract_scholid(txt, "ror")
+    got_rrid <- extract_scholid(txt, "rrid")
 
-        testthat::expect_true(length(got_doi[[1]]) >= 1L)
-        testthat::expect_true(length(got_orc[[2]]) >= 1L)
-        testthat::expect_true(length(got_arx[[3]]) >= 1L)
-        testthat::expect_true(length(got_pmc[[4]]) >= 1L)
-        testthat::expect_true(length(got_pmi[[5]]) >= 1L)
-        testthat::expect_true(length(got_isn[[6]]) >= 1L)
-        testthat::expect_true(length(got_isb[[7]]) >= 1L)
-        testthat::expect_true(length(got_ror[[8]]) >= 1L)
+    testthat::expect_true(length(got_doi[[1]]) >= 1L)
+    testthat::expect_true(length(got_orc[[2]]) >= 1L)
+    testthat::expect_true(length(got_arx[[3]]) >= 1L)
+    testthat::expect_true(length(got_pmc[[4]]) >= 1L)
+    testthat::expect_true(length(got_pmi[[5]]) >= 1L)
+    testthat::expect_true(length(got_isn[[6]]) >= 1L)
+    testthat::expect_true(length(got_isb[[7]]) >= 1L)
+    testthat::expect_true(length(got_ror[[8]]) >= 1L)
+    testthat::expect_true(length(got_rrid[[9]]) >= 1L)
     }
 )
 

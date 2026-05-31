@@ -16,6 +16,30 @@
 #'   metadata lists.
 #' @noRd
 .scholid_registry <- function() {
+    rrid_body_patterns <- c(
+        "AB_\\d+",
+        "CVCL_[0-9A-Z]+",
+        "SCR_\\d+",
+        "Addgene_\\d+",
+        "IMSR_[A-Z]+:\\d+",
+        "MGI:\\d+",
+        "WB:[A-Za-z0-9._-]+",
+        "FlyBase:[A-Za-z0-9._-]+",
+        "RGD:\\d+",
+        "ZFIN:[A-Za-z0-9._-]+",
+        "ZIRC:[A-Za-z0-9._-]+",
+        "MMRRC_\\d+",
+        "BDSC_\\d+",
+        "DGGR_\\d+",
+        "VDRC_\\d+",
+        "BCBC_\\d+",
+        "XGSC_[A-Za-z0-9._-]+",
+        "NXR_[A-Za-z0-9._-]+",
+        "RRRC_\\d+",
+        "TSC_\\d+",
+        "FlyORF_\\d+"
+    )
+
     list(
         doi = list(
             order       = 10L,
@@ -48,6 +72,20 @@
                 "(?<![[:alnum:]_./-])",
                 "(?:https?://ror\\.org/)?",
                 "0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}",
+                "(?![[:alnum:]_])"
+            )
+        ),
+        rrid = list(
+            order = 37L,
+            pat   = "^RRID:.+$",
+            body_patterns = rrid_body_patterns,
+            extract_pat = paste0(
+                "(?<![[:alnum:]_./-])",
+                "(?:https?://(?:scicrunch\\.org/resolver/|identifiers\\.org/|n2t\\.net/)?)?",
+                "RRID:[[:space:]]*",
+                "(?:",
+                paste(rrid_body_patterns, collapse = "|"),
+                ")",
                 "(?![[:alnum:]_])"
             )
         ),

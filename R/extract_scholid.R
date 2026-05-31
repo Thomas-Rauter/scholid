@@ -116,6 +116,30 @@ extract_ror <- function(text) {
 }
 
 
+#' Extract RRID identifiers from text
+#'
+#' @description
+#' Extracts Research Resource Identifiers from free text or resolver URLs.
+#'
+#' Extracted RRID candidates are cleaned to remove URL prefixes and trailing
+#' prose punctuation where necessary, and only structurally valid RRIDs for
+#' known authorities are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted RRIDs.
+#'
+#' @noRd
+extract_rrid <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "rrid",
+        clean_fn    = .clean_extracted_rrid,
+        validate_fn = is_rrid
+    )
+}
+
+
 #' Extract ISBN identifiers from text
 #'
 #' @description
@@ -351,6 +375,48 @@ extract_pmcid <- function(text) {
     x <- sub("^ror\\.org/", "", x, ignore.case = TRUE)
     x <- sub("/+$", "", x)
     tolower(x)
+}
+
+
+#' Clean an extracted RRID candidate
+#'
+#' @description
+#' Removes resolver URL prefixes, trailing punctuation, and surrounding
+#' whitespace from an extracted RRID candidate, and normalizes the `RRID:`
+#' label.
+#'
+#' @param x A single extracted RRID candidate.
+#'
+#' @return A cleaned RRID candidate string, or `""` if empty.
+#'
+#' @noRd
+.clean_extracted_rrid <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub(
+        "^https?://scicrunch\\.org/resolver/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://identifiers\\.org/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://n2t\\.net/rrid:",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub("^RRID[[:space:]]*:[[:space:]]*", "RRID:", x, ignore.case = TRUE)
+    x
 }
 
 

@@ -160,6 +160,96 @@ testthat::test_that("normalize_ror strips wrappers and enforces compact lowercas
     testthat::expect_identical(got, exp)
 })
 
+testthat::test_that(
+    "normalize_rrid strips wrappers and requires RRID label or resolver URL",
+    {
+        x <- c(
+            "RRID:AB_262044",
+            "https://scicrunch.org/resolver/RRID:AB_262044",
+            "https://identifiers.org/RRID:SCR_007358",
+            "RRID: AB_262044",
+            "rrid:CVCL_2260",
+            "AB_262044",
+            "RRID:UNKNOWN_123",
+            "bad",
+            NA
+        )
+
+        got <- normalize_rrid(x)
+        exp <- c(
+            "RRID:AB_262044",
+            "RRID:AB_262044",
+            "RRID:SCR_007358",
+            "RRID:AB_262044",
+            "RRID:CVCL_2260",
+            NA_character_,
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized RRID outputs are valid RRIDs and classify as rrid",
+    {
+        x <- normalize_scholid(
+            c(
+                "RRID:AB_262044",
+                "https://scicrunch.org/resolver/RRID:SCR_007358",
+                "RRID: Addgene_80088"
+            ),
+            "rrid"
+        )
+
+        testthat::expect_true(all(is_rrid(x)))
+        testthat::expect_true(all(is_scholid(x, "rrid")))
+        testthat::expect_true(all(classify_scholid(x) == "rrid"))
+    }
+)
+
+testthat::test_that(
+    "RRID normalization accepts plausible labeled and URL input forms",
+    {
+        x <- c(
+            "RRID:AB_262044",
+            "https://scicrunch.org/resolver/RRID:AB_262044",
+            "RRID: IMSR_JAX:000664",
+            "rrid:MGI:3840442"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "rrid"),
+            c(
+                "RRID:AB_262044",
+                "RRID:AB_262044",
+                "RRID:IMSR_JAX:000664",
+                "RRID:MGI:3840442"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "RRID normalization rejects bare local IDs and unknown authorities",
+    {
+        x <- c(
+            "AB_262044",
+            "RRID:UNKNOWN_123",
+            "catalog AB_262044",
+            "(RRID:AB_262044)",
+            "RRID:AB_262044xyz"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "rrid"),
+            rep(NA_character_, length(x))
+        )
+    }
+)
+
 testthat::test_that("ISBN normalization keeps valid inputs canonical", {
     testthat::expect_equal(
         normalize_scholid(

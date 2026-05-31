@@ -166,6 +166,68 @@ normalize_ror <- function(x) {
 }
 
 
+#' Normalize RRID identifiers
+#'
+#' @description
+#' Normalizes Research Resource Identifiers from resolver URLs or labeled forms
+#' to canonical `RRID:` form. Inputs must include an explicit `RRID:` label
+#' or a supported resolver URL; bare local IDs are rejected.
+#'
+#' Normalization requires structurally valid identifiers for known RRID
+#' authorities.
+#'
+#' @param x A vector of RRID values.
+#'
+#' @return A character vector of normalized RRIDs. Invalid or unsupported
+#'   inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_rrid <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+
+    has_marker <- grepl("RRID\\s*:", y, ignore.case = TRUE) |
+        grepl("scicrunch\\.org/resolver/", y, ignore.case = TRUE) |
+        grepl("identifiers\\.org/", y, ignore.case = TRUE) |
+        grepl("n2t\\.net/", y, ignore.case = TRUE) |
+        grepl("bioregistry\\.io/rrid:", y, ignore.case = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub(
+        "^https?://scicrunch\\.org/resolver/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://identifiers\\.org/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://n2t\\.net/rrid:",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://bioregistry\\.io/rrid:",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub("^RRID[[:space:]]*:[[:space:]]*", "RRID:", y, ignore.case = TRUE)
+    y <- sub("[[:punct:]]+$", "", y)
+
+    y[!is.na(y) & !is_rrid(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ISBN identifiers
 #'
 #' @description

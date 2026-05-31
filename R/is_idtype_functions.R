@@ -168,6 +168,28 @@ is_ror <- function(x) {
 }
 
 
+#' Check RRID identifiers
+#'
+#' Tests whether values are valid Research Resource Identifiers in canonical
+#' `RRID:` form. Validation is structural and limited to known RRID authority
+#' prefixes; registry existence is not checked.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_rrid <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_rrid_strict,
+        logical(1)
+    )
+    init$out
+}
+
+
 #' Check PubMed identifiers
 #'
 #' Tests whether values are structurally plausible PubMed identifiers
@@ -346,6 +368,52 @@ is_pmcid <- function(x) {
         98L - (as.numeric(body_num) * 100) %% 97
     )
     identical(substr(x, 8L, 9L), expected)
+}
+
+
+#' Return RRID body patterns from the registry
+#'
+#' @return A character vector of regular expression fragments for RRID bodies.
+#'
+#' @noRd
+.rrid_body_patterns <- function() {
+    .scholid_registry()[["rrid"]]$body_patterns
+}
+
+
+#' Strict RRID validator
+#'
+#' @description
+#' Validates canonical `RRID:` identifiers against a conservative allowlist
+#' of known authority body patterns. Bare local IDs without the `RRID:` prefix
+#' are rejected.
+#'
+#' @param x A single character string in canonical form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_rrid_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- trimws(x)
+    if (!grepl("^RRID:", x)) {
+        return(FALSE)
+    }
+
+    body <- substr(x, 6L, nchar(x))
+    if (!nzchar(body)) {
+        return(FALSE)
+    }
+
+    patterns <- .rrid_body_patterns()
+    any(vapply(
+        patterns,
+        function(p) grepl(paste0("^", p, "$"), body, perl = TRUE),
+        logical(1)
+    ))
 }
 
 

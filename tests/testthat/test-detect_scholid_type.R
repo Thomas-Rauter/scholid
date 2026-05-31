@@ -40,6 +40,24 @@ testthat::test_that("detect_scholid_type classifies canonical identifiers", {
     testthat::expect_equal(got[9], "isbn")
 })
 
+testthat::test_that(
+    "detect_scholid_type detects canonical ROR iDs",
+    {
+        x <- c(
+            "01an7q238",
+            "02mhbdp94",
+            "02s376052"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("ror", "ror", "ror")
+        )
+    }
+)
+
 testthat::test_that("detect_scholid_type detects wrapped identifiers", {
     x <- c(
         "https://doi.org/10.1000/182",
@@ -65,6 +83,39 @@ testthat::test_that("detect_scholid_type detects wrapped identifiers", {
     testthat::expect_equal(got[8], "pmid")
     testthat::expect_equal(got[9], "pmcid")
 })
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped ROR iDs",
+    {
+        x <- c(
+            "https://ror.org/01an7q238",
+            "https://ror.org/01an7q238/",
+            "ror.org/02mhbdp94",
+            "ROR: 02s376052"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("ror", "ror", "ror", "ror")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects checksum-invalid ROR iDs",
+    {
+        x <- c(
+            "02mhbdp99",
+            "not-a-ror"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
 
 testthat::test_that("detect_scholid_type trims whitespace before detection", {
     x <- c(

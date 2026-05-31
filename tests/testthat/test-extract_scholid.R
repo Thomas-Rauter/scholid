@@ -238,6 +238,65 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_ror finds ROR iDs in text and URLs",
+    {
+        txt <- c(
+            "Affiliation: https://ror.org/01an7q238.",
+            "ROR 02mhbdp94",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "ror"
+        )
+
+        testthat::expect_true(any(got[[1]] == "01an7q238"))
+        testthat::expect_true(any(got[[2]] == "02mhbdp94"))
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_ror returns multiple matches from one string",
+    {
+        txt <- paste(
+            "affiliations:",
+            "https://ror.org/01an7q238",
+            "and https://ror.org/02mhbdp94"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "ror"
+        )[[1]]
+
+        testthat::expect_true(any(got == "01an7q238"))
+        testthat::expect_true(any(got == "02mhbdp94"))
+    }
+)
+
+testthat::test_that(
+    "extract_ror rejects checksum-invalid ROR candidates",
+    {
+        txt <- "see https://ror.org/02mhbdp99 for details"
+
+        got <- extract_scholid(
+            txt,
+            "ror"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
     "extract_isbn finds ISBN-10 and ISBN-13 with hyphens/spaces",
     {
         txt <- c(
@@ -636,37 +695,18 @@ testthat::test_that(
             "PMCID: PMC12345",
             "PMID 1234567",
             "ISSN 2434-561X",
-            "ISBN 0-306-40615-2"
+            "ISBN 0-306-40615-2",
+            "ROR https://ror.org/01an7q238"
         )
 
-        got_doi <- extract_scholid(
-            txt,
-            "doi"
-        )
-        got_orc <- extract_scholid(
-            txt,
-            "orcid"
-        )
-        got_arx <- extract_scholid(
-            txt,
-            "arxiv"
-        )
-        got_pmc <- extract_scholid(
-            txt,
-            "pmcid"
-        )
-        got_pmi <- extract_scholid(
-            txt,
-            "pmid"
-        )
-        got_isn <- extract_scholid(
-            txt,
-            "issn"
-        )
-        got_isb <- extract_scholid(
-            txt,
-            "isbn"
-        )
+        got_doi <- extract_scholid(txt, "doi")
+        got_orc <- extract_scholid(txt, "orcid")
+        got_arx <- extract_scholid(txt, "arxiv")
+        got_pmc <- extract_scholid(txt, "pmcid")
+        got_pmi <- extract_scholid(txt, "pmid")
+        got_isn <- extract_scholid(txt, "issn")
+        got_isb <- extract_scholid(txt, "isbn")
+        got_ror <- extract_scholid(txt, "ror")
 
         testthat::expect_true(length(got_doi[[1]]) >= 1L)
         testthat::expect_true(length(got_orc[[2]]) >= 1L)
@@ -675,6 +715,7 @@ testthat::test_that(
         testthat::expect_true(length(got_pmi[[5]]) >= 1L)
         testthat::expect_true(length(got_isn[[6]]) >= 1L)
         testthat::expect_true(length(got_isb[[7]]) >= 1L)
+        testthat::expect_true(length(got_ror[[8]]) >= 1L)
     }
 )
 

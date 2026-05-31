@@ -228,6 +228,91 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_ror accepts checksum-valid compact ROR iDs",
+    {
+        x <- c(
+            "02mhbdp94",
+            "01an7q238",
+            "02s376052"
+        )
+
+        testthat::expect_identical(
+            is_ror(x),
+            c(TRUE, TRUE, TRUE)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_ror rejects checksum-invalid and malformed ROR iDs",
+    {
+        x <- c(
+            "02mhbdp94",
+            "02mhbdp99",
+            "not-a-ror",
+            "02mhbdp9",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_ror(x),
+            c(TRUE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_ror for type ror",
+    {
+        x <- c("01an7q238", "02mhbdp99", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "ror"),
+            is_ror(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "ROR normalization canonicalizes valid non-canonical inputs",
+    {
+        x <- c(
+            "01an7q238",
+            "https://ror.org/01an7q238",
+            "ror.org/01an7q238",
+            "ROR: 01an7q238"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "ror"),
+            c(
+                "01an7q238",
+                "01an7q238",
+                "01an7q238",
+                "01an7q238"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized ROR outputs validate and classify as ror",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://ror.org/01an7q238",
+                "ROR: 02mhbdp94"
+            ),
+            "ror"
+        )
+
+        testthat::expect_true(all(is_ror(x)))
+        testthat::expect_true(all(is_scholid(x, "ror")))
+        testthat::expect_true(all(classify_scholid(x) == "ror"))
+    }
+)
+
+testthat::test_that(
     "is_isbn validates ISBN-10 and ISBN-13 checksums",
     {
         x <- c(

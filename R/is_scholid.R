@@ -4,7 +4,7 @@
 #' Vectorized predicate that tests whether values are valid scholarly
 #' identifiers of a given supported type.
 #'
-#' For identifier types with checksum algorithms (e.g., ORCID, ISBN, ISSN),
+#' For identifier types with checksum algorithms (e.g., ORCID, ROR, ISBN, ISSN),
 #' checksum correctness is verified. The same checksum rules apply to
 #' [normalize_scholid()].
 #'

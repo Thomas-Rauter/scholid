@@ -39,10 +39,29 @@ testthat::test_that("classify_scholid classifies canonical identifiers", {
     testthat::expect_equal(got[9], "isbn")
 })
 
+testthat::test_that(
+    "classify_scholid classifies canonical ROR iDs",
+    {
+        x <- c(
+            "01an7q238",
+            "02mhbdp94",
+            "02s376052"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("ror", "ror", "ror")
+        )
+    }
+)
+
 testthat::test_that("classify_scholid does not classify wrapped identifiers", {
     x <- c(
         "https://doi.org/10.1000/182",
         "https://orcid.org/0000-0002-1825-0097",
+        "https://ror.org/01an7q238",
         "arXiv:2101.00001",
         "ISSN 0317-8471",
         "PMID: 12345",
@@ -58,6 +77,7 @@ testthat::test_that("classify_scholid works after per-type normalization", {
     x <- c(
         "https://doi.org/10.1000/182",
         "https://orcid.org/0000-0002-1825-0097",
+        "https://ror.org/01an7q238",
         "arXiv:2101.00001v2",
         "ISSN 0317-8471",
         "PMID: 12345",
@@ -67,22 +87,38 @@ testthat::test_that("classify_scholid works after per-type normalization", {
 
     x[1] <- normalize_doi(x[1])
     x[2] <- normalize_orcid(x[2])
-    x[3] <- normalize_arxiv(x[3])
-    x[4] <- normalize_issn(x[4])
-    x[5] <- normalize_pmid(x[5])
-    x[6] <- normalize_pmcid(x[6])
-    x[7] <- normalize_isbn(x[7])
+    x[3] <- normalize_ror(x[3])
+    x[4] <- normalize_arxiv(x[4])
+    x[5] <- normalize_issn(x[5])
+    x[6] <- normalize_pmid(x[6])
+    x[7] <- normalize_pmcid(x[7])
+    x[8] <- normalize_isbn(x[8])
 
     got <- classify_scholid(x)
 
     testthat::expect_equal(got[1], "doi")
     testthat::expect_equal(got[2], "orcid")
-    testthat::expect_equal(got[3], "arxiv")
-    testthat::expect_equal(got[4], "issn")
-    testthat::expect_equal(got[5], "pmid")
-    testthat::expect_equal(got[6], "pmcid")
-    testthat::expect_equal(got[7], "isbn")
+    testthat::expect_equal(got[3], "ror")
+    testthat::expect_equal(got[4], "arxiv")
+    testthat::expect_equal(got[5], "issn")
+    testthat::expect_equal(got[6], "pmid")
+    testthat::expect_equal(got[7], "pmcid")
+    testthat::expect_equal(got[8], "isbn")
 })
+
+testthat::test_that(
+    "classify_scholid rejects checksum-invalid ROR iDs",
+    {
+        x <- c(
+            "02mhbdp99",
+            "not-a-ror"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
 
 testthat::test_that("classify_scholid respects scholid_types order", {
     x <- c("PMC12345", "10.1000/182")

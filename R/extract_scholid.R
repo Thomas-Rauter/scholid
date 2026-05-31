@@ -92,6 +92,30 @@ extract_orcid <- function(text) {
 }
 
 
+#' Extract ROR identifiers from text
+#'
+#' @description
+#' Extracts ROR iDs from free text or URLs.
+#'
+#' Extracted ROR candidates are cleaned to remove URL prefixes and trailing
+#' prose punctuation where necessary, and only checksum-valid ROR iDs are
+#' returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted ROR iDs.
+#'
+#' @noRd
+extract_ror <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "ror",
+        clean_fn    = .clean_extracted_ror,
+        validate_fn = is_ror
+    )
+}
+
+
 #' Extract ISBN identifiers from text
 #'
 #' @description
@@ -302,6 +326,31 @@ extract_pmcid <- function(text) {
         clean_fn    = clean_fn,
         validate_fn = validate_fn
     )
+}
+
+
+#' Clean an extracted ROR candidate
+#'
+#' @description
+#' Removes URL prefixes, trailing punctuation, and surrounding whitespace
+#' from an extracted ROR candidate.
+#'
+#' @param x A single extracted ROR candidate.
+#'
+#' @return A cleaned ROR candidate string, or `""` if empty.
+#'
+#' @noRd
+.clean_extracted_ror <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub("^https?://ror\\.org/", "", x, ignore.case = TRUE)
+    x <- sub("^ror\\.org/", "", x, ignore.case = TRUE)
+    x <- sub("/+$", "", x)
+    tolower(x)
 }
 
 

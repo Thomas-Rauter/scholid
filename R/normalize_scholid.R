@@ -135,6 +135,37 @@ normalize_orcid <- function(x) {
 }
 
 
+#' Normalize ROR identifiers
+#'
+#' @description
+#' Normalizes ROR iDs from URL-prefixed, label-prefixed, or compact forms to
+#' canonical lowercase compact form.
+#'
+#' Normalization requires checksum-valid identifiers.
+#'
+#' @param x A vector of ROR values.
+#'
+#' @return A character vector of normalized ROR iDs. Invalid or
+#'   checksum-failing inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_ror <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+
+    y <- sub("^https?://ror\\.org/", "", y, ignore.case = TRUE)
+    y <- sub("^ror\\.org/", "", y, ignore.case = TRUE)
+    y <- sub("^ror\\s*:?\\s*", "", y, ignore.case = TRUE)
+    y <- sub("/+$", "", y)
+    y <- tolower(y)
+
+    y[!is.na(y) & !is_ror(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ISBN identifiers
 #'
 #' @description

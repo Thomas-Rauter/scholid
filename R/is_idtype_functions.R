@@ -148,6 +148,26 @@ is_arxiv <- function(x) {
 }
 
 
+#' Check ROR identifiers
+#'
+#' Tests whether values are valid ROR iDs, including checksum.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_ror <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_ror_strict,
+        logical(1)
+    )
+    init$out
+}
+
+
 #' Check PubMed identifiers
 #'
 #' Tests whether values are structurally plausible PubMed identifiers
@@ -255,6 +275,77 @@ is_pmcid <- function(x) {
     }
 
     TRUE
+}
+
+
+#' Decode a Crockford base32 string to an integer
+#'
+#' @description
+#' Internal helper for ROR checksum validation. Accepts lowercase Crockford
+#' base32 strings and maps `i`/`l` to `1` and `o` to `0`, following ROR's
+#' identifier generation rules.
+#'
+#' @param x A single Crockford base32 string.
+#'
+#' @return An integer value, or `NA_integer_` if decoding fails.
+#'
+#' @noRd
+.crockford_base32_decode <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(NA_integer_)
+    }
+
+    chars <- strsplit(gsub("-", "", tolower(x), fixed = TRUE), "")[[1]]
+    alphabet <- strsplit("0123456789abcdefghjkmnpqrstvwxyz", "")[[1]]
+    n <- 0L
+
+    for (ch in chars) {
+        if (ch %in% c("i", "l")) {
+            ch <- "1"
+        } else if (ch == "o") {
+            ch <- "0"
+        }
+
+        idx <- match(ch, alphabet)
+        if (is.na(idx)) {
+            return(NA_integer_)
+        }
+
+        n <- n * 32L + (idx - 1L)
+    }
+
+    n
+}
+
+
+#' Strict ROR validator
+#'
+#' @param x A single character string in canonical compact form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_ror_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- tolower(trimws(x))
+    pat <- .scholid_registry()[["ror"]]$pat
+    if (!grepl(pat, x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    body_num <- .crockford_base32_decode(substr(x, 2L, 7L))
+    if (is.na(body_num)) {
+        return(FALSE)
+    }
+
+    expected <- sprintf(
+        "%02d",
+        98L - (as.numeric(body_num) * 100) %% 97
+    )
+    identical(substr(x, 8L, 9L), expected)
 }
 
 

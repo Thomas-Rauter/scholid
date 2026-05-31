@@ -41,6 +41,16 @@
             order       = 30L,
             extract_pat = "(\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"
         ),
+        ror = list(
+            order       = 35L,
+            pat         = "^0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}$",
+            extract_pat = paste0(
+                "(?<![[:alnum:]_./-])",
+                "(?:https?://ror\\.org/)?",
+                "0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}",
+                "(?![[:alnum:]_])"
+            )
+        ),
         isbn = list(
             order       = 40L,
             extract_pat = "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"

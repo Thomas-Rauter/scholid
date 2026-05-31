@@ -20,7 +20,7 @@ When working with identifiers in R, it is essential to distinguish between:
 - **Registry validity** (does the identifier actually exist?)
 
 The functions in `scholid` validate identifiers at the **structural**
-level and verify checksums where defined (ORCID, ISBN, ISSN). They do
+level and verify checksums where defined (ORCID, ROR, ISBN, ISSN). They do
 not check registry or online existence. The regexes shown below describe
 the structural form that an identifier must match; checksum rules are
 documented separately for relevant types.
@@ -128,6 +128,41 @@ Unhyphenated internal form:
 
 ```
 ^\d{15}[\dX]$
+```
+
+---
+
+# ROR (Research Organization Registry)
+
+**Governing body:** ROR Community  
+**Documentation:** [ROR identifier pattern](https://ror.readme.io/docs/identifier)
+
+## Structure
+
+A ROR iD is a 9-character lowercase string:
+
+```
+0abcdef94
+```
+
+Preferred external form is the full URL:
+
+```
+https://ror.org/01an7q238
+```
+
+## Checksum
+
+The last two characters are a checksum derived from the preceding seven
+characters using Crockford base32 encoding and ISO/IEC 7064 MOD 97-10 rules,
+matching ROR's identifier generation implementation.
+
+## Structural Regex
+
+Compact form:
+
+```
+^0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}$
 ```
 
 ---

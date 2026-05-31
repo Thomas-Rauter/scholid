@@ -131,6 +131,35 @@ testthat::test_that("normalize_orcid removes wrappers and enforces grouping", {
     testthat::expect_identical(got, exp)
 })
 
+testthat::test_that("normalize_ror strips wrappers and enforces compact lowercase form", {
+    x <- c(
+        "01an7q238",
+        "https://ror.org/01an7q238",
+        "https://ror.org/01an7q238/",
+        "ror.org/01an7q238",
+        "ROR: 02mhbdp94",
+        " 02s376052 ",
+        "02mhbdp99",
+        "bad",
+        NA
+    )
+
+    got <- normalize_ror(x)
+    exp <- c(
+        "01an7q238",
+        "01an7q238",
+        "01an7q238",
+        "01an7q238",
+        "02mhbdp94",
+        "02s376052",
+        NA_character_,
+        NA_character_,
+        NA_character_
+    )
+
+    testthat::expect_identical(got, exp)
+})
+
 testthat::test_that("ISBN normalization keeps valid inputs canonical", {
     testthat::expect_equal(
         normalize_scholid(
@@ -417,6 +446,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalized ROR outputs are valid ROR iDs and classify as ror",
+    {
+        x <- normalize_scholid(
+            c(
+                "01an7q238",
+                "https://ror.org/02mhbdp94",
+                "ROR: 02s376052"
+            ),
+            "ror"
+        )
+
+        testthat::expect_true(all(is_ror(x)))
+        testthat::expect_true(all(is_scholid(x, "ror")))
+        testthat::expect_true(all(classify_scholid(x) == "ror"))
+    }
+)
+
+testthat::test_that(
     "normalize_orcid canonicalizes valid lowercase x to uppercase X",
     {
         x <- c(
@@ -643,6 +690,47 @@ testthat::test_that(
                 "PMC123456",
                 "PMC123456"
             )
+        )
+    }
+)
+
+testthat::test_that(
+    "ROR normalization accepts plausible input forms",
+    {
+        x <- c(
+            "01an7q238",
+            "https://ror.org/01an7q238",
+            "ror.org/02mhbdp94",
+            "ROR: 02s376052"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "ror"),
+            c(
+                "01an7q238",
+                "01an7q238",
+                "02mhbdp94",
+                "02s376052"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "ROR normalization rejects checksum-invalid and malformed inputs",
+    {
+        x <- c(
+            "02mhbdp99",
+            "not-a-ror",
+            "02mhbdp9",
+            "(01an7q238)",
+            "abc01an7q238",
+            "01an7q238xyz"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "ror"),
+            rep(NA_character_, length(x))
         )
     }
 )

@@ -200,6 +200,30 @@ extract_arxiv <- function(text) {
 }
 
 
+#' Extract SWHID identifiers from text
+#'
+#' @description
+#' Extracts Software Heritage identifiers from free text or resolver URLs.
+#'
+#' Extracted SWHID candidates are cleaned to remove URL prefixes and trailing
+#' prose punctuation where necessary, and only structurally valid SWHIDs are
+#' returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted SWHIDs.
+#'
+#' @noRd
+extract_swhid <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "swhid",
+        clean_fn    = .clean_extracted_swhid,
+        validate_fn = is_swhid
+    )
+}
+
+
 #' Extract PubMed identifiers from text
 #'
 #' @description
@@ -416,6 +440,49 @@ extract_pmcid <- function(text) {
         ignore.case = TRUE
     )
     x <- sub("^RRID[[:space:]]*:[[:space:]]*", "RRID:", x, ignore.case = TRUE)
+    x
+}
+
+
+#' Clean an extracted SWHID candidate
+#'
+#' @description
+#' Removes resolver URL prefixes, trailing prose punctuation, and surrounding
+#' whitespace from an extracted SWHID candidate, and canonicalizes the core
+#' identifier.
+#'
+#' @param x A single extracted SWHID candidate.
+#'
+#' @return A cleaned SWHID candidate string, or `""` if empty.
+#'
+#' @noRd
+.clean_extracted_swhid <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?\"']+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub(
+        "^https?://archive\\.softwareheritage\\.org/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://browse\\.softwareheritage\\.org/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://identifiers\\.org/swh/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- gsub("[[:space:]]+", "", x)
+    x <- .canonicalize_swhid(x)
     x
 }
 

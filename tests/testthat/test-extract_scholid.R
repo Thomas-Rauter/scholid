@@ -297,6 +297,82 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_swhid finds SWHIDs in text and URLs",
+    {
+        txt <- c(
+            "Archive swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2.",
+            "See https://archive.softwareheritage.org/swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "swhid"
+        )
+
+        testthat::expect_true(any(got[[1]] == "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"))
+        testthat::expect_true(any(got[[2]] == "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d"))
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_swhid returns multiple matches from one string",
+    {
+        txt <- paste(
+            "artifacts:",
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "and swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "swhid"
+        )[[1]]
+
+        testthat::expect_true(any(got == "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"))
+        testthat::expect_true(any(got == "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d"))
+    }
+)
+
+testthat::test_that(
+    "extract_swhid rejects invalid SWHID candidates",
+    {
+        txt <- "see swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2 for details"
+
+        got <- extract_scholid(
+            txt,
+            "swhid"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_swhid does not extract bare hex strings without swh prefix",
+    {
+        txt <- "commit 94a9ed024d3859793618152ea559a168bbcbb5e2 was archived"
+
+        got <- extract_scholid(
+            txt,
+            "swhid"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
     "extract_rrid finds RRIDs in text and URLs",
     {
         txt <- c(
@@ -773,7 +849,8 @@ testthat::test_that(
         "ISSN 2434-561X",
         "ISBN 0-306-40615-2",
         "ROR https://ror.org/01an7q238",
-        "RRID:AB_262044"
+        "RRID:AB_262044",
+        "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
     )
 
     got_doi <- extract_scholid(txt, "doi")
@@ -785,6 +862,7 @@ testthat::test_that(
     got_isb <- extract_scholid(txt, "isbn")
     got_ror <- extract_scholid(txt, "ror")
     got_rrid <- extract_scholid(txt, "rrid")
+    got_swhid <- extract_scholid(txt, "swhid")
 
     testthat::expect_true(length(got_doi[[1]]) >= 1L)
     testthat::expect_true(length(got_orc[[2]]) >= 1L)
@@ -795,6 +873,7 @@ testthat::test_that(
     testthat::expect_true(length(got_isb[[7]]) >= 1L)
     testthat::expect_true(length(got_ror[[8]]) >= 1L)
     testthat::expect_true(length(got_rrid[[9]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[10]]) >= 1L)
     }
 )
 

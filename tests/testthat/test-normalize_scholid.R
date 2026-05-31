@@ -131,7 +131,8 @@ testthat::test_that("normalize_orcid removes wrappers and enforces grouping", {
     testthat::expect_identical(got, exp)
 })
 
-testthat::test_that("normalize_ror strips wrappers and enforces compact lowercase form", {
+testthat::test_that(
+    "normalize_ror strips wrappers and enforces compact lowercase form", {
     x <- c(
         "01an7q238",
         "https://ror.org/01an7q238",
@@ -152,6 +153,66 @@ testthat::test_that("normalize_ror strips wrappers and enforces compact lowercas
         "01an7q238",
         "02mhbdp94",
         "02s376052",
+        NA_character_,
+        NA_character_,
+        NA_character_
+    )
+
+    testthat::expect_identical(got, exp)
+})
+
+testthat::test_that(
+    "normalize_swhid strips wrappers and requires swh prefix or resolver URL",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "https://identifiers.org/swh/swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            "SWH:1:CNT:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "bad",
+            NA
+        )
+
+        got <- normalize_swhid(x)
+        exp <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            NA_character_,
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that("normalize_swhid strips wrappers and lwcases compactly", {
+    x <- c(
+        "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "https://identifiers.org/swh/swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+        "SWH:1:CNT:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;unknown=foo",
+        "bad",
+        NA
+    )
+
+    got <- normalize_swhid(x)
+
+    exp <- c(
+        "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+        "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        NA_character_,
+        NA_character_,
         NA_character_,
         NA_character_,
         NA_character_
@@ -207,6 +268,28 @@ testthat::test_that(
         testthat::expect_true(all(is_rrid(x)))
         testthat::expect_true(all(is_scholid(x, "rrid")))
         testthat::expect_true(all(classify_scholid(x) == "rrid"))
+    }
+)
+
+testthat::test_that(
+    "normalized SWHID outputs are valid SWHIDs and classify as swhid",
+    {
+        x <- normalize_scholid(
+            c(
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+                "https://archive.softwareheritage.org/swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+                paste0(
+                    "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;",
+                    "origin=https://example.org/repo.git;",
+                    "lines=9-15"
+                )
+            ),
+            "swhid"
+        )
+
+        testthat::expect_true(all(is_swhid(x)))
+        testthat::expect_true(all(is_scholid(x, "swhid")))
+        testthat::expect_true(all(classify_scholid(x) == "swhid"))
     }
 )
 
@@ -820,6 +903,54 @@ testthat::test_that(
 
         testthat::expect_identical(
             normalize_scholid(x, "ror"),
+            rep(NA_character_, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "SWHID normalization accepts plausible labeled and URL input forms",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "SWH:1:REV:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            paste0(
+                "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;",
+                "origin=https://example.org/repo.git;",
+                "visit=swh:1:snp:d7f1b9eb7ccb596c2622c4780febaa02549830f9"
+            )
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "swhid"),
+            c(
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+                "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+                paste0(
+                    "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;",
+                    "origin=https://example.org/repo.git;",
+                    "visit=swh:1:snp:d7f1b9eb7ccb596c2622c4780febaa02549830f9"
+                )
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "SWHID normalization rejects bare hex strings and invalid qualifiers",
+    {
+        x <- c(
+            "94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;unknown=foo",
+            "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;path=relative",
+            "(swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2)"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "swhid"),
             rep(NA_character_, length(x))
         )
     }

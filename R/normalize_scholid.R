@@ -79,6 +79,73 @@ normalize_doi <- function(x) {
 }
 
 
+#' Normalize SWHID identifiers
+#'
+#' @description
+#' Normalizes Software Heritage identifiers from resolver URLs or labeled forms
+#' to canonical compact `swh:` form. Inputs must include an explicit `swh:`
+#' prefix or a supported resolver URL; bare 40-character hex strings are
+#' rejected.
+#'
+#' Normalization requires structurally valid identifiers. Content-hash
+#' correctness is not checked.
+#'
+#' @param x A vector of SWHID values.
+#'
+#' @return A character vector of normalized SWHIDs. Invalid or unsupported
+#'   inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_swhid <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+
+    has_marker <- grepl("swh\\s*:", y, ignore.case = TRUE) |
+        grepl("archive\\.softwareheritage\\.org/", y, ignore.case = TRUE) |
+        grepl("browse\\.softwareheritage\\.org/", y, ignore.case = TRUE) |
+        grepl("identifiers\\.org/swh/", y, ignore.case = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub(
+        "^https?://archive\\.softwareheritage\\.org/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://browse\\.softwareheritage\\.org/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://identifiers\\.org/swh/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- gsub("[[:space:]]+", "", y)
+    y <- sub("[.,;:!?]+$", "", y)
+
+    y <- vapply(y, function(val) {
+        if (is.na(val) || !nzchar(val)) {
+            return(NA_character_)
+        }
+
+        val <- .canonicalize_swhid(val)
+        if (is_swhid(val)) {
+            val
+        } else {
+            NA_character_
+        }
+    }, character(1))
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ORCID identifiers
 #'
 #' @description

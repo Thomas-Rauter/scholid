@@ -61,6 +61,25 @@
                 "(?![[:alnum:]_\\-/])"
             )
         ),
+        swhid = list(
+            order = 25L,
+            core_pat = "^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$",
+            qualifier_keys = c(
+                "origin",
+                "visit",
+                "anchor",
+                "path",
+                "lines"
+            ),
+            extract_pat = paste0(
+                "(?<![[:alnum:]_])",
+                "(?:https?://(?:archive|browse)\\.softwareheritage\\.org/|",
+                "https?://identifiers\\.org/swh/)?",
+                "swh:1:(?:cnt|dir|rev|rel|snp):[0-9a-fA-F]{40}",
+                "(?:;(?:origin|visit|anchor|path|lines)=[^[:space:]<>\")']+)*",
+                "(?![[:alnum:]_:])"
+            )
+        ),
         orcid = list(
             order       = 30L,
             extract_pat = "(\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"

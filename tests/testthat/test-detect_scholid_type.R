@@ -118,6 +118,57 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical SWHIDs",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            "swh:1:dir:d198bc9d7a6bcf6db04f476d29314f157507d505"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("swhid", "swhid", "swhid")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped SWHIDs",
+    {
+        x <- c(
+            "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "https://identifiers.org/swh/swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            "SWH:1:DIR:d198bc9d7a6bcf6db04f476d29314f157507d505"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("swhid", "swhid", "swhid")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects bare hex strings and invalid SWHIDs",
+    {
+        x <- c(
+            "94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "not-a-swhid"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical RRIDs",
     {
         x <- c(

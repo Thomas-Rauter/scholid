@@ -58,6 +58,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical SWHIDs",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            "swh:1:dir:d198bc9d7a6bcf6db04f476d29314f157507d505"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("swhid", "swhid", "swhid")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical RRIDs",
     {
         x <- c(
@@ -84,7 +102,8 @@ testthat::test_that("classify_scholid does not classify wrapped identifiers", {
         "arXiv:2101.00001",
         "ISSN 0317-8471",
         "PMID: 12345",
-        "PMCID: PMC12345"
+        "PMCID: PMC12345",
+        "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
     )
 
     got <- classify_scholid(x)
@@ -144,6 +163,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid works for SWHIDs after normalization",
+    {
+        x <- c(
+            "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "SWH:1:REV:309cf2674ee7a0749978cf8265ab91a60aea0f7d"
+        )
+
+        x <- normalize_swhid(x)
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("swhid", "swhid")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid rejects checksum-invalid ROR iDs",
     {
         x <- c(
@@ -164,6 +201,21 @@ testthat::test_that(
             "AB_262044",
             "RRID:UNKNOWN_123",
             "not-a-rrid"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
+    "classify_scholid rejects bare hex strings and invalid SWHIDs",
+    {
+        x <- c(
+            "94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;unknown=foo"
         )
 
         got <- classify_scholid(x)

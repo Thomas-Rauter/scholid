@@ -148,6 +148,28 @@ is_arxiv <- function(x) {
 }
 
 
+#' Check SWHID identifiers
+#'
+#' Tests whether values are valid Software Heritage identifiers in canonical
+#' `swh:` form. Validation is structural only; content-hash correctness is
+#' not checked.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_swhid <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_swhid_strict,
+        logical(1)
+    )
+    init$out
+}
+
+
 #' Check ROR identifiers
 #'
 #' Tests whether values are valid ROR iDs, including checksum.
@@ -414,6 +436,169 @@ is_pmcid <- function(x) {
         function(p) grepl(paste0("^", p, "$"), body, perl = TRUE),
         logical(1)
     ))
+}
+
+
+#' Return the SWHID core validation pattern from the registry
+#'
+#' @return A single regular expression pattern string.
+#'
+#' @noRd
+.swhid_core_pat <- function() {
+    .scholid_registry()[["swhid"]]$core_pat
+}
+
+
+#' Split a SWHID into core and qualifier segments
+#'
+#' @param x A single compact SWHID string without surrounding whitespace.
+#'
+#' @return A list with `core` and `qualifiers` character strings.
+#'
+#' @noRd
+.swhid_split <- function(x) {
+    pos <- regexpr(";", x, fixed = TRUE)[1]
+
+    if (pos == -1L) {
+        return(list(
+            core        = x,
+            qualifiers  = ""
+        ))
+    }
+
+    list(
+        core        = substr(x, 1L, pos - 1L),
+        qualifiers  = substr(x, pos + 1L, nchar(x))
+    )
+}
+
+
+#' Validate SWHID qualifier segments
+#'
+#' @param qualifiers A semicolon-separated qualifier string without a leading
+#'   semicolon.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_swhid_qualifiers_valid <- function(qualifiers) {
+    if (!nzchar(qualifiers)) {
+        return(TRUE)
+    }
+
+    parts <- strsplit(qualifiers, ";", fixed = TRUE)[[1]]
+    parts <- parts[nzchar(parts)]
+
+    if (!length(parts)) {
+        return(TRUE)
+    }
+
+    keys <- character(0)
+    core_pat <- .swhid_core_pat()
+
+    for (part in parts) {
+        if (!grepl("^(origin|visit|anchor|path|lines)=", part, perl = TRUE)) {
+            return(FALSE)
+        }
+
+        key <- sub("=.*$", "", part)
+        if (key %in% keys) {
+            return(FALSE)
+        }
+        keys <- c(keys, key)
+
+        val <- sub("^[^=]+=", "", part)
+        if (!nzchar(val)) {
+            return(FALSE)
+        }
+
+        if (key %in% c("visit", "anchor")) {
+            if (!grepl(core_pat, val, perl = TRUE)) {
+                return(FALSE)
+            }
+        } else if (key == "path") {
+            if (!grepl("^/", val, perl = TRUE)) {
+                return(FALSE)
+            }
+        } else if (key == "lines") {
+            if (!grepl("^[0-9]+(-[0-9]+)?$", val, perl = TRUE)) {
+                return(FALSE)
+            }
+        } else if (key == "origin") {
+            if (!grepl("^[a-zA-Z][a-zA-Z0-9+.-]*:.+", val, perl = TRUE)) {
+                return(FALSE)
+            }
+        }
+    }
+
+    TRUE
+}
+
+
+#' Canonicalize a compact SWHID string
+#'
+#' @description
+#' Lowercases the core identifier and embedded visit/anchor qualifier cores.
+#' The input must already be whitespace-free.
+#'
+#' @param x A single compact SWHID string.
+#'
+#' @return A canonical SWHID string.
+#'
+#' @noRd
+.canonicalize_swhid <- function(x) {
+    parts <- .swhid_split(x)
+    core <- tolower(parts$core)
+
+    if (!nzchar(parts$qualifiers)) {
+        return(core)
+    }
+
+    qual_parts <- strsplit(parts$qualifiers, ";", fixed = TRUE)[[1]]
+    qual_parts <- vapply(qual_parts, function(part) {
+        if (grepl("^(visit|anchor)=", part, perl = TRUE)) {
+            prefix <- sub("=.*$", "=", part)
+            paste0(prefix, tolower(sub("^[^=]+=", "", part)))
+        } else {
+            part
+        }
+    }, character(1))
+
+    paste0(core, ";", paste(qual_parts, collapse = ";"))
+}
+
+
+#' Strict SWHID validator
+#'
+#' @description
+#' Validates canonical `swh:` identifiers. The core must use lowercase hex,
+#' scheme version `1`, and a known object type. Optional qualifiers must use
+#' known keys and pass conservative value checks. Bare 40-character hex strings
+#' without the `swh:` prefix are rejected.
+#'
+#' @param x A single character string in canonical form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_swhid_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- gsub("[[:space:]]+", "", trimws(x))
+
+    if (!grepl("^swh:", x)) {
+        return(FALSE)
+    }
+
+    parts <- .swhid_split(x)
+
+    if (!grepl(.swhid_core_pat(), parts$core, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    .is_swhid_qualifiers_valid(parts$qualifiers)
 }
 
 

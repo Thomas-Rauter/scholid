@@ -350,6 +350,61 @@ Structural regex:
 
 ---
 
+# SWHID (SoftWare Hash IDentifier)
+
+**Governing body:** Software Heritage  
+**Standard:** ISO/IEC 18670  
+**Documentation:** [SWHID specification](https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html)
+
+## Structure
+
+A SWHID identifies a software artifact archived by Software Heritage. The
+core identifier has four colon-separated fields:
+
+```
+swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
+```
+
+Where:
+
+- `swh` is the scheme prefix
+- `1` is the scheme version
+- `cnt` is the object type (`cnt`, `dir`, `rev`, `rel`, or `snp`)
+- the final field is a 40-character lowercase hex SHA-1 intrinsic identifier
+
+Optional qualifiers may follow, separated by semicolons:
+
+```
+swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;origin=https://example.org/repo.git;path=/src/main.c;lines=9-15
+```
+
+Resolver URLs include:
+
+```
+https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
+```
+
+## Validation in scholid
+
+SWHID validation is **structural only**. The embedded hash is an intrinsic
+content identifier, but verifying that it matches the referenced artifact
+requires access to the artifact itself and is not performed by `scholid`.
+
+To limit false positives, `scholid` requires the explicit `swh:` prefix and
+rejects bare 40-character hex strings (for example Git commit hashes). Known
+qualifier keys (`origin`, `visit`, `anchor`, `path`, `lines`) are validated
+conservatively when present.
+
+## Structural Regex
+
+Core form:
+
+```
+^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$
+```
+
+---
+
 # PMID (PubMed Identifier)
 
 **Authority:** U.S. National Library of Medicine

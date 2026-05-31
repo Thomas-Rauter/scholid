@@ -313,6 +313,198 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_swhid accepts canonical core SWHIDs for known object types",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:dir:d198bc9d7a6bcf6db04f476d29314f157507d505",
+            "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            "swh:1:rel:22ece559cc7cc2364edc5e5593d63ae8bd229f9f",
+            "swh:1:snp:c7c108084bc0bf3d81436bf980b46e98bd338453"
+        )
+
+        testthat::expect_identical(
+            is_swhid(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_swhid accepts canonical qualified SWHIDs with known qualifiers",
+    {
+        x <- paste0(
+            "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;",
+            "origin=https://example.org/repo.git;",
+            "visit=swh:1:snp:d7f1b9eb7ccb596c2622c4780febaa02549830f9;",
+            "lines=9-15"
+        )
+
+        testthat::expect_true(is_swhid(x))
+    }
+)
+
+testthat::test_that(
+    "is_swhid rejects bare hex strings, non-canonical casing, and invalid forms",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "SWH:1:CNT:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;unknown=foo",
+            "not-a-swhid",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_swhid(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_swhid for type swhid",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "94a9ed024d3859793618152ea559a168bbcbb5e2",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_scholid(x, "swhid"),
+            is_swhid(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "SWHID normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "SWH:1:CNT:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "swhid"),
+            rep(
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+                3L
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized SWHID outputs validate and classify as swhid",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://archive.softwareheritage.org/swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+                "SWH:1:DIR:d198bc9d7a6bcf6db04f476d29314f157507d505"
+            ),
+            "swhid"
+        )
+
+        testthat::expect_true(all(is_swhid(x)))
+        testthat::expect_true(all(is_scholid(x, "swhid")))
+        testthat::expect_true(all(classify_scholid(x) == "swhid"))
+    }
+)
+
+testthat::test_that(
+    "is_swhid accepts canonical SWHIDs for known object types",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:dir:d198bc9d7a6bcf6db04f476d29314f157507d505",
+            "swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+            "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;origin=https://gitorious.org/ocamlp3l/ocamlp3l_cvs.git;visit=swh:1:snp:d7f1b9eb7ccb596c2622c4780febaa02549830f9;lines=9-15"
+        )
+
+        testthat::expect_identical(
+            is_swhid(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_swhid rejects bare hex strings and malformed SWHIDs",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "SWH:1:CNT:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;unknown=foo",
+            "not-a-swhid",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_swhid(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_swhid for type swhid",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "swh:2:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_scholid(x, "swhid"),
+            is_swhid(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "SWHID normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            "SWH:1:CNT:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "swhid"),
+            rep(
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+                3L
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized SWHID outputs validate and classify as swhid",
+    {
+        x <- normalize_scholid(
+            c("https://archive.softwareheritage.org/swh:1:rev:309cf2674ee7a0749978cf8265ab91a60aea0f7d",
+              "SWH:1:CNT:94a9ed024d3859793618152ea559a168bbcbb5e2"
+            ),
+            "swhid"
+        )
+
+        testthat::expect_true(all(is_swhid(x)))
+        testthat::expect_true(all(is_scholid(x, "swhid")))
+        testthat::expect_true(all(classify_scholid(x) == "swhid"))
+    }
+)
+
+testthat::test_that(
     "is_rrid accepts canonical RRIDs for known authorities",
     {
         x <- c(

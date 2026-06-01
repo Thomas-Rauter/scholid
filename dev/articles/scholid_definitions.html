@@ -496,12 +496,59 @@ during classification.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="ark-archival-resource-key">ARK (Archival Resource Key)<a class="anchor" aria-label="anchor" href="#ark-archival-resource-key"></a>
+</h2>
+<p><strong>Governing body:</strong> ARK Alliance<br><strong>Documentation:</strong> <a href="https://arks.org/" class="external-link">ARK
+specification</a></p>
+<div class="section level3">
+<h3 id="structure-8">Structure<a class="anchor" aria-label="anchor" href="#structure-8"></a>
+</h3>
+<p>An ARK is a persistent identifier for digital, physical, or abstract
+objects. The core identifier has the form:</p>
+<pre><code>ark:/NAAN/Name[Qualifier]</code></pre>
+<p>Where:</p>
+<ul>
+<li>
+<code>NAAN</code> — Name Assigning Authority Number (in
+<code>scholid</code>, five digits)</li>
+<li>
+<code>Name</code> — opaque name assigned by the authority</li>
+<li>
+<code>Qualifier</code> — optional hierarchical (<code>/</code>) or
+variant (<code>.</code>) suffix</li>
+</ul>
+<p>Examples:</p>
+<pre><code>ark:/12148/btv1b8449691v/f29
+ark:/13030/654xz321</code></pre>
+<p>Resolver URLs often embed the ARK after the host, for example:</p>
+<pre><code>https://n2t.net/ark:/12148/btv1b8449691v</code></pre>
+<p>The labels <code>ark:</code> and <code>ark:/</code> are equivalent;
+<code>scholid</code> canonicalizes to <code>ark:/</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid-3">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-3"></a>
+</h3>
+<p>ARK validation is <strong>structural only</strong>. Resolver
+existence is not checked.</p>
+<p>To limit false positives, <code>scholid</code> requires an explicit
+<code>ark:</code> label, a five-digit NAAN, and a non-empty name body.
+Bare paths without the <code>ark:</code> prefix are rejected.</p>
+</div>
+<div class="section level3">
+<h3 id="structural-regex-9">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-9"></a>
+</h3>
+<p>Canonical form:</p>
+<pre><code>^ark:/[0-9]{5}/[0-9A-Za-z][0-9A-Za-z._/=-]*$</code></pre>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="swhid-software-hash-identifier">SWHID (SoftWare Hash IDentifier)<a class="anchor" aria-label="anchor" href="#swhid-software-hash-identifier"></a>
 </h2>
 <p><strong>Governing body:</strong> Software Heritage<br><strong>Standard:</strong> ISO/IEC 18670<br><strong>Documentation:</strong> <a href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html" class="external-link">SWHID
 specification</a></p>
 <div class="section level3">
-<h3 id="structure-8">Structure<a class="anchor" aria-label="anchor" href="#structure-8"></a>
+<h3 id="structure-9">Structure<a class="anchor" aria-label="anchor" href="#structure-9"></a>
 </h3>
 <p>A SWHID identifies a software artifact archived by Software Heritage.
 The core identifier has four colon-separated fields:</p>
@@ -525,7 +572,7 @@ identifier</li>
 <pre><code>https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-3">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-3"></a>
+<h3 id="validation-in-scholid-4">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-4"></a>
 </h3>
 <p>SWHID validation is <strong>structural only</strong>. The embedded
 hash is an intrinsic content identifier, but verifying that it matches
@@ -538,7 +585,7 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 <code>lines</code>) are validated conservatively when present.</p>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-9">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-9"></a>
+<h3 id="structural-regex-10">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-10"></a>
 </h3>
 <p>Core form:</p>
 <pre><code>^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$</code></pre>
@@ -550,7 +597,7 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 </h2>
 <p><strong>Authority:</strong> U.S. National Library of Medicine</p>
 <div class="section level3">
-<h3 id="structure-9">Structure<a class="anchor" aria-label="anchor" href="#structure-9"></a>
+<h3 id="structure-10">Structure<a class="anchor" aria-label="anchor" href="#structure-10"></a>
 </h3>
 <ul>
 <li>Pure integer</li>
@@ -569,7 +616,7 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 </h2>
 <p><strong>Authority:</strong> PubMed Central</p>
 <div class="section level3">
-<h3 id="structure-10">Structure<a class="anchor" aria-label="anchor" href="#structure-10"></a>
+<h3 id="structure-11">Structure<a class="anchor" aria-label="anchor" href="#structure-11"></a>
 </h3>
 <pre><code><span><span class="va">PMC1234567</span></span></code></pre>
 <p>Components: - Literal prefix <code>PMC</code> - One or more

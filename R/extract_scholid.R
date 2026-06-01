@@ -200,6 +200,30 @@ extract_arxiv <- function(text) {
 }
 
 
+#' Extract ADS bibcodes from text
+#'
+#' @description
+#' Extracts SAO/NASA ADS bibliographic codes from free text or ADS URLs.
+#'
+#' Extracted bibcode candidates are cleaned to remove URL prefixes and
+#' trailing prose punctuation where necessary, and only structurally valid
+#' bibcodes are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted bibcodes.
+#'
+#' @noRd
+extract_bibcode <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "bibcode",
+        clean_fn    = .clean_extracted_bibcode,
+        validate_fn = is_bibcode
+    )
+}
+
+
 #' Extract OpenAlex identifiers from text
 #'
 #' @description
@@ -412,6 +436,24 @@ extract_pmcid <- function(text) {
 #' @return A cleaned ROR candidate string, or `""` if empty.
 #'
 #' @noRd
+.clean_extracted_bibcode <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub(
+        "^https?://(?:ui\\.)?adsabs\\.harvard\\.edu/abs/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub("(?i)^bibcode\\s*:?\\s*", "", x, perl = TRUE)
+    x
+}
+
+
 .clean_extracted_openalex <- function(x) {
     if (is.na(x) || !nzchar(x)) {
         return("")

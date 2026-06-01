@@ -593,6 +593,92 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_bibcode accepts canonical 19-character ADS bibcodes",
+    {
+        x <- c(
+            "1992ApJ...400L...1W",
+            "1995ApJ...438..387R",
+            "1974MNRAS.168..249B"
+        )
+
+        testthat::expect_identical(
+            is_bibcode(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_bibcode rejects wrong length, all-dot journal, and non-letter tails",
+    {
+        x <- c(
+            "1992ApJ...400L...1W",
+            "1992ApJ...400L...1",
+            "1992ApJ...400L...1WX",
+            "1992.....400L...1W",
+            "not-a-bibcode",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_bibcode(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_bibcode for type bibcode",
+    {
+        x <- c("1992ApJ...400L...1W", "1992.....400L...1W", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "bibcode"),
+            is_bibcode(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "bibcode normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "1992ApJ...400L...1W",
+            "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+            "bibcode:1995ApJ...438..387R",
+            "1992ApJ...400L...1W."
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "bibcode"),
+            c(
+                "1992ApJ...400L...1W",
+                "1992ApJ...400L...1W",
+                "1995ApJ...438..387R",
+                "1992ApJ...400L...1W"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized bibcode outputs validate and classify as bibcode",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+                "bibcode: 1995ApJ...438..387R"
+            ),
+            "bibcode"
+        )
+
+        testthat::expect_true(all(is_bibcode(x)))
+        testthat::expect_true(all(is_scholid(x, "bibcode")))
+        testthat::expect_true(all(classify_scholid(x) == "bibcode"))
+    }
+)
+
+testthat::test_that(
     "is_openalex accepts canonical uppercase keys for known entity types",
     {
         x <- c(

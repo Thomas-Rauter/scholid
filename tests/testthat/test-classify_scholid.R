@@ -94,6 +94,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical bibcodes",
+    {
+        x <- c(
+            "1992ApJ...400L...1W",
+            "1995ApJ...438..387R",
+            "1974MNRAS.168..249B"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("bibcode", "bibcode", "bibcode")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical OpenAlex keys",
     {
         x <- c(
@@ -122,7 +140,8 @@ testthat::test_that("classify_scholid does not classify wrapped identifiers", {
         "PMID: 12345",
         "PMCID: PMC12345",
         "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
-        "https://openalex.org/W2741809807"
+        "https://openalex.org/W2741809807",
+        "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W"
     )
 
     got <- classify_scholid(x)
@@ -200,6 +219,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid works for bibcodes after normalization",
+    {
+        x <- c(
+            "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+            "bibcode:1995ApJ...438..387R"
+        )
+
+        x <- normalize_bibcode(x)
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("bibcode", "bibcode")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid works for OpenAlex IDs after normalization",
     {
         x <- c(
@@ -239,6 +276,21 @@ testthat::test_that(
             "AB_262044",
             "RRID:UNKNOWN_123",
             "not-a-rrid"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
+    "classify_scholid rejects malformed bibcodes",
+    {
+        x <- c(
+            "1992ApJ...400L...1",
+            "1992.....400L...1W",
+            "not-a-bibcode"
         )
 
         got <- classify_scholid(x)

@@ -12,6 +12,7 @@ testthat::test_that(
             x,
             c("doi",
               "arxiv",
+              "bibcode",
               "openalex",
               "swhid",
               "orcid",

@@ -411,6 +411,49 @@ normalize_arxiv <- function(x) {
 }
 
 
+#' Normalize ADS bibcodes
+#'
+#' @description
+#' Normalizes SAO/NASA ADS bibliographic codes from ADS URLs, `bibcode:`
+#' labels, or bare 19-character strings to canonical bibcode form. Case is
+#' preserved.
+#'
+#' Normalization requires structurally valid bibcodes. ADS existence is not
+#' checked.
+#'
+#' @param x A vector of bibcode values.
+#'
+#' @return A character vector of normalized bibcodes. Invalid or unsupported
+#'   inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_bibcode <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+    y <- sub("[.,;:!?]+$", "", y)
+
+    bare_pat <- .bibcode_pat()
+    has_marker <- grepl("adsabs\\.harvard\\.edu", y, ignore.case = TRUE) |
+        grepl("(?i)^bibcode\\s*:", y, perl = TRUE) |
+        grepl(bare_pat, y, perl = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub(
+        "^https?://(?:ui\\.)?adsabs\\.harvard\\.edu/abs/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub("(?i)^bibcode\\s*:?\\s*", "", y, perl = TRUE)
+
+    y[!is.na(y) & !is_bibcode(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize OpenAlex identifiers
 #'
 #' @description

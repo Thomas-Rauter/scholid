@@ -449,6 +449,65 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_bibcode finds bibcodes in text and ADS URLs",
+    {
+        txt <- c(
+            "See 1992ApJ...400L...1W for details.",
+            "ADS https://ui.adsabs.harvard.edu/abs/1995ApJ...438..387R",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "bibcode"
+        )
+
+        testthat::expect_true(any(got[[1]] == "1992ApJ...400L...1W"))
+        testthat::expect_true(any(got[[2]] == "1995ApJ...438..387R"))
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_bibcode returns multiple matches from one string",
+    {
+        txt <- paste(
+            "references:",
+            "1992ApJ...400L...1W",
+            "and 1995ApJ...438..387R"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "bibcode"
+        )[[1]]
+
+        testthat::expect_true(any(got == "1992ApJ...400L...1W"))
+        testthat::expect_true(any(got == "1995ApJ...438..387R"))
+    }
+)
+
+testthat::test_that(
+    "extract_bibcode rejects malformed bibcode candidates",
+    {
+        txt <- "see 1992ApJ...400L...1 and 1992.....400L...1W for details"
+
+        got <- extract_scholid(
+            txt,
+            "bibcode"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
     "extract_openalex finds OpenAlex IDs in text and URLs",
     {
         txt <- c(
@@ -920,6 +979,7 @@ testthat::test_that(
         "doi:10.1000/182",
         "ORCID 0000-0002-1825-0097",
         "arXiv:2101.00001v2",
+        "ADS 1992ApJ...400L...1W",
         "OpenAlex https://openalex.org/W2741809807",
         "PMCID: PMC12345",
         "PMID 1234567",
@@ -933,6 +993,7 @@ testthat::test_that(
     got_doi <- extract_scholid(txt, "doi")
     got_orc <- extract_scholid(txt, "orcid")
     got_arx <- extract_scholid(txt, "arxiv")
+    got_bib <- extract_scholid(txt, "bibcode")
     got_oa <- extract_scholid(txt, "openalex")
     got_pmc <- extract_scholid(txt, "pmcid")
     got_pmi <- extract_scholid(txt, "pmid")
@@ -945,14 +1006,15 @@ testthat::test_that(
     testthat::expect_true(length(got_doi[[1]]) >= 1L)
     testthat::expect_true(length(got_orc[[2]]) >= 1L)
     testthat::expect_true(length(got_arx[[3]]) >= 1L)
-    testthat::expect_true(length(got_oa[[4]]) >= 1L)
-    testthat::expect_true(length(got_pmc[[5]]) >= 1L)
-    testthat::expect_true(length(got_pmi[[6]]) >= 1L)
-    testthat::expect_true(length(got_isn[[7]]) >= 1L)
-    testthat::expect_true(length(got_isb[[8]]) >= 1L)
-    testthat::expect_true(length(got_ror[[9]]) >= 1L)
-    testthat::expect_true(length(got_rrid[[10]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[11]]) >= 1L)
+    testthat::expect_true(length(got_bib[[4]]) >= 1L)
+    testthat::expect_true(length(got_oa[[5]]) >= 1L)
+    testthat::expect_true(length(got_pmc[[6]]) >= 1L)
+    testthat::expect_true(length(got_pmi[[7]]) >= 1L)
+    testthat::expect_true(length(got_isn[[8]]) >= 1L)
+    testthat::expect_true(length(got_isb[[9]]) >= 1L)
+    testthat::expect_true(length(got_ror[[10]]) >= 1L)
+    testthat::expect_true(length(got_rrid[[11]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[12]]) >= 1L)
     }
 )
 

@@ -61,6 +61,16 @@
                 "(?![[:alnum:]_\\-/])"
             )
         ),
+        bibcode = list(
+            order = 21L,
+            pat = "^\\d{4}[A-Za-z0-9.]{14}[A-Za-z]$",
+            extract_pat = paste0(
+                "(?<![[:alnum:]_/])",
+                "(?:https?://(?:ui\\.)?adsabs\\.harvard\\.edu/abs/)?",
+                "\\d{4}[A-Za-z0-9.]{14}[A-Za-z]",
+                "(?![[:alnum:].])"
+            )
+        ),
         openalex = list(
             order = 22L,
             pat   = "^[WASTIKPFG][0-9]{5,}$",

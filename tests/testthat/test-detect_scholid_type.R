@@ -169,6 +169,58 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical bibcodes",
+    {
+        x <- c(
+            "1992ApJ...400L...1W",
+            "1995ApJ...438..387R",
+            "1974MNRAS.168..249B"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("bibcode", "bibcode", "bibcode")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped bibcodes",
+    {
+        x <- c(
+            "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+            "https://adsabs.harvard.edu/abs/1995ApJ...438..387R",
+            "bibcode: 1974MNRAS.168..249B",
+            "1992ApJ...400L...1W"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("bibcode", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects malformed bibcodes",
+    {
+        x <- c(
+            "1992ApJ...400L...1",
+            "1992.....400L...1W",
+            "not-a-bibcode"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical OpenAlex keys",
     {
         x <- c(

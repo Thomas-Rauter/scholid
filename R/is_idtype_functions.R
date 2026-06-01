@@ -148,6 +148,28 @@ is_arxiv <- function(x) {
 }
 
 
+#' Check ADS bibcodes
+#'
+#' Tests whether values are valid SAO/NASA ADS bibliographic codes in canonical
+#' 19-character form. Validation is structural only; ADS existence is not
+#' checked.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_bibcode <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_bibcode_strict,
+        logical(1)
+    )
+    init$out
+}
+
+
 #' Check OpenAlex identifiers
 #'
 #' Tests whether values are valid OpenAlex IDs in canonical uppercase key
@@ -339,6 +361,58 @@ is_pmcid <- function(x) {
 }
 
 
+#' Return the bibcode validation pattern from the registry
+#'
+#' @return A single regular expression pattern string.
+#'
+#' @noRd
+.bibcode_pat <- function() {
+    .scholid_registry()[["bibcode"]]$pat
+}
+
+
+#' Strict bibcode validator
+#'
+#' @description
+#' Validates canonical 19-character ADS bibcodes (`YYYYJJJJJVVVVM PPPPA`).
+#' Wrapped URLs are rejected; use `normalize_bibcode()` first.
+#'
+#' @param x A single character string in canonical form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_bibcode_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- trimws(x)
+    if (nchar(x) != 19L) {
+        return(FALSE)
+    }
+
+    if (grepl("[[:space:]]", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    pat <- .bibcode_pat()
+    if (!grepl(pat, x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    journal <- substr(x, 5L, 9L)
+    grepl("[A-Za-z]", journal, perl = TRUE)
+}
+
+
+#' Strict DOI validator
+#'
+#' @param x A single character string.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
 .is_doi_strict <- function(x) {
     if (!nzchar(x)) {
         return(FALSE)

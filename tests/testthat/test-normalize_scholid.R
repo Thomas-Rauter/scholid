@@ -254,6 +254,92 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_bibcode strips wrappers and preserves case",
+    {
+        x <- c(
+            "1992ApJ...400L...1W",
+            "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+            "https://adsabs.harvard.edu/abs/1995ApJ...438..387R",
+            "bibcode: 1974MNRAS.168..249B",
+            "1992ApJ...400L...1W.",
+            "1992ApJ...400L...1",
+            "1992.....400L...1W",
+            "not-a-bibcode",
+            NA
+        )
+
+        got <- normalize_bibcode(x)
+        exp <- c(
+            "1992ApJ...400L...1W",
+            "1992ApJ...400L...1W",
+            "1995ApJ...438..387R",
+            "1974MNRAS.168..249B",
+            "1992ApJ...400L...1W",
+            NA_character_,
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized bibcode outputs are valid bibcodes and classify as bibcode",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+                "bibcode:1995ApJ...438..387R"
+            ),
+            "bibcode"
+        )
+
+        testthat::expect_true(all(is_bibcode(x)))
+        testthat::expect_true(all(is_scholid(x, "bibcode")))
+        testthat::expect_true(all(classify_scholid(x) == "bibcode"))
+    }
+)
+
+testthat::test_that(
+    "Bibcode normalization accepts plausible labeled and URL input forms",
+    {
+        x <- c(
+            "1992ApJ...400L...1W",
+            "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+            "bibcode:1995ApJ...438..387R"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "bibcode"),
+            c(
+                "1992ApJ...400L...1W",
+                "1992ApJ...400L...1W",
+                "1995ApJ...438..387R"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "Bibcode normalization rejects malformed bibcodes",
+    {
+        x <- c(
+            "1992ApJ...400L...1",
+            "1992.....400L...1W",
+            "catalog 1992ApJ...400L...1W",
+            "(1992ApJ...400L...1W)"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "bibcode"),
+            rep(NA_character_, length(x))
+        )
+    }
+)
+
+testthat::test_that(
     "normalize_openalex strips wrappers and uppercases canonical keys",
     {
         x <- c(

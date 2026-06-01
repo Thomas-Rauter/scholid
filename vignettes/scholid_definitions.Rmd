@@ -350,6 +350,58 @@ Structural regex:
 
 ---
 
+# ADS Bibcode
+
+**Authority:** SAO/NASA Astrophysics Data System (ADS)  
+**Documentation:** [ADS bibliographic codes](https://adsabs.harvard.edu/abs_doc/help_pages/data.html)
+
+## Structure
+
+An ADS bibcode is a fixed **19-character** identifier for bibliographic records
+in astronomy and related fields. The format follows SIMBAD/NED conventions:
+
+```
+YYYYJJJJJVVVVM PPPPA
+```
+
+Where:
+
+- `YYYY` — publication year (four digits)
+- `JJJJJ` — journal abbreviation, left-justified, padded with `.`
+- `VVVV` — volume, right-justified, padded with `.`
+- `M` — qualifier (e.g. `L` for letters)
+- `PPPP` — page, right-justified, padded with `.`
+- `A` — first letter of the first author's surname
+
+Example:
+
+```
+1992ApJ...400L...1W
+```
+
+Preferred resolver URLs include:
+
+```
+https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W
+```
+
+## Validation in scholid
+
+Bibcode validation is **structural only**. There is no checksum algorithm, and
+ADS existence is not checked.
+
+To limit false positives, `scholid` requires exactly 19 characters, a
+letter in the journal field, and a letter as the final author-initial
+character. Case is preserved in canonical form.
+
+## Structural Regex
+
+```
+^\d{4}[A-Za-z0-9.]{14}[A-Za-z]$
+```
+
+---
+
 # OpenAlex ID
 
 **Governing body:** OurResearch (OpenAlex)  

@@ -144,11 +144,47 @@ slash - Non-whitespace suffix</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="isni-international-standard-name-identifier">ISNI (International Standard Name Identifier)<a class="anchor" aria-label="anchor" href="#isni-international-standard-name-identifier"></a>
+</h2>
+<p><strong>Governing body:</strong> ISNI International Agency<br><strong>Standard:</strong> ISO 27729<br><strong>Documentation:</strong> <a href="https://isni.org/" class="external-link">ISNI</a></p>
+<div class="section level3">
+<h3 id="structure-1">Structure<a class="anchor" aria-label="anchor" href="#structure-1"></a>
+</h3>
+<p>An ISNI uniquely identifies public identities of contributors to
+media content. The identifier is 16 characters: 15 decimal digits plus a
+check character.</p>
+<p>Compact canonical form:</p>
+<pre><code>000000012146438X</code></pre>
+<p>Human-readable presentation uses an <code>ISNI</code> prefix and
+spaces in blocks of four:</p>
+<pre><code>ISNI 0000 0001 2146 438X</code></pre>
+<p>Preferred resolver URLs include:</p>
+<pre><code>https://isni.org/isni/000000012146438X</code></pre>
+<p>ORCID iDs use the same ISO/IEC 7064 MOD 11-2 checksum on 16
+characters but are canonicalized in <code>scholid</code> with hyphens.
+Compact checksum-valid 16-character strings are treated as ISNI;
+hyphenated strings are treated as ORCID.</p>
+</div>
+<div class="section level3">
+<h3 id="checksum">Checksum<a class="anchor" aria-label="anchor" href="#checksum"></a>
+</h3>
+<p>Uses ISO/IEC 7064 MOD 11-2, identical to ORCID. The check character
+may be <code>0</code>–<code>9</code> or <code>X</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="structural-regex-1">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-1"></a>
+</h3>
+<p>Compact canonical form:</p>
+<pre><code>^\d{15}[\dX]$</code></pre>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="orcid">ORCID<a class="anchor" aria-label="anchor" href="#orcid"></a>
 </h2>
 <p><strong>Governing body:</strong> ORCID, Inc.<br><strong>Standard basis:</strong> ISO 7064 (checksum algorithm)</p>
 <div class="section level3">
-<h3 id="structure-1">Structure<a class="anchor" aria-label="anchor" href="#structure-1"></a>
+<h3 id="structure-2">Structure<a class="anchor" aria-label="anchor" href="#structure-2"></a>
 </h3>
 <p>An ORCID iD consists of 16 characters:</p>
 <pre><code><span><span class="fl">0000</span><span class="op">-</span><span class="fl">0002</span><span class="op">-</span><span class="fl">1825</span><span class="op">-</span><span class="fl">0097</span></span></code></pre>
@@ -167,14 +203,14 @@ slash - Non-whitespace suffix</p>
 </div>
 </div>
 <div class="section level3">
-<h3 id="checksum">Checksum<a class="anchor" aria-label="anchor" href="#checksum"></a>
+<h3 id="checksum-1">Checksum<a class="anchor" aria-label="anchor" href="#checksum-1"></a>
 </h3>
 <p>Uses ISO 7064 Mod 11-2 algorithm.<br>
 A structurally correct ORCID may still be invalid if the checksum does
 not match.</p>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-1">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-1"></a>
+<h3 id="structural-regex-2">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-2"></a>
 </h3>
 <p>Hyphenated form:</p>
 <pre><code>^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$</code></pre>
@@ -189,7 +225,7 @@ not match.</p>
 <p><strong>Governing body:</strong> ROR Community<br><strong>Documentation:</strong> <a href="https://ror.readme.io/docs/identifier" class="external-link">ROR identifier
 pattern</a></p>
 <div class="section level3">
-<h3 id="structure-2">Structure<a class="anchor" aria-label="anchor" href="#structure-2"></a>
+<h3 id="structure-3">Structure<a class="anchor" aria-label="anchor" href="#structure-3"></a>
 </h3>
 <p>A ROR iD is a 9-character lowercase string:</p>
 <pre><code>0abcdef94</code></pre>
@@ -197,14 +233,14 @@ pattern</a></p>
 <pre><code>https://ror.org/01an7q238</code></pre>
 </div>
 <div class="section level3">
-<h3 id="checksum-1">Checksum<a class="anchor" aria-label="anchor" href="#checksum-1"></a>
+<h3 id="checksum-2">Checksum<a class="anchor" aria-label="anchor" href="#checksum-2"></a>
 </h3>
 <p>The last two characters are a checksum derived from the preceding
 seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 97-10 rules, matching ROR’s identifier generation implementation.</p>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-2">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-2"></a>
+<h3 id="structural-regex-3">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-3"></a>
 </h3>
 <p>Compact form:</p>
 <pre><code>^0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}$</code></pre>
@@ -217,7 +253,7 @@ seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 <p><strong>Governing body:</strong> Resource Identification Initiative
 (SciCrunch)<br><strong>Documentation:</strong> <a href="https://rrid.site/about/guidelines" class="external-link">RRID guidelines</a></p>
 <div class="section level3">
-<h3 id="structure-3">Structure<a class="anchor" aria-label="anchor" href="#structure-3"></a>
+<h3 id="structure-4">Structure<a class="anchor" aria-label="anchor" href="#structure-4"></a>
 </h3>
 <p>A RRID cites a research resource such as an antibody, cell line,
 model organism, software tool, or plasmid. The canonical form includes
@@ -246,7 +282,7 @@ IDs such as <code>AB_262044</code> without the <code>RRID:</code> prefix
 are rejected.</p>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-3">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-3"></a>
+<h3 id="structural-regex-4">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-4"></a>
 </h3>
 <p>Canonical form (authority body validated separately):</p>
 <pre><code>^RRID:.+$</code></pre>
@@ -285,7 +321,7 @@ are rejected.</p>
 </div>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-4">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-4"></a>
+<h3 id="structural-regex-5">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-5"></a>
 </h3>
 <p>ISBN-10:</p>
 <pre><code>^\d{9}[\dX]$</code></pre>
@@ -299,7 +335,7 @@ are rejected.</p>
 </h2>
 <p><strong>Governing body:</strong> ISSN International Centre<br><strong>Standard:</strong> ISO 3297</p>
 <div class="section level3">
-<h3 id="structure-4">Structure<a class="anchor" aria-label="anchor" href="#structure-4"></a>
+<h3 id="structure-5">Structure<a class="anchor" aria-label="anchor" href="#structure-5"></a>
 </h3>
 <p>An ISSN has 8 characters:</p>
 <pre><code>1234-567X</code></pre>
@@ -316,7 +352,7 @@ are rejected.</p>
 </div>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-5">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-5"></a>
+<h3 id="structural-regex-6">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-6"></a>
 </h3>
 <p>Hyphenated:</p>
 <pre><code>^\d{4}-\d{3}[\dX]$</code></pre>
@@ -358,12 +394,114 @@ are rejected.</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="ads-bibcode">ADS Bibcode<a class="anchor" aria-label="anchor" href="#ads-bibcode"></a>
+</h2>
+<p><strong>Authority:</strong> SAO/NASA Astrophysics Data System
+(ADS)<br><strong>Documentation:</strong> <a href="https://adsabs.harvard.edu/abs_doc/help_pages/data.html" class="external-link">ADS
+bibliographic codes</a></p>
+<div class="section level3">
+<h3 id="structure-6">Structure<a class="anchor" aria-label="anchor" href="#structure-6"></a>
+</h3>
+<p>An ADS bibcode is a fixed <strong>19-character</strong> identifier
+for bibliographic records in astronomy and related fields. The format
+follows SIMBAD/NED conventions:</p>
+<pre><code>YYYYJJJJJVVVVM PPPPA</code></pre>
+<p>Where:</p>
+<ul>
+<li>
+<code>YYYY</code> — publication year (four digits)</li>
+<li>
+<code>JJJJJ</code> — journal abbreviation, left-justified, padded
+with <code>.</code>
+</li>
+<li>
+<code>VVVV</code> — volume, right-justified, padded with
+<code>.</code>
+</li>
+<li>
+<code>M</code> — qualifier (e.g. <code>L</code> for letters)</li>
+<li>
+<code>PPPP</code> — page, right-justified, padded with
+<code>.</code>
+</li>
+<li>
+<code>A</code> — first letter of the first author’s surname</li>
+</ul>
+<p>Example:</p>
+<pre><code>1992ApJ...400L...1W</code></pre>
+<p>Preferred resolver URLs include:</p>
+<pre><code>https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W</code></pre>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid-1">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-1"></a>
+</h3>
+<p>Bibcode validation is <strong>structural only</strong>. There is no
+checksum algorithm, and ADS existence is not checked.</p>
+<p>To limit false positives, <code>scholid</code> requires exactly 19
+characters, a letter in the journal field, and a letter as the final
+author-initial character. Case is preserved in canonical form.</p>
+</div>
+<div class="section level3">
+<h3 id="structural-regex-7">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-7"></a>
+</h3>
+<pre><code>^\d{4}[A-Za-z0-9.]{14}[A-Za-z]$</code></pre>
+<hr>
+</div>
+</div>
+<div class="section level2">
+<h2 id="openalex-id">OpenAlex ID<a class="anchor" aria-label="anchor" href="#openalex-id"></a>
+</h2>
+<p><strong>Governing body:</strong> OurResearch (OpenAlex)<br><strong>Documentation:</strong> <a href="https://developers.openalex.org/guides/key-concepts" class="external-link">OpenAlex key
+concepts</a></p>
+<div class="section level3">
+<h3 id="structure-7">Structure<a class="anchor" aria-label="anchor" href="#structure-7"></a>
+</h3>
+<p>Every OpenAlex entity has a persistent ID. The official form is a
+URL:</p>
+<pre><code>https://openalex.org/W2741809807</code></pre>
+<p>The short key (<code>W2741809807</code>) is commonly used in API
+calls and tabular data. Keys are case-insensitive; <code>scholid</code>
+canonicalizes them to uppercase.</p>
+<p>A key consists of:</p>
+<ul>
+<li>a single letter prefix indicating entity type (<code>W</code>,
+<code>A</code>, <code>S</code>, <code>I</code>, <code>T</code>,
+<code>K</code>, <code>P</code>, <code>F</code>, or <code>G</code>)</li>
+<li>a numeric tail (at least five digits)</li>
+</ul>
+<p>Examples:</p>
+<pre><code><span><span class="va">W2741809807</span></span>
+<span><span class="va">A5023888391</span></span>
+<span><span class="va">I97018004</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid-2">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-2"></a>
+</h3>
+<p>OpenAlex validation is <strong>structural only</strong>. There is no
+checksum algorithm, and registry existence is not checked.</p>
+<p>Deprecated concept IDs (<code>C</code> prefix) are not accepted. Bare
+keys are accepted only when they match the structural pattern; wrapped
+URLs should be normalized with <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> before
+classification.</p>
+<p>Works, authors, and institutions in OpenAlex often also have DOI,
+ORCID, or ROR identifiers respectively; those types are checked earlier
+during classification.</p>
+</div>
+<div class="section level3">
+<h3 id="structural-regex-8">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-8"></a>
+</h3>
+<p>Canonical uppercase key:</p>
+<pre><code>^[WASTIKPFG][0-9]{5,}$</code></pre>
+<hr>
+</div>
+</div>
+<div class="section level2">
 <h2 id="swhid-software-hash-identifier">SWHID (SoftWare Hash IDentifier)<a class="anchor" aria-label="anchor" href="#swhid-software-hash-identifier"></a>
 </h2>
 <p><strong>Governing body:</strong> Software Heritage<br><strong>Standard:</strong> ISO/IEC 18670<br><strong>Documentation:</strong> <a href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html" class="external-link">SWHID
 specification</a></p>
 <div class="section level3">
-<h3 id="structure-5">Structure<a class="anchor" aria-label="anchor" href="#structure-5"></a>
+<h3 id="structure-8">Structure<a class="anchor" aria-label="anchor" href="#structure-8"></a>
 </h3>
 <p>A SWHID identifies a software artifact archived by Software Heritage.
 The core identifier has four colon-separated fields:</p>
@@ -387,7 +525,7 @@ identifier</li>
 <pre><code>https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-1">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-1"></a>
+<h3 id="validation-in-scholid-3">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-3"></a>
 </h3>
 <p>SWHID validation is <strong>structural only</strong>. The embedded
 hash is an intrinsic content identifier, but verifying that it matches
@@ -400,7 +538,7 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 <code>lines</code>) are validated conservatively when present.</p>
 </div>
 <div class="section level3">
-<h3 id="structural-regex-6">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-6"></a>
+<h3 id="structural-regex-9">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-9"></a>
 </h3>
 <p>Core form:</p>
 <pre><code>^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$</code></pre>
@@ -412,7 +550,7 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 </h2>
 <p><strong>Authority:</strong> U.S. National Library of Medicine</p>
 <div class="section level3">
-<h3 id="structure-6">Structure<a class="anchor" aria-label="anchor" href="#structure-6"></a>
+<h3 id="structure-9">Structure<a class="anchor" aria-label="anchor" href="#structure-9"></a>
 </h3>
 <ul>
 <li>Pure integer</li>
@@ -431,7 +569,7 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 </h2>
 <p><strong>Authority:</strong> PubMed Central</p>
 <div class="section level3">
-<h3 id="structure-7">Structure<a class="anchor" aria-label="anchor" href="#structure-7"></a>
+<h3 id="structure-10">Structure<a class="anchor" aria-label="anchor" href="#structure-10"></a>
 </h3>
 <pre><code><span><span class="va">PMC1234567</span></span></code></pre>
 <p>Components: - Literal prefix <code>PMC</code> - One or more

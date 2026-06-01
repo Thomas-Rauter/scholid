@@ -72,6 +72,49 @@ Non-whitespace suffix
 
 ------------------------------------------------------------------------
 
+## ISNI (International Standard Name Identifier)
+
+**Governing body:** ISNI International Agency  
+**Standard:** ISO 27729  
+**Documentation:** [ISNI](https://isni.org/)
+
+### Structure
+
+An ISNI uniquely identifies public identities of contributors to media
+content. The identifier is 16 characters: 15 decimal digits plus a check
+character.
+
+Compact canonical form:
+
+    000000012146438X
+
+Human-readable presentation uses an `ISNI` prefix and spaces in blocks
+of four:
+
+    ISNI 0000 0001 2146 438X
+
+Preferred resolver URLs include:
+
+    https://isni.org/isni/000000012146438X
+
+ORCID iDs use the same ISO/IEC 7064 MOD 11-2 checksum on 16 characters
+but are canonicalized in `scholid` with hyphens. Compact checksum-valid
+16-character strings are treated as ISNI; hyphenated strings are treated
+as ORCID.
+
+### Checksum
+
+Uses ISO/IEC 7064 MOD 11-2, identical to ORCID. The check character may
+be `0`–`9` or `X`.
+
+### Structural Regex
+
+Compact canonical form:
+
+    ^\d{15}[\dX]$
+
+------------------------------------------------------------------------
+
 ## ORCID
 
 **Governing body:** ORCID, Inc.  
@@ -290,6 +333,103 @@ Example:
 Structural regex:
 
     ^[a-z\-]+/\d{7}(v\d+)?$
+
+------------------------------------------------------------------------
+
+## ADS Bibcode
+
+**Authority:** SAO/NASA Astrophysics Data System (ADS)  
+**Documentation:** [ADS bibliographic
+codes](https://adsabs.harvard.edu/abs_doc/help_pages/data.html)
+
+### Structure
+
+An ADS bibcode is a fixed **19-character** identifier for bibliographic
+records in astronomy and related fields. The format follows SIMBAD/NED
+conventions:
+
+    YYYYJJJJJVVVVM PPPPA
+
+Where:
+
+- `YYYY` — publication year (four digits)
+- `JJJJJ` — journal abbreviation, left-justified, padded with `.`
+- `VVVV` — volume, right-justified, padded with `.`
+- `M` — qualifier (e.g. `L` for letters)
+- `PPPP` — page, right-justified, padded with `.`
+- `A` — first letter of the first author’s surname
+
+Example:
+
+    1992ApJ...400L...1W
+
+Preferred resolver URLs include:
+
+    https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W
+
+### Validation in scholid
+
+Bibcode validation is **structural only**. There is no checksum
+algorithm, and ADS existence is not checked.
+
+To limit false positives, `scholid` requires exactly 19 characters, a
+letter in the journal field, and a letter as the final author-initial
+character. Case is preserved in canonical form.
+
+### Structural Regex
+
+    ^\d{4}[A-Za-z0-9.]{14}[A-Za-z]$
+
+------------------------------------------------------------------------
+
+## OpenAlex ID
+
+**Governing body:** OurResearch (OpenAlex)  
+**Documentation:** [OpenAlex key
+concepts](https://developers.openalex.org/guides/key-concepts)
+
+### Structure
+
+Every OpenAlex entity has a persistent ID. The official form is a URL:
+
+    https://openalex.org/W2741809807
+
+The short key (`W2741809807`) is commonly used in API calls and tabular
+data. Keys are case-insensitive; `scholid` canonicalizes them to
+uppercase.
+
+A key consists of:
+
+- a single letter prefix indicating entity type (`W`, `A`, `S`, `I`,
+  `T`, `K`, `P`, `F`, or `G`)
+- a numeric tail (at least five digits)
+
+Examples:
+
+    W2741809807
+    A5023888391
+    I97018004
+
+### Validation in scholid
+
+OpenAlex validation is **structural only**. There is no checksum
+algorithm, and registry existence is not checked.
+
+Deprecated concept IDs (`C` prefix) are not accepted. Bare keys are
+accepted only when they match the structural pattern; wrapped URLs
+should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+Works, authors, and institutions in OpenAlex often also have DOI, ORCID,
+or ROR identifiers respectively; those types are checked earlier during
+classification.
+
+### Structural Regex
+
+Canonical uppercase key:
+
+    ^[WASTIKPFG][0-9]{5,}$
 
 ------------------------------------------------------------------------
 

@@ -17,8 +17,9 @@ A character vector of supported identifier type strings.
 
 ``` r
 scholid_types()
-#>  [1] "doi"   "arxiv" "swhid" "orcid" "ror"   "rrid"  "isbn"  "issn"  "pmcid"
-#> [10] "pmid" 
+#>  [1] "doi"      "arxiv"    "bibcode"  "openalex" "swhid"    "isni"    
+#>  [7] "orcid"    "ror"      "rrid"     "isbn"     "issn"     "pmcid"   
+#> [13] "pmid"    
 "orcid" %in% scholid_types()
 #> [1] TRUE
 ```

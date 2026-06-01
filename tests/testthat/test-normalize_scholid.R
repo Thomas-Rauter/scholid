@@ -340,6 +340,90 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_isni strips wrappers and preserves compact uppercase form",
+    {
+        x <- c(
+            "000000012146438X",
+            "https://isni.org/isni/000000012124423X",
+            "ISNI 0000 0001 2146 438X",
+            "urn:isni:000000012146438X",
+            "0000-0002-1825-0097",
+            "000000012146438A",
+            "not-an-isni",
+            NA
+        )
+
+        got <- normalize_isni(x)
+        exp <- c(
+            "000000012146438X",
+            "000000012124423X",
+            "000000012146438X",
+            "000000012146438X",
+            NA_character_,
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized ISNI outputs are valid ISNIs and classify as isni",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://isni.org/isni/000000012124423X",
+                "ISNI 0000 0001 2146 438X"
+            ),
+            "isni"
+        )
+
+        testthat::expect_true(all(is_isni(x)))
+        testthat::expect_true(all(is_scholid(x, "isni")))
+        testthat::expect_true(all(classify_scholid(x) == "isni"))
+    }
+)
+
+testthat::test_that(
+    "ISNI normalization accepts plausible labeled and URL input forms",
+    {
+        x <- c(
+            "000000012146438X",
+            "https://isni.org/isni/000000012124423X",
+            "ISNI 0000 0001 2146 438X"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "isni"),
+            c(
+                "000000012146438X",
+                "000000012124423X",
+                "000000012146438X"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "ISNI normalization rejects hyphenated ORCID form and invalid checksums",
+    {
+        x <- c(
+            "0000-0002-1825-0097",
+            "000000012146438A",
+            "catalog 000000012146438X",
+            "(000000012146438X)"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "isni"),
+            rep(NA_character_, length(x))
+        )
+    }
+)
+
+testthat::test_that(
     "normalize_openalex strips wrappers and uppercases canonical keys",
     {
         x <- c(

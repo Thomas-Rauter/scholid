@@ -112,6 +112,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical compact ISNIs",
+    {
+        x <- c(
+            "000000012146438X",
+            "000000012124423X",
+            "0000000080456315"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("isni", "isni", "isni")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical OpenAlex keys",
     {
         x <- c(
@@ -141,7 +159,8 @@ testthat::test_that("classify_scholid does not classify wrapped identifiers", {
         "PMCID: PMC12345",
         "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
         "https://openalex.org/W2741809807",
-        "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W"
+        "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+        "https://isni.org/isni/000000012146438X"
     )
 
     got <- classify_scholid(x)
@@ -219,6 +238,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid works for ISNIs after normalization",
+    {
+        x <- c(
+            "https://isni.org/isni/000000012124423X",
+            "ISNI 0000 0001 2146 438X"
+        )
+
+        x <- normalize_isni(x)
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("isni", "isni")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid works for bibcodes after normalization",
     {
         x <- c(
@@ -281,6 +318,23 @@ testthat::test_that(
         got <- classify_scholid(x)
 
         testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
+    "classify_scholid rejects hyphenated ORCID form and invalid ISNIs",
+    {
+        x <- c(
+            "0000-0002-1825-0097",
+            "000000012146438A",
+            "not-an-isni"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_equal(got[1], "orcid")
+        testthat::expect_true(is.na(got[2]))
+        testthat::expect_true(is.na(got[3]))
     }
 )
 

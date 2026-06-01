@@ -15,6 +15,7 @@ testthat::test_that(
               "bibcode",
               "openalex",
               "swhid",
+              "isni",
               "orcid",
               "ror",
               "rrid",

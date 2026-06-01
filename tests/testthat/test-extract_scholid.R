@@ -508,6 +508,65 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_isni finds ISNIs in text and URLs",
+    {
+        txt <- c(
+            "Contributor ISNI 0000 0001 2146 438X.",
+            "Profile https://isni.org/isni/000000012124423X",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "isni"
+        )
+
+        testthat::expect_true(any(got[[1]] == "000000012146438X"))
+        testthat::expect_true(any(got[[2]] == "000000012124423X"))
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_isni returns multiple matches from one string",
+    {
+        txt <- paste(
+            "names:",
+            "000000012146438X",
+            "and 000000012124423X"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "isni"
+        )[[1]]
+
+        testthat::expect_true(any(got == "000000012146438X"))
+        testthat::expect_true(any(got == "000000012124423X"))
+    }
+)
+
+testthat::test_that(
+    "extract_isni rejects hyphenated ORCID and invalid checksum candidates",
+    {
+        txt <- "see 0000-0002-1825-0097 and 000000012146438A for details"
+
+        got <- extract_scholid(
+            txt,
+            "isni"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
     "extract_openalex finds OpenAlex IDs in text and URLs",
     {
         txt <- c(
@@ -987,7 +1046,8 @@ testthat::test_that(
         "ISBN 0-306-40615-2",
         "ROR https://ror.org/01an7q238",
         "RRID:AB_262044",
-        "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "ISNI 0000 0001 2146 438X"
     )
 
     got_doi <- extract_scholid(txt, "doi")
@@ -1002,6 +1062,7 @@ testthat::test_that(
     got_ror <- extract_scholid(txt, "ror")
     got_rrid <- extract_scholid(txt, "rrid")
     got_swhid <- extract_scholid(txt, "swhid")
+    got_isni <- extract_scholid(txt, "isni")
 
     testthat::expect_true(length(got_doi[[1]]) >= 1L)
     testthat::expect_true(length(got_orc[[2]]) >= 1L)
@@ -1015,6 +1076,7 @@ testthat::test_that(
     testthat::expect_true(length(got_ror[[10]]) >= 1L)
     testthat::expect_true(length(got_rrid[[11]]) >= 1L)
     testthat::expect_true(length(got_swhid[[12]]) >= 1L)
+    testthat::expect_true(length(got_isni[[13]]) >= 1L)
     }
 )
 

@@ -69,6 +69,31 @@ extract_doi <- function(text) {
 }
 
 
+#' Extract ISNI identifiers from text
+#'
+#' @description
+#' Extracts International Standard Name Identifiers from free text, labels,
+#' or resolver URLs.
+#'
+#' Extracted ISNI candidates are cleaned to remove URL prefixes and trailing
+#' prose punctuation where necessary, and only checksum-valid compact ISNIs
+#' are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted ISNIs.
+#'
+#' @noRd
+extract_isni <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "isni",
+        clean_fn    = .clean_extracted_isni,
+        validate_fn = is_isni
+    )
+}
+
+
 #' Extract ORCID identifiers from text
 #'
 #' @description
@@ -474,6 +499,26 @@ extract_pmcid <- function(text) {
     )
     x <- sub("/+$", "", x)
     toupper(x)
+}
+
+
+.clean_extracted_isni <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub("^https?://isni\\.org/isni/", "", x, ignore.case = TRUE)
+    x <- sub("(?i)^urn:isni:", "", x, perl = TRUE)
+    x <- sub("(?i)^isni[[:space:]]*:?[[:space:]]*", "", x, perl = TRUE)
+    x <- sub(
+        "(?i)^https?://viaf\\.org/viaf/sourceID/ISNI(?:%7C|\\|)",
+        "",
+        x,
+        perl = TRUE
+    )
+    toupper(gsub("[-[:space:]]", "", x))
 }
 
 

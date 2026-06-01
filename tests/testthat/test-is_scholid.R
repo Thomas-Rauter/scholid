@@ -679,6 +679,109 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_isni accepts canonical compact checksum-valid ISNIs",
+    {
+        x <- c(
+            "000000012146438X",
+            "000000012124423X",
+            "0000000080456315"
+        )
+
+        testthat::expect_identical(
+            is_isni(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_isni rejects hyphenated ORCID form, bad checksums, and malformed values",
+    {
+        x <- c(
+            "000000012146438X",
+            "0000-0002-1825-0097",
+            "000000012146438A",
+            "00000001214643800",
+            "not-an-isni",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_isni(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_isni for type isni",
+    {
+        x <- c("000000012146438X", "0000-0002-1825-0097", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "isni"),
+            is_isni(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "ISNI normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "000000012146438X",
+            "https://isni.org/isni/000000012124423X",
+            "ISNI 0000 0001 2146 438X",
+            "urn:isni:000000012146438X"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "isni"),
+            c(
+                "000000012146438X",
+                "000000012124423X",
+                "000000012146438X",
+                "000000012146438X"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized ISNI outputs validate and classify as isni",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://isni.org/isni/000000012124423X",
+                "ISNI 0000 0001 2146 438X"
+            ),
+            "isni"
+        )
+
+        testthat::expect_true(all(is_isni(x)))
+        testthat::expect_true(all(is_scholid(x, "isni")))
+        testthat::expect_true(all(classify_scholid(x) == "isni"))
+    }
+)
+
+testthat::test_that(
+    "compact checksum-valid strings classify as isni and hyphenated strings as orcid",
+    {
+        x <- c(
+            "000000012146438X",
+            "0000-0002-1825-0097"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("isni", "orcid")
+        )
+    }
+)
+
+testthat::test_that(
     "is_openalex accepts canonical uppercase keys for known entity types",
     {
         x <- c(

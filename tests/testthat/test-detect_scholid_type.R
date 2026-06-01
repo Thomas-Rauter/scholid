@@ -221,6 +221,60 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical compact ISNIs",
+    {
+        x <- c(
+            "000000012146438X",
+            "000000012124423X",
+            "0000000080456315"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("isni", "isni", "isni")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped ISNIs",
+    {
+        x <- c(
+            "https://isni.org/isni/000000012124423X",
+            "ISNI 0000 0001 2146 438X",
+            "urn:isni:000000012146438X",
+            "000000012146438X"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("isni", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects hyphenated ORCID form and invalid ISNIs",
+    {
+        x <- c(
+            "0000-0002-1825-0097",
+            "000000012146438A",
+            "not-an-isni"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_equal(got[1], "orcid")
+        testthat::expect_true(is.na(got[2]))
+        testthat::expect_true(is.na(got[3]))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical OpenAlex keys",
     {
         x <- c(
@@ -418,7 +472,7 @@ testthat::test_that(
 
         testthat::expect_identical(
             detect_scholid_type(x),
-            c("orcid", "issn", "isbn", "pmid")
+            c("isni", "issn", "isbn", "pmid")
         )
     }
 )

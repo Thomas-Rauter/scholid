@@ -103,6 +103,23 @@
                 "(?![[:alnum:]_:])"
             )
         ),
+        isni = list(
+            order = 29L,
+            pat   = "^\\d{15}[0-9X]$",
+            extract_pat = paste0(
+                "(?i)(?<![[:alnum:]_])",
+                "(?:ISNI[[:space:]]*|",
+                "https?://isni\\.org/isni/|",
+                "urn:isni:|",
+                "https?://viaf\\.org/viaf/sourceID/ISNI%7C)?",
+                "(?:",
+                "(?:\\d{4}[[:space:]]?){3}\\d{3}[0-9X]",
+                "|",
+                "\\d{15}[0-9X]",
+                ")",
+                "(?![[:alnum:]_\\-])"
+            )
+        ),
         orcid = list(
             order       = 30L,
             extract_pat = "(\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"

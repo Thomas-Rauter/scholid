@@ -146,6 +146,57 @@ normalize_swhid <- function(x) {
 }
 
 
+#' Normalize ISNI identifiers
+#'
+#' @description
+#' Normalizes International Standard Name Identifiers from `isni.org` URLs,
+#' `ISNI`-prefixed spaced forms, or compact 16-character strings to canonical
+#' compact uppercase form. Hyphenated ORCID-style strings are rejected.
+#'
+#' Normalization requires checksum-valid identifiers.
+#'
+#' @param x A vector of ISNI values.
+#'
+#' @return A character vector of normalized ISNIs. Invalid, unsupported, or
+#'   checksum-failing inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_isni <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+    y <- sub("[.,;:!?]+$", "", y)
+
+    is_orcid_hyph <- grepl("^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx]$", y)
+    y[is_orcid_hyph] <- NA_character_
+
+    bare_pat <- .isni_pat()
+    has_marker <- grepl("isni\\.org/isni/", y, ignore.case = TRUE) |
+        grepl("(?i)^urn:isni:", y, perl = TRUE) |
+        grepl("(?i)^isni[[:space:]]", y, perl = TRUE) |
+        grepl("viaf\\.org/viaf/sourceID/ISNI", y, ignore.case = TRUE) |
+        grepl(paste0("(?i)", bare_pat), y, perl = TRUE) |
+        grepl("(?i)^(?:\\d{4}[[:space:]]?){3}\\d{3}[0-9X]$", y, perl = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub("^https?://isni\\.org/isni/", "", y, ignore.case = TRUE)
+    y <- sub("(?i)^urn:isni:", "", y, perl = TRUE)
+    y <- sub("(?i)^isni[[:space:]]*:?[[:space:]]*", "", y, perl = TRUE)
+    y <- sub(
+        "(?i)^https?://viaf\\.org/viaf/sourceID/ISNI(?:%7C|\\|)",
+        "",
+        y,
+        perl = TRUE
+    )
+    y <- toupper(gsub("[-[:space:]]", "", y))
+
+    y[!is.na(y) & !is_isni(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ORCID identifiers
 #'
 #' @description

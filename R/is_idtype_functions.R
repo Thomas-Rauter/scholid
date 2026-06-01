@@ -36,19 +36,36 @@ is_orcid <- function(x) {
     valid <- grepl(pat, y)
     res <- rep(FALSE, length(y))
 
-    chk <- function(id) {
-        d <- strsplit(gsub("-", "", id), "")[[1]]
-        s <- 0
-        for (i in seq_len(15)) {
-            s <- (s + as.integer(d[i])) * 2
-        }
-        r <- (12 - (s %% 11)) %% 11
-        cd <- if (r == 10) "X" else as.character(r)
-        cd == d[16]
-    }
-
-    res[valid] <- vapply(y[valid], chk, logical(1))
+    res[valid] <- vapply(
+        y[valid],
+        function(id) {
+            .iso7064_mod11_2_valid(gsub("-", "", id))
+        },
+        logical(1)
+    )
     init$out[init$ok] <- res
+    init$out
+}
+
+
+#' Check ISNI identifiers
+#'
+#' Tests whether values are valid International Standard Name Identifiers in
+#' canonical compact 16-character form, including ISO/IEC 7064 MOD 11-2
+#' checksum. Hyphenated ORCID-style strings are rejected.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_isni <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_isni_strict,
+        logical(1)
+    )
     init$out
 }
 
@@ -298,6 +315,88 @@ is_pmcid <- function(x) {
 
 
 # Level 2 functions (functions called by level 1 functions) definitions --------
+
+
+#' Validate a compact 16-character ISO/IEC 7064 MOD 11-2 identifier
+#'
+#' @description
+#' Internal helper shared by ORCID and ISNI validators. The input must be a
+#' 16-character string of digits with an optional `X` check character.
+#'
+#' @param compact A single compact 16-character identifier string.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.iso7064_mod11_2_valid <- function(compact) {
+    if (is.na(compact) || nchar(compact) != 16L) {
+        return(FALSE)
+    }
+
+    d <- strsplit(compact, "")[[1]]
+    if (!all(grepl("[0-9]", d[1:15]))) {
+        return(FALSE)
+    }
+
+    if (!grepl("^[0-9X]$", d[16])) {
+        return(FALSE)
+    }
+
+    s <- 0L
+    for (i in seq_len(15)) {
+        s <- (s + as.integer(d[i])) * 2L
+    }
+    r <- (12L - (s %% 11L)) %% 11L
+    cd <- if (r == 10L) {
+        "X"
+    } else {
+        as.character(r)
+    }
+
+    identical(cd, d[16])
+}
+
+
+#' Return the ISNI validation pattern from the registry
+#'
+#' @return A single regular expression pattern string.
+#'
+#' @noRd
+.isni_pat <- function() {
+    .scholid_registry()[["isni"]]$pat
+}
+
+
+#' Strict ISNI validator
+#'
+#' @description
+#' Validates canonical compact ISNIs (`000000012146438X`). Hyphenated
+#' ORCID-style strings and wrapped forms are rejected; use
+#' `normalize_isni()` first.
+#'
+#' @param x A single character string in canonical form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_isni_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- trimws(x)
+    if (grepl("[[:space:]-]", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    x <- toupper(x)
+    pat <- .isni_pat()
+    if (!grepl(pat, x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    .iso7064_mod11_2_valid(x)
+}
 
 
 #' Strip optional ISBN labels from identifier strings

@@ -85,6 +85,57 @@ This checks:
 
 ---
 
+# ISNI (International Standard Name Identifier)
+
+**Governing body:** ISNI International Agency  
+**Standard:** ISO 27729  
+**Documentation:** [ISNI](https://isni.org/)
+
+## Structure
+
+An ISNI uniquely identifies public identities of contributors to media
+content. The identifier is 16 characters: 15 decimal digits plus a check
+character.
+
+Compact canonical form:
+
+```
+000000012146438X
+```
+
+Human-readable presentation uses an `ISNI` prefix and spaces in blocks of
+four:
+
+```
+ISNI 0000 0001 2146 438X
+```
+
+Preferred resolver URLs include:
+
+```
+https://isni.org/isni/000000012146438X
+```
+
+ORCID iDs use the same ISO/IEC 7064 MOD 11-2 checksum on 16 characters but
+are canonicalized in `scholid` with hyphens. Compact checksum-valid
+16-character strings are treated as ISNI; hyphenated strings are treated
+as ORCID.
+
+## Checksum
+
+Uses ISO/IEC 7064 MOD 11-2, identical to ORCID. The check character may be
+`0`–`9` or `X`.
+
+## Structural Regex
+
+Compact canonical form:
+
+```
+^\d{15}[\dX]$
+```
+
+---
+
 # ORCID
 
 **Governing body:** ORCID, Inc.  

@@ -449,6 +449,82 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_openalex finds OpenAlex IDs in text and URLs",
+    {
+        txt <- c(
+            "Work https://openalex.org/W2741809807.",
+            "Author https://api.openalex.org/authors/A5023888391",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "openalex"
+        )
+
+        testthat::expect_true(any(got[[1]] == "W2741809807"))
+        testthat::expect_true(any(got[[2]] == "A5023888391"))
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_openalex returns multiple matches from one string",
+    {
+        txt <- paste(
+            "entities:",
+            "W2741809807",
+            "and A5023888391"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "openalex"
+        )[[1]]
+
+        testthat::expect_true(any(got == "W2741809807"))
+        testthat::expect_true(any(got == "A5023888391"))
+    }
+)
+
+testthat::test_that(
+    "extract_openalex rejects deprecated concept and invalid candidates",
+    {
+        txt <- "see https://openalex.org/C12345678 and W123 for details"
+
+        got <- extract_scholid(
+            txt,
+            "openalex"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_openalex does not extract unrelated letter-digit tokens",
+    {
+        txt <- "version v2741809807 was noted"
+
+        got <- extract_scholid(
+            txt,
+            "openalex"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
     "extract_isbn finds ISBN-10 and ISBN-13 with hyphens/spaces",
     {
         txt <- c(
@@ -844,6 +920,7 @@ testthat::test_that(
         "doi:10.1000/182",
         "ORCID 0000-0002-1825-0097",
         "arXiv:2101.00001v2",
+        "OpenAlex https://openalex.org/W2741809807",
         "PMCID: PMC12345",
         "PMID 1234567",
         "ISSN 2434-561X",
@@ -856,6 +933,7 @@ testthat::test_that(
     got_doi <- extract_scholid(txt, "doi")
     got_orc <- extract_scholid(txt, "orcid")
     got_arx <- extract_scholid(txt, "arxiv")
+    got_oa <- extract_scholid(txt, "openalex")
     got_pmc <- extract_scholid(txt, "pmcid")
     got_pmi <- extract_scholid(txt, "pmid")
     got_isn <- extract_scholid(txt, "issn")
@@ -867,13 +945,14 @@ testthat::test_that(
     testthat::expect_true(length(got_doi[[1]]) >= 1L)
     testthat::expect_true(length(got_orc[[2]]) >= 1L)
     testthat::expect_true(length(got_arx[[3]]) >= 1L)
-    testthat::expect_true(length(got_pmc[[4]]) >= 1L)
-    testthat::expect_true(length(got_pmi[[5]]) >= 1L)
-    testthat::expect_true(length(got_isn[[6]]) >= 1L)
-    testthat::expect_true(length(got_isb[[7]]) >= 1L)
-    testthat::expect_true(length(got_ror[[8]]) >= 1L)
-    testthat::expect_true(length(got_rrid[[9]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[10]]) >= 1L)
+    testthat::expect_true(length(got_oa[[4]]) >= 1L)
+    testthat::expect_true(length(got_pmc[[5]]) >= 1L)
+    testthat::expect_true(length(got_pmi[[6]]) >= 1L)
+    testthat::expect_true(length(got_isn[[7]]) >= 1L)
+    testthat::expect_true(length(got_isb[[8]]) >= 1L)
+    testthat::expect_true(length(got_ror[[9]]) >= 1L)
+    testthat::expect_true(length(got_rrid[[10]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[11]]) >= 1L)
     }
 )
 

@@ -350,6 +350,59 @@ Structural regex:
 
 ---
 
+# OpenAlex ID
+
+**Governing body:** OurResearch (OpenAlex)  
+**Documentation:** [OpenAlex key concepts](https://developers.openalex.org/guides/key-concepts)
+
+## Structure
+
+Every OpenAlex entity has a persistent ID. The official form is a URL:
+
+```
+https://openalex.org/W2741809807
+```
+
+The short key (`W2741809807`) is commonly used in API calls and tabular data.
+Keys are case-insensitive; `scholid` canonicalizes them to uppercase.
+
+A key consists of:
+
+- a single letter prefix indicating entity type (`W`, `A`, `S`, `I`, `T`,
+  `K`, `P`, `F`, or `G`)
+- a numeric tail (at least five digits)
+
+Examples:
+
+```
+W2741809807
+A5023888391
+I97018004
+```
+
+## Validation in scholid
+
+OpenAlex validation is **structural only**. There is no checksum algorithm,
+and registry existence is not checked.
+
+Deprecated concept IDs (`C` prefix) are not accepted. Bare keys are accepted
+only when they match the structural pattern; wrapped URLs should be normalized
+with `normalize_scholid()` before classification.
+
+Works, authors, and institutions in OpenAlex often also have DOI, ORCID, or
+ROR identifiers respectively; those types are checked earlier during
+classification.
+
+## Structural Regex
+
+Canonical uppercase key:
+
+```
+^[WASTIKPFG][0-9]{5,}$
+```
+
+---
+
 # SWHID (SoftWare Hash IDentifier)
 
 **Governing body:** Software Heritage  

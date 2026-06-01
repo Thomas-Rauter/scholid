@@ -61,6 +61,19 @@
                 "(?![[:alnum:]_\\-/])"
             )
         ),
+        openalex = list(
+            order = 22L,
+            pat   = "^[WASTIKPFG][0-9]{5,}$",
+            extract_pat = paste0(
+                "(?<![[:alnum:]_./-])",
+                "(?:https?://openalex\\.org/|",
+                "https?://api\\.openalex\\.org/",
+                "(?:works|authors|sources|institutions|topics|keywords|",
+                "publishers|funders|grants|concepts)/)?",
+                "[WASTIKPFG][0-9]{5,}",
+                "(?![[:alnum:]_])"
+            )
+        ),
         swhid = list(
             order = 25L,
             core_pat = "^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$",

@@ -200,6 +200,30 @@ extract_arxiv <- function(text) {
 }
 
 
+#' Extract OpenAlex identifiers from text
+#'
+#' @description
+#' Extracts OpenAlex IDs from free text or OpenAlex URLs.
+#'
+#' Extracted OpenAlex candidates are cleaned to remove URL prefixes and
+#' trailing prose punctuation where necessary, and only structurally valid
+#' identifiers are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted OpenAlex IDs.
+#'
+#' @noRd
+extract_openalex <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "openalex",
+        clean_fn    = .clean_extracted_openalex,
+        validate_fn = is_openalex
+    )
+}
+
+
 #' Extract SWHID identifiers from text
 #'
 #' @description
@@ -388,6 +412,29 @@ extract_pmcid <- function(text) {
 #' @return A cleaned ROR candidate string, or `""` if empty.
 #'
 #' @noRd
+.clean_extracted_openalex <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub("^https?://openalex\\.org/", "", x, ignore.case = TRUE)
+    x <- sub(
+        paste0(
+            "^https?://api\\.openalex\\.org/",
+            "(?:works|authors|sources|institutions|topics|keywords|",
+            "publishers|funders|grants|concepts)/"
+        ),
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub("/+$", "", x)
+    toupper(x)
+}
+
+
 .clean_extracted_ror <- function(x) {
     if (is.na(x) || !nzchar(x)) {
         return("")

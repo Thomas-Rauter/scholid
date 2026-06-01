@@ -30,6 +30,7 @@ testthat::test_that(
             .scholid_detect_primary_types(),
             c("doi",
               "arxiv",
+              "openalex",
               "swhid",
               "orcid",
               "ror",

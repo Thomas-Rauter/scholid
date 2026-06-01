@@ -254,6 +254,40 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_openalex strips wrappers and uppercases canonical keys",
+    {
+        x <- c(
+            "W2741809807",
+            "https://openalex.org/W2741809807",
+            "https://openalex.org/W2741809807/",
+            "https://api.openalex.org/works/W2741809807",
+            "https://api.openalex.org/authors/A5023888391",
+            "w2741809807",
+            "W123",
+            "C12345678",
+            "not-an-openalex-id",
+            NA
+        )
+
+        got <- normalize_openalex(x)
+        exp <- c(
+            "W2741809807",
+            "W2741809807",
+            "W2741809807",
+            "W2741809807",
+            "A5023888391",
+            "W2741809807",
+            NA_character_,
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
     "normalized RRID outputs are valid RRIDs and classify as rrid",
     {
         x <- normalize_scholid(
@@ -268,6 +302,24 @@ testthat::test_that(
         testthat::expect_true(all(is_rrid(x)))
         testthat::expect_true(all(is_scholid(x, "rrid")))
         testthat::expect_true(all(classify_scholid(x) == "rrid"))
+    }
+)
+
+testthat::test_that(
+    "normalized OpenAlex outputs are valid OpenAlex IDs and classify as openalex",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://openalex.org/W2741809807",
+                "https://api.openalex.org/institutions/I97018004",
+                "w2741809807"
+            ),
+            "openalex"
+        )
+
+        testthat::expect_true(all(is_openalex(x)))
+        testthat::expect_true(all(is_scholid(x, "openalex")))
+        testthat::expect_true(all(classify_scholid(x) == "openalex"))
     }
 )
 
@@ -328,6 +380,41 @@ testthat::test_that(
 
         testthat::expect_identical(
             normalize_scholid(x, "rrid"),
+            rep(NA_character_, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "OpenAlex normalization accepts plausible labeled and URL input forms",
+    {
+        x <- c(
+            "W2741809807",
+            "https://openalex.org/W2741809807",
+            "https://api.openalex.org/works/W2741809807",
+            "w2741809807"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "openalex"),
+            rep("W2741809807", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "OpenAlex normalization rejects short tails, deprecated prefixes, and unrelated strings",
+    {
+        x <- c(
+            "W123",
+            "C12345678",
+            "catalog W2741809807",
+            "(W2741809807)",
+            "W2741809807xyz"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "openalex"),
             rep(NA_character_, length(x))
         )
     }

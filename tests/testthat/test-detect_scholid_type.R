@@ -169,6 +169,58 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical OpenAlex keys",
+    {
+        x <- c(
+            "W2741809807",
+            "A5023888391",
+            "I97018004"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("openalex", "openalex", "openalex")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped OpenAlex IDs",
+    {
+        x <- c(
+            "https://openalex.org/W2741809807",
+            "https://api.openalex.org/works/W2741809807",
+            "https://api.openalex.org/authors/A5023888391",
+            "w2741809807"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("openalex", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects short tails and deprecated OpenAlex prefixes",
+    {
+        x <- c(
+            "W123",
+            "C12345678",
+            "not-an-openalex-id"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical RRIDs",
     {
         x <- c(

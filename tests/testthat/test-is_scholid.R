@@ -593,6 +593,99 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_openalex accepts canonical uppercase keys for known entity types",
+    {
+        x <- c(
+            "W2741809807",
+            "A5023888391",
+            "I97018004",
+            "S137773608",
+            "T154945302",
+            "F4320332160",
+            "G12345678",
+            "K12345678",
+            "P12345678"
+        )
+
+        testthat::expect_identical(
+            is_openalex(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_openalex rejects lowercase keys, short tails, and deprecated prefixes",
+    {
+        x <- c(
+            "W2741809807",
+            "w2741809807",
+            "W123",
+            "C12345678",
+            "X12345678",
+            "not-an-openalex-id",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_openalex(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_openalex for type openalex",
+    {
+        x <- c("W2741809807", "w2741809807", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "openalex"),
+            is_openalex(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "OpenAlex normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "W2741809807",
+            "https://openalex.org/W2741809807",
+            "https://api.openalex.org/works/W2741809807",
+            "w2741809807"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "openalex"),
+            rep("W2741809807", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized OpenAlex outputs validate and classify as openalex",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://openalex.org/W2741809807",
+                "https://api.openalex.org/authors/A5023888391",
+                "i97018004"
+            ),
+            "openalex"
+        )
+
+        testthat::expect_identical(
+            x,
+            c("W2741809807", "A5023888391", "I97018004")
+        )
+        testthat::expect_true(all(is_openalex(x)))
+        testthat::expect_true(all(is_scholid(x, "openalex")))
+        testthat::expect_true(all(classify_scholid(x) == "openalex"))
+    }
+)
+
+testthat::test_that(
     "is_isbn validates ISBN-10 and ISBN-13 checksums",
     {
         x <- c(

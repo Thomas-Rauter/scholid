@@ -93,6 +93,24 @@ testthat::test_that(
     }
 )
 
+testthat::test_that(
+    "classify_scholid classifies canonical OpenAlex keys",
+    {
+        x <- c(
+            "W2741809807",
+            "A5023888391",
+            "I97018004"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("openalex", "openalex", "openalex")
+        )
+    }
+)
+
 testthat::test_that("classify_scholid does not classify wrapped identifiers", {
     x <- c(
         "https://doi.org/10.1000/182",
@@ -103,7 +121,8 @@ testthat::test_that("classify_scholid does not classify wrapped identifiers", {
         "ISSN 0317-8471",
         "PMID: 12345",
         "PMCID: PMC12345",
-        "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+        "https://openalex.org/W2741809807"
     )
 
     got <- classify_scholid(x)
@@ -181,6 +200,25 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid works for OpenAlex IDs after normalization",
+    {
+        x <- c(
+            "https://openalex.org/W2741809807",
+            "https://api.openalex.org/authors/A5023888391",
+            "w2741809807"
+        )
+
+        x <- normalize_openalex(x)
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("openalex", "openalex", "openalex")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid rejects checksum-invalid ROR iDs",
     {
         x <- c(
@@ -201,6 +239,22 @@ testthat::test_that(
             "AB_262044",
             "RRID:UNKNOWN_123",
             "not-a-rrid"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
+    "classify_scholid rejects lowercase keys, short tails, and deprecated OpenAlex prefixes",
+    {
+        x <- c(
+            "w2741809807",
+            "W123",
+            "C12345678",
+            "not-an-openalex-id"
         )
 
         got <- classify_scholid(x)

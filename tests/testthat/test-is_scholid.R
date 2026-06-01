@@ -679,6 +679,92 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_ark accepts canonical ark:/NAAN/Name identifiers",
+    {
+        x <- c(
+            "ark:/12148/btv1b8449691v",
+            "ark:/13030/654xz321",
+            "ark:/12148/btv1b8449691v/f29"
+        )
+
+        testthat::expect_identical(
+            is_ark(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_ark rejects bare paths, short NAANs, and malformed values",
+    {
+        x <- c(
+            "ark:/12148/btv1b8449691v",
+            "12148/btv1b8449691v",
+            "ark:/1234/btv1b8449691v",
+            "ark:/12148/",
+            "not-an-ark",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_ark(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_ark for type ark",
+    {
+        x <- c("ark:/13030/654xz321", "12148/btv1b8449691v", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "ark"),
+            is_ark(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "ARK normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "ark:/12148/btv1b8449691v",
+            "https://n2t.net/ark:/12148/btv1b8449691v",
+            "ark:13030/654xz321",
+            "ark:/12148/btv1b8449691v/f29."
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "ark"),
+            c(
+                "ark:/12148/btv1b8449691v",
+                "ark:/12148/btv1b8449691v",
+                "ark:/13030/654xz321",
+                "ark:/12148/btv1b8449691v/f29"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized ARK outputs validate and classify as ark",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://n2t.net/ark:/13030/654xz321",
+                "ark:12148/btv1b8449691v"
+            ),
+            "ark"
+        )
+
+        testthat::expect_true(all(is_ark(x)))
+        testthat::expect_true(all(is_scholid(x, "ark")))
+        testthat::expect_true(all(classify_scholid(x) == "ark"))
+    }
+)
+
+testthat::test_that(
     "is_isni accepts canonical compact checksum-valid ISNIs",
     {
         x <- c(

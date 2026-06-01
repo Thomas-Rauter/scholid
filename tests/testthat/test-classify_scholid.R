@@ -112,6 +112,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical ARKs",
+    {
+        x <- c(
+            "ark:/12148/btv1b8449691v",
+            "ark:/13030/654xz321",
+            "ark:/12148/btv1b8449691v/f29"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("ark", "ark", "ark")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical compact ISNIs",
     {
         x <- c(
@@ -160,7 +178,8 @@ testthat::test_that("classify_scholid does not classify wrapped identifiers", {
         "https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
         "https://openalex.org/W2741809807",
         "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
-        "https://isni.org/isni/000000012146438X"
+        "https://isni.org/isni/000000012146438X",
+        "https://n2t.net/ark:/12148/btv1b8449691v"
     )
 
     got <- classify_scholid(x)
@@ -233,6 +252,24 @@ testthat::test_that(
         testthat::expect_identical(
             got,
             c("swhid", "swhid")
+        )
+    }
+)
+
+testthat::test_that(
+    "classify_scholid works for ARKs after normalization",
+    {
+        x <- c(
+            "https://n2t.net/ark:/12148/btv1b8449691v",
+            "ark:13030/654xz321"
+        )
+
+        x <- normalize_ark(x)
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("ark", "ark")
         )
     }
 )
@@ -313,6 +350,21 @@ testthat::test_that(
             "AB_262044",
             "RRID:UNKNOWN_123",
             "not-a-rrid"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
+    "classify_scholid rejects bare paths and malformed ARKs",
+    {
+        x <- c(
+            "12148/btv1b8449691v",
+            "ark:/1234/btv1b8449691v",
+            "not-an-ark"
         )
 
         got <- classify_scholid(x)

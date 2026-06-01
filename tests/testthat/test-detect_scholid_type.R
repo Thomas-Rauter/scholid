@@ -221,6 +221,57 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical ARKs",
+    {
+        x <- c(
+            "ark:/12148/btv1b8449691v",
+            "ark:/13030/654xz321",
+            "ark:/12148/btv1b8449691v/f29"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("ark", "ark", "ark")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped ARKs",
+    {
+        x <- c(
+            "https://n2t.net/ark:/12148/btv1b8449691v",
+            "ark:13030/654xz321",
+            "ark:/12148/btv1b8449691v"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("ark", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects bare paths and malformed ARKs",
+    {
+        x <- c(
+            "12148/btv1b8449691v",
+            "ark:/1234/btv1b8449691v",
+            "not-an-ark"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical compact ISNIs",
     {
         x <- c(

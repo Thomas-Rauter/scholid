@@ -506,6 +506,60 @@ Canonical uppercase key:
 
 ---
 
+# ARK (Archival Resource Key)
+
+**Governing body:** ARK Alliance  
+**Documentation:** [ARK specification](https://arks.org/)
+
+## Structure
+
+An ARK is a persistent identifier for digital, physical, or abstract objects.
+The core identifier has the form:
+
+```
+ark:/NAAN/Name[Qualifier]
+```
+
+Where:
+
+- `NAAN` — Name Assigning Authority Number (in `scholid`, five digits)
+- `Name` — opaque name assigned by the authority
+- `Qualifier` — optional hierarchical (`/`) or variant (`.`) suffix
+
+Examples:
+
+```
+ark:/12148/btv1b8449691v/f29
+ark:/13030/654xz321
+```
+
+Resolver URLs often embed the ARK after the host, for example:
+
+```
+https://n2t.net/ark:/12148/btv1b8449691v
+```
+
+The labels `ark:` and `ark:/` are equivalent; `scholid` canonicalizes to
+`ark:/`.
+
+## Validation in scholid
+
+ARK validation is **structural only**. Resolver existence is not checked.
+
+To limit false positives, `scholid` requires an explicit `ark:` label, a
+five-digit NAAN, and a non-empty name body. Bare paths without the `ark:`
+prefix are rejected.
+
+## Structural Regex
+
+Canonical form:
+
+```
+^ark:/[0-9]{5}/[0-9A-Za-z][0-9A-Za-z._/=-]*$
+```
+
+---
+
 # SWHID (SoftWare Hash IDentifier)
 
 **Governing body:** Software Heritage  

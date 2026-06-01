@@ -508,6 +508,65 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_ark finds ARKs in text and URLs",
+    {
+        txt <- c(
+            "Object ark:/12148/btv1b8449691v/f29.",
+            "Link https://n2t.net/ark:/13030/654xz321",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "ark"
+        )
+
+        testthat::expect_true(any(got[[1]] == "ark:/12148/btv1b8449691v/f29"))
+        testthat::expect_true(any(got[[2]] == "ark:/13030/654xz321"))
+        testthat::expect_identical(
+            got[[3]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_ark returns multiple matches from one string",
+    {
+        txt <- paste(
+            "objects:",
+            "ark:/12148/btv1b8449691v",
+            "and ark:/13030/654xz321"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "ark"
+        )[[1]]
+
+        testthat::expect_true(any(got == "ark:/12148/btv1b8449691v"))
+        testthat::expect_true(any(got == "ark:/13030/654xz321"))
+    }
+)
+
+testthat::test_that(
+    "extract_ark rejects bare paths and short NAAN candidates",
+    {
+        txt <- "see 12148/btv1b8449691v and ark:/1234/btv1b8449691v for details"
+
+        got <- extract_scholid(
+            txt,
+            "ark"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
     "extract_isni finds ISNIs in text and URLs",
     {
         txt <- c(
@@ -1040,6 +1099,7 @@ testthat::test_that(
         "arXiv:2101.00001v2",
         "ADS 1992ApJ...400L...1W",
         "OpenAlex https://openalex.org/W2741809807",
+        "ark:/12148/btv1b8449691v",
         "PMCID: PMC12345",
         "PMID 1234567",
         "ISSN 2434-561X",
@@ -1055,6 +1115,7 @@ testthat::test_that(
     got_arx <- extract_scholid(txt, "arxiv")
     got_bib <- extract_scholid(txt, "bibcode")
     got_oa <- extract_scholid(txt, "openalex")
+    got_ark <- extract_scholid(txt, "ark")
     got_pmc <- extract_scholid(txt, "pmcid")
     got_pmi <- extract_scholid(txt, "pmid")
     got_isn <- extract_scholid(txt, "issn")
@@ -1069,14 +1130,15 @@ testthat::test_that(
     testthat::expect_true(length(got_arx[[3]]) >= 1L)
     testthat::expect_true(length(got_bib[[4]]) >= 1L)
     testthat::expect_true(length(got_oa[[5]]) >= 1L)
-    testthat::expect_true(length(got_pmc[[6]]) >= 1L)
-    testthat::expect_true(length(got_pmi[[7]]) >= 1L)
-    testthat::expect_true(length(got_isn[[8]]) >= 1L)
-    testthat::expect_true(length(got_isb[[9]]) >= 1L)
-    testthat::expect_true(length(got_ror[[10]]) >= 1L)
-    testthat::expect_true(length(got_rrid[[11]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[12]]) >= 1L)
-    testthat::expect_true(length(got_isni[[13]]) >= 1L)
+    testthat::expect_true(length(got_ark[[6]]) >= 1L)
+    testthat::expect_true(length(got_pmc[[7]]) >= 1L)
+    testthat::expect_true(length(got_pmi[[8]]) >= 1L)
+    testthat::expect_true(length(got_isn[[9]]) >= 1L)
+    testthat::expect_true(length(got_isb[[10]]) >= 1L)
+    testthat::expect_true(length(got_ror[[11]]) >= 1L)
+    testthat::expect_true(length(got_rrid[[12]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[13]]) >= 1L)
+    testthat::expect_true(length(got_isni[[14]]) >= 1L)
     }
 )
 

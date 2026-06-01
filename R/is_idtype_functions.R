@@ -165,6 +165,27 @@ is_arxiv <- function(x) {
 }
 
 
+#' Check ARK identifiers
+#'
+#' Tests whether values are valid Archival Resource Keys in canonical `ark:/`
+#' form. Validation is structural only; resolver existence is not checked.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_ark <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_ark_strict,
+        logical(1)
+    )
+    init$out
+}
+
+
 #' Check ADS bibcodes
 #'
 #' Tests whether values are valid SAO/NASA ADS bibliographic codes in canonical
@@ -460,6 +481,42 @@ is_pmcid <- function(x) {
 }
 
 
+#' Return the ARK validation pattern from the registry
+#'
+#' @return A single regular expression pattern string.
+#'
+#' @noRd
+.ark_pat <- function() {
+    .scholid_registry()[["ark"]]$pat
+}
+
+
+#' Canonicalize an ARK string to ark:/NAAN/Name form
+#'
+#' @param x A single ARK candidate string.
+#'
+#' @return A canonical ARK string, or `NA_character_` if no ARK label is present.
+#'
+#' @noRd
+.canonicalize_ark <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(NA_character_)
+    }
+
+    x <- trimws(x)
+    pos <- regexpr("(?i)ark:", x, perl = TRUE)[1]
+    if (pos < 1L) {
+        return(NA_character_)
+    }
+
+    x <- substr(x, pos, nchar(x))
+    x <- sub("(?i)^ark:/*", "ark:/", x, perl = TRUE)
+    x <- sub("[.,;:!?]+$", "", x)
+    x <- sub("[?#].*$", "", x)
+    x
+}
+
+
 #' Return the bibcode validation pattern from the registry
 #'
 #' @return A single regular expression pattern string.
@@ -467,6 +524,41 @@ is_pmcid <- function(x) {
 #' @noRd
 .bibcode_pat <- function() {
     .scholid_registry()[["bibcode"]]$pat
+}
+
+
+#' Strict ARK validator
+#'
+#' @description
+#' Validates canonical `ark:/NAAN/Name` identifiers. Wrapped URLs and bare
+#' paths without the `ark:` label are rejected; use `normalize_ark()` first.
+#'
+#' @param x A single character string in canonical form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_ark_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- trimws(x)
+    if (grepl("^https?://", x, ignore.case = TRUE)) {
+        return(FALSE)
+    }
+
+    if (!grepl("(?i)^ark:", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    x <- .canonicalize_ark(x)
+    if (is.na(x) || grepl("[[:space:]]", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    pat <- .ark_pat()
+    grepl(pat, x, perl = TRUE)
 }
 
 

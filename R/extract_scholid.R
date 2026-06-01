@@ -69,6 +69,30 @@ extract_doi <- function(text) {
 }
 
 
+#' Extract ARK identifiers from text
+#'
+#' @description
+#' Extracts Archival Resource Keys from free text or resolver URLs.
+#'
+#' Extracted ARK candidates are cleaned to remove URL prefixes and trailing
+#' prose punctuation where necessary, and only structurally valid ARKs are
+#' returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted ARKs.
+#'
+#' @noRd
+extract_ark <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "ark",
+        clean_fn    = .clean_extracted_ark,
+        validate_fn = is_ark
+    )
+}
+
+
 #' Extract ISNI identifiers from text
 #'
 #' @description
@@ -499,6 +523,21 @@ extract_pmcid <- function(text) {
     )
     x <- sub("/+$", "", x)
     toupper(x)
+}
+
+
+.clean_extracted_ark <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
+    val <- .canonicalize_ark(trimws(x))
+    if (is.na(val)) {
+        ""
+    } else {
+        val
+    }
 }
 
 

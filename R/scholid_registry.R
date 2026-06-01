@@ -103,6 +103,18 @@
                 "(?![[:alnum:]_:])"
             )
         ),
+        ark = list(
+            order = 27L,
+            pat   = "^ark:/[0-9]{5}/[0-9A-Za-z][0-9A-Za-z._/=-]*$",
+            extract_pat = paste0(
+                "(?i)(?<![[:alnum:]_])",
+                "(?:https?://[^[:space:]<>\")']+/)?",
+                "ark:/*",
+                "[0-9]{5}/",
+                "[0-9A-Za-z][0-9A-Za-z._/=-]*",
+                "(?![[:alnum:]_:=/])"
+            )
+        ),
         isni = list(
             order = 29L,
             pat   = "^\\d{15}[0-9X]$",

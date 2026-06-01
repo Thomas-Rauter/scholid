@@ -33,6 +33,7 @@ testthat::test_that(
               "bibcode",
               "openalex",
               "swhid",
+              "ark",
               "isni",
               "orcid",
               "ror",

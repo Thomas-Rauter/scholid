@@ -146,6 +146,47 @@ normalize_swhid <- function(x) {
 }
 
 
+#' Normalize ARK identifiers
+#'
+#' @description
+#' Normalizes Archival Resource Keys from resolver URLs or `ark:`-prefixed
+#' strings to canonical `ark:/NAAN/Name` form. Inputs must include an explicit
+#' `ark:` label; bare paths without the label are rejected.
+#'
+#' Normalization requires structurally valid identifiers. Resolver existence
+#' is not checked.
+#'
+#' @param x A vector of ARK values.
+#'
+#' @return A character vector of normalized ARKs. Invalid or unsupported
+#'   inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_ark <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+
+    has_marker <- grepl("(?i)ark:", y, perl = TRUE)
+    y[!has_marker] <- NA_character_
+
+    y <- vapply(y, function(val) {
+        if (is.na(val) || !nzchar(val)) {
+            return(NA_character_)
+        }
+
+        val <- .canonicalize_ark(val)
+        if (is_ark(val)) {
+            val
+        } else {
+            NA_character_
+        }
+    }, character(1))
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ISNI identifiers
 #'
 #' @description

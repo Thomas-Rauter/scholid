@@ -340,6 +340,90 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_ark strips wrappers and canonicalizes to ark:/ form",
+    {
+        x <- c(
+            "ark:/12148/btv1b8449691v",
+            "https://n2t.net/ark:/12148/btv1b8449691v",
+            "ark:13030/654xz321",
+            "ark:/12148/btv1b8449691v/f29.",
+            "12148/btv1b8449691v",
+            "ark:/1234/btv1b8449691v",
+            "not-an-ark",
+            NA
+        )
+
+        got <- normalize_ark(x)
+        exp <- c(
+            "ark:/12148/btv1b8449691v",
+            "ark:/12148/btv1b8449691v",
+            "ark:/13030/654xz321",
+            "ark:/12148/btv1b8449691v/f29",
+            NA_character_,
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized ARK outputs are valid ARKs and classify as ark",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://n2t.net/ark:/13030/654xz321",
+                "ark:12148/btv1b8449691v"
+            ),
+            "ark"
+        )
+
+        testthat::expect_true(all(is_ark(x)))
+        testthat::expect_true(all(is_scholid(x, "ark")))
+        testthat::expect_true(all(classify_scholid(x) == "ark"))
+    }
+)
+
+testthat::test_that(
+    "ARK normalization accepts plausible labeled and URL input forms",
+    {
+        x <- c(
+            "ark:/12148/btv1b8449691v",
+            "https://n2t.net/ark:/12148/btv1b8449691v",
+            "ark:13030/654xz321"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "ark"),
+            c(
+                "ark:/12148/btv1b8449691v",
+                "ark:/12148/btv1b8449691v",
+                "ark:/13030/654xz321"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "ARK normalization rejects bare paths and malformed ARKs",
+    {
+        x <- c(
+            "12148/btv1b8449691v",
+            "ark:/1234/btv1b8449691v",
+            "ark:/12148/",
+            "not-an-ark"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "ark"),
+            rep(NA_character_, length(x))
+        )
+    }
+)
+
+testthat::test_that(
     "normalize_isni strips wrappers and preserves compact uppercase form",
     {
         x <- c(

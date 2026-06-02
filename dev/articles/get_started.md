@@ -40,9 +40,10 @@ implementations such as `is_doi()`, `normalize_orcid()`, and
 scholid::scholid_types()
 ```
 
-    ##  [1] "doi"      "arxiv"    "bibcode"  "openalex" "swhid"    "ark"     
-    ##  [7] "isni"     "orcid"    "ror"      "rrid"     "uniprot"  "refseq"  
-    ## [13] "sra"      "isbn"     "issn"     "pmcid"    "pmid"
+    ##  [1] "doi"        "arxiv"      "bibcode"    "openalex"   "swhid"     
+    ##  [6] "ark"        "isni"       "orcid"      "ror"        "rrid"      
+    ## [11] "uniprot"    "refseq"     "sra"        "geo"        "bioproject"
+    ## [16] "assembly"   "isbn"       "issn"       "pmcid"      "pmid"
 
 ## Detect: `is_scholid()`
 

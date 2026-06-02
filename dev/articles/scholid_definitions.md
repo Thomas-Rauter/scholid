@@ -353,6 +353,130 @@ before classification.
 
 ------------------------------------------------------------------------
 
+## GEO (Gene Expression Omnibus accession)
+
+**Governing body:** NCBI GEO  
+**Documentation:** [GEO programmatic
+access](https://www.ncbi.nlm.nih.gov/geo/info/geo_paccess.html)
+
+### Structure
+
+A GEO accession identifies a curated dataset, series, sample, or
+platform record. The format is a three-letter entity prefix followed by
+digits.
+
+Examples:
+
+    GSE2553
+    GSM313800
+    GPL96
+    GDS505
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553
+    https://identifiers.org/geo/GSE2553
+
+### Validation in scholid
+
+GEO validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession. Supported entity prefixes are
+`GSE` (series), `GSM` (sample), `GPL` (platform), and `GDS` (dataset).
+Wrapped URLs and lowercase accessions should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^(?:GSE|GSM|GPL|GDS)[0-9]{2,}$
+
+------------------------------------------------------------------------
+
+## BioProject (INSDC BioProject accession)
+
+**Governing body:** INSDC BioProject (NCBI, EBI, DDBJ)  
+**Documentation:** [BioProject
+handbook](https://www.ncbi.nlm.nih.gov/books/NBK169438/)
+
+### Structure
+
+A BioProject accession identifies a research project that groups related
+sequence and sample records. The format is a five-letter INSDC prefix
+followed by digits.
+
+Examples:
+
+    PRJNA257197
+    PRJEB12345
+    PRJDB303
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197
+    https://identifiers.org/bioproject/PRJNA257197
+
+### Validation in scholid
+
+BioProject validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession. Known prefixes (`PRJNA`,
+`PRJEB`, `PRJDB`, `PRJDA`, `PRJEA`) are allowlisted. Wrapped URLs and
+lowercase accessions should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^(?:PRJNA|PRJEB|PRJDB|PRJDA|PRJEA)[0-9]{2,}$
+
+------------------------------------------------------------------------
+
+## Genome assembly (INSDC GCA/GCF accession)
+
+**Governing body:** INSDC / NCBI Assembly  
+**Documentation:** [Genome assembly
+accessions](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/data-processing/policies-annotation/genome-processing/version-status/)
+
+### Structure
+
+A genome assembly accession identifies a collection of sequences
+comprising an assembled genome. GenBank assemblies use the `GCA_`
+prefix; NCBI RefSeq assembly counterparts use `GCF_`. The accession body
+is nine digits followed by a version number.
+
+Examples:
+
+    GCF_000001405.40
+    GCA_000001405.29
+    GCA_009914755.4
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40
+    https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/
+    https://identifiers.org/insdc.gcf:GCF_000001405.40
+
+### Validation in scholid
+
+Assembly validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession with version suffix. Only
+`GCA_` and `GCF_` prefixes are accepted, with exactly nine digits in the
+accession body. Wrapped URLs and lowercase accessions should be
+normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^GC[AF]_[0-9]{9}\.[0-9]+$
+
+------------------------------------------------------------------------
+
 ## ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  

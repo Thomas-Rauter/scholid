@@ -306,6 +306,50 @@ with `normalize_scholid()` before classification.
 
 ---
 
+# RefSeq (NCBI Reference Sequence accession)
+
+**Governing body:** NCBI RefSeq  
+**Documentation:** [RefSeq accession format](https://www.ncbi.nlm.nih.gov/refseq/key/#accessions)
+
+## Structure
+
+A RefSeq accession uniquely identifies a curated sequence record. The format
+is a two-letter molecule-type prefix, an underscore, an alphanumeric accession
+body, a period, and a version number.
+
+Examples:
+
+```
+NM_001744.6
+NP_001735.1
+NC_003619.1
+NZ_CASIGT010000001.1
+```
+
+Preferred resolver URLs include:
+
+```
+https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6
+https://www.ncbi.nlm.nih.gov/protein/NP_001735.1
+https://identifiers.org/refseq/NM_001744.6
+```
+
+## Validation in scholid
+
+RefSeq validation is **structural only**. Registry existence is not checked.
+
+Canonical form is the uppercase accession with version suffix. Known RefSeq
+prefixes are allowlisted. Wrapped URLs and lowercase accessions should be
+normalized with `normalize_scholid()` before classification.
+
+## Structural Regex
+
+```
+^(?:AC|AP|NC|NG|NM|NP|NR|NT|NW|NZ|XM|XP|XR|YP|WP)_[A-Z0-9]+\.[0-9]+$
+```
+
+---
+
 # ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  

@@ -334,6 +334,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical RefSeq accessions",
+    {
+        x <- c(
+            "NM_001744.6",
+            "NP_001735.1",
+            "NC_003619.1"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("refseq", "refseq", "refseq")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped RefSeq accessions",
+    {
+        x <- c(
+            "https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
+            "refseq:NP_001735.1",
+            "https://identifiers.org/refseq/NC_003619.1"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("refseq", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects lowercase bare RefSeq accessions via normalization",
+    {
+        x <- "nm_001744.6"
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            "refseq"
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects malformed RefSeq candidates",
+    {
+        x <- c(
+            "NM_001744",
+            "not-refseq"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical compact ISNIs",
     {
         x <- c(

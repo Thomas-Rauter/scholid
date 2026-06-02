@@ -859,6 +859,102 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_refseq accepts canonical uppercase RefSeq accessions with version",
+    {
+        x <- c(
+            "NM_001744.6",
+            "NP_001735.1",
+            "NC_003619.1",
+            "NZ_CASIGT010000001.1"
+        )
+
+        testthat::expect_identical(
+            is_refseq(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_refseq rejects URLs, lowercase, missing version, and RRID-like strings",
+    {
+        x <- c(
+            "NM_001744.6",
+            "https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
+            "nm_001744.6",
+            "NM_001744",
+            "RRID:AB_262044",
+            "not-refseq",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_refseq(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_refseq for type refseq",
+    {
+        x <- c("NM_001744.6", "nm_001744.6", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "refseq"),
+            is_refseq(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "RefSeq normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "NM_001744.6",
+            "https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
+            "https://www.ncbi.nlm.nih.gov/protein/NP_001735.1",
+            "https://identifiers.org/refseq/NC_003619.1",
+            "refseq:NM_021964.7",
+            "nm_001744.6",
+            "NM_001744",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "refseq"),
+            c(
+                "NM_001744.6",
+                "NM_001744.6",
+                "NP_001735.1",
+                "NC_003619.1",
+                "NM_021964.7",
+                "NM_001744.6",
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized RefSeq outputs validate and classify as refseq",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
+                "refseq:NP_001735.1"
+            ),
+            "refseq"
+        )
+
+        testthat::expect_true(all(is_refseq(x)))
+        testthat::expect_true(all(is_scholid(x, "refseq")))
+        testthat::expect_true(all(classify_scholid(x) == "refseq"))
+    }
+)
+
+testthat::test_that(
     "is_isni accepts canonical compact checksum-valid ISNIs",
     {
         x <- c(

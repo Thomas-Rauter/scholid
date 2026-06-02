@@ -612,6 +612,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_refseq finds accessions in text and URLs",
+    {
+        txt <- c(
+            "Transcript NM_001744.6 and protein NP_001735.1.",
+            "Link https://www.ncbi.nlm.nih.gov/nuccore/NC_003619.1",
+            "refseq:NM_021964.7",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "refseq"
+        )
+
+        testthat::expect_true(any(got[[1]] == "NM_001744.6"))
+        testthat::expect_true(any(got[[1]] == "NP_001735.1"))
+        testthat::expect_true(any(got[[2]] == "NC_003619.1"))
+        testthat::expect_true(any(got[[3]] == "NM_021964.7"))
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_refseq returns multiple matches from one string",
+    {
+        txt <- paste(
+            "records:",
+            "NM_001744.6",
+            "and https://identifiers.org/refseq/NP_001735.1"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "refseq"
+        )[[1]]
+
+        testthat::expect_true(any(got == "NM_001744.6"))
+        testthat::expect_true(any(got == "NP_001735.1"))
+    }
+)
+
+testthat::test_that(
+    "extract_refseq normalizes lowercase tokens and rejects invalid candidates",
+    {
+        txt <- "see nm_001744.6, NM_001744, and RRID:AB_262044 for details"
+
+        got <- extract_scholid(
+            txt,
+            "refseq"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            "NM_001744.6"
+        )
+    }
+)
+
+testthat::test_that(
     "extract_ark rejects bare paths and short NAAN candidates",
     {
         txt <- "see 12148/btv1b8449691v and ark:/1234/btv1b8449691v for details"
@@ -1169,6 +1231,7 @@ testthat::test_that(
         "ROR https://ror.org/01an7q238",
         "RRID:AB_262044",
         "UniProt https://www.uniprot.org/uniprot/P12345",
+        "RefSeq https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
         "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
         "ISNI 0000 0001 2146 438X"
     )
@@ -1186,6 +1249,7 @@ testthat::test_that(
     got_ror <- extract_scholid(txt, "ror")
     got_rrid <- extract_scholid(txt, "rrid")
     got_uniprot <- extract_scholid(txt, "uniprot")
+    got_refseq <- extract_scholid(txt, "refseq")
     got_swhid <- extract_scholid(txt, "swhid")
     got_isni <- extract_scholid(txt, "isni")
 
@@ -1202,8 +1266,9 @@ testthat::test_that(
     testthat::expect_true(length(got_ror[[11]]) >= 1L)
     testthat::expect_true(length(got_rrid[[12]]) >= 1L)
     testthat::expect_true(length(got_uniprot[[13]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[14]]) >= 1L)
-    testthat::expect_true(length(got_isni[[15]]) >= 1L)
+    testthat::expect_true(length(got_refseq[[14]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[15]]) >= 1L)
+    testthat::expect_true(length(got_isni[[16]]) >= 1L)
     }
 )
 

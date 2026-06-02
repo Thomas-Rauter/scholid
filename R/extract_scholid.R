@@ -165,6 +165,30 @@ extract_uniprot <- function(text) {
 }
 
 
+#' Extract RefSeq accession numbers from text
+#'
+#' @description
+#' Extracts RefSeq accessions from free text or URLs.
+#'
+#' Extracted RefSeq candidates are cleaned to remove URL prefixes and
+#' trailing prose punctuation where necessary, and only structurally valid
+#' accessions are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted RefSeq accessions.
+#'
+#' @noRd
+extract_refseq <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "refseq",
+        clean_fn    = .clean_extracted_refseq,
+        validate_fn = is_refseq
+    )
+}
+
+
 #' Extract ROR identifiers from text
 #'
 #' @description
@@ -570,6 +594,30 @@ extract_pmcid <- function(text) {
         ignore.case = TRUE
     )
     x <- sub("(?i)^uniprot:", "", x, perl = TRUE)
+    toupper(x)
+}
+
+
+.clean_extracted_refseq <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:nuccore|protein)/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://identifiers\\.org/refseq/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub("(?i)^refseq:", "", x, perl = TRUE)
     toupper(x)
 }
 

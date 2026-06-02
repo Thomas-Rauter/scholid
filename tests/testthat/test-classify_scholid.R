@@ -148,6 +148,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical RefSeq accessions",
+    {
+        x <- c(
+            "NM_001744.6",
+            "NP_001735.1",
+            "NC_003619.1"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("refseq", "refseq", "refseq")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical compact ISNIs",
     {
         x <- c(

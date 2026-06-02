@@ -40,6 +40,15 @@
         "FlyORF_\\d+"
     )
 
+    refseq_prefixes <- c(
+        "AC", "AP", "NC", "NG", "NM", "NP", "NR", "NT", "NW", "NZ",
+        "XM", "XP", "XR", "YP", "WP"
+    )
+    refseq_prefix_pat <- paste(refseq_prefixes, collapse = "|")
+    refseq_core_pat <- paste0(
+        "(?:", refseq_prefix_pat, ")_[A-Z0-9]+\\.[0-9]+"
+    )
+
     list(
         doi = list(
             order       = 10L,
@@ -173,6 +182,18 @@
                 "uniprot:)?",
                 "(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|",
                 "[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})",
+                "(?![[:alnum:]_\\-])"
+            )
+        ),
+        refseq = list(
+            order = 39L,
+            pat   = paste0("^", refseq_core_pat, "$"),
+            extract_pat = paste0(
+                "(?i)(?<![[:alnum:]_])",
+                "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:nuccore|protein)/|",
+                "https?://identifiers\\.org/refseq/|",
+                "refseq:)?",
+                refseq_core_pat,
                 "(?![[:alnum:]_\\-])"
             )
         ),

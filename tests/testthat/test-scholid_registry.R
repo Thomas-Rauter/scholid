@@ -39,6 +39,7 @@ testthat::test_that(
               "ror",
               "rrid",
               "uniprot",
+              "refseq",
               "isbn",
               "issn",
               "pmcid"

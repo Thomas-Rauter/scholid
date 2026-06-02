@@ -434,6 +434,55 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_refseq strips wrappers and canonicalizes to uppercase accessions",
+    {
+        x <- c(
+            "NM_001744.6",
+            "https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
+            "https://www.ncbi.nlm.nih.gov/protein/NP_001735.1",
+            "https://identifiers.org/refseq/NC_003619.1",
+            "refseq:NM_021964.7",
+            "nm_001744.6",
+            "NM_001744",
+            "RRID:AB_262044",
+            NA
+        )
+
+        got <- normalize_refseq(x)
+        exp <- c(
+            "NM_001744.6",
+            "NM_001744.6",
+            "NP_001735.1",
+            "NC_003619.1",
+            "NM_021964.7",
+            "NM_001744.6",
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized RefSeq outputs are valid RefSeq accessions and classify as refseq",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
+                "refseq:NP_001735.1"
+            ),
+            "refseq"
+        )
+
+        testthat::expect_true(all(is_refseq(x)))
+        testthat::expect_true(all(is_scholid(x, "refseq")))
+        testthat::expect_true(all(classify_scholid(x) == "refseq"))
+    }
+)
+
+testthat::test_that(
     "ARK normalization accepts plausible labeled and URL input forms",
     {
         x <- c(

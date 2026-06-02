@@ -345,6 +345,61 @@ normalize_uniprot <- function(x) {
 }
 
 
+#' Normalize RefSeq accession numbers
+#'
+#' @description
+#' Normalizes RefSeq accessions from NCBI or identifiers.org URLs,
+#' `refseq:`-prefixed strings, or bare accessions to canonical uppercase form
+#' with a version suffix.
+#'
+#' Normalization requires structurally valid accession numbers. Registry
+#' existence is not checked.
+#'
+#' @param x A vector of RefSeq values.
+#'
+#' @return A character vector of normalized RefSeq accessions. Invalid or
+#'   unsupported inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_refseq <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+    y <- sub("[.,;:!?]+$", "", y)
+
+    bare_pat <- .refseq_pat()
+    has_marker <- grepl(
+        "ncbi\\.nlm\\.nih\\.gov/(?:nuccore|protein)/",
+        y,
+        ignore.case = TRUE
+    ) |
+        grepl("identifiers\\.org/refseq/", y, ignore.case = TRUE) |
+        grepl("(?i)^refseq:", y, perl = TRUE) |
+        grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:nuccore|protein)/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://identifiers\\.org/refseq/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub("(?i)^refseq:", "", y, perl = TRUE)
+    y <- toupper(y)
+
+    y[!is.na(y) & !is_refseq(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ROR identifiers
 #'
 #' @description

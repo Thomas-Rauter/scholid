@@ -130,6 +130,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical UniProt accessions",
+    {
+        x <- c(
+            "P12345",
+            "Q9H0H5",
+            "A0A022YWF9"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("uniprot", "uniprot", "uniprot")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical compact ISNIs",
     {
         x <- c(

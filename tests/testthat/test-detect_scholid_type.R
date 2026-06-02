@@ -272,6 +272,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical UniProt accessions",
+    {
+        x <- c(
+            "P12345",
+            "Q9H0H5",
+            "A0A022YWF9"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("uniprot", "uniprot", "uniprot")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped UniProt accessions",
+    {
+        x <- c(
+            "https://www.uniprot.org/uniprot/P04637",
+            "uniprot:Q9H0H5",
+            "https://identifiers.org/uniprot/A0A022YWF9"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("uniprot", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects lowercase bare UniProt accessions via normalization",
+    {
+        x <- "p12345"
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            "uniprot"
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects malformed UniProt candidates",
+    {
+        x <- c(
+            "P123",
+            "not-uniprot"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical compact ISNIs",
     {
         x <- c(

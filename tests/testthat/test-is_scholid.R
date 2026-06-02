@@ -765,6 +765,100 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_uniprot accepts canonical uppercase UniProtKB accessions",
+    {
+        x <- c(
+            "P12345",
+            "Q9H0H5",
+            "A0A022YWF9",
+            "O75882"
+        )
+
+        testthat::expect_identical(
+            is_uniprot(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_uniprot rejects URLs, lowercase, short tails, and RRID-like strings",
+    {
+        x <- c(
+            "P12345",
+            "https://www.uniprot.org/uniprot/P04637",
+            "p12345",
+            "P123",
+            "RRID:AB_262044",
+            "not-uniprot",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_uniprot(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_uniprot for type uniprot",
+    {
+        x <- c("P12345", "p12345", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "uniprot"),
+            is_uniprot(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "UniProt normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "P12345",
+            "https://www.uniprot.org/uniprot/P04637",
+            "https://identifiers.org/uniprot/Q9H0H5",
+            "uniprot:A0A022YWF9",
+            "p12345",
+            "P123",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "uniprot"),
+            c(
+                "P12345",
+                "P04637",
+                "Q9H0H5",
+                "A0A022YWF9",
+                "P12345",
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized UniProt outputs validate and classify as uniprot",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.uniprot.org/uniprot/P04637",
+                "uniprot:Q9H0H5"
+            ),
+            "uniprot"
+        )
+
+        testthat::expect_true(all(is_uniprot(x)))
+        testthat::expect_true(all(is_scholid(x, "uniprot")))
+        testthat::expect_true(all(classify_scholid(x) == "uniprot"))
+    }
+)
+
+testthat::test_that(
     "is_isni accepts canonical compact checksum-valid ISNIs",
     {
         x <- c(
@@ -885,6 +979,21 @@ testthat::test_that(
         testthat::expect_identical(
             is_openalex(x),
             rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_openalex rejects UniProt-shaped 6-character accessions",
+    {
+        x <- c(
+            "P12345",
+            "Q9H0H5"
+        )
+
+        testthat::expect_identical(
+            is_openalex(x),
+            rep(FALSE, length(x))
         )
     }
 )

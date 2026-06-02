@@ -38,6 +38,7 @@ testthat::test_that(
               "orcid",
               "ror",
               "rrid",
+              "uniprot",
               "isbn",
               "issn",
               "pmcid"

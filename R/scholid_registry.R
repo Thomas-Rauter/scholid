@@ -160,6 +160,22 @@
                 "(?![[:alnum:]_])"
             )
         ),
+        uniprot = list(
+            order = 38L,
+            pat   = paste0(
+                "^(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|",
+                "[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})$"
+            ),
+            extract_pat = paste0(
+                "(?i)(?<![[:alnum:]_])",
+                "(?:https?://(?:www\\.)?uniprot\\.org/(?:uniprot|uniprotkb)/|",
+                "https?://identifiers\\.org/uniprot/|",
+                "uniprot:)?",
+                "(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|",
+                "[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})",
+                "(?![[:alnum:]_\\-])"
+            )
+        ),
         isbn = list(
             order       = 40L,
             extract_pat = "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"

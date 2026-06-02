@@ -265,6 +265,47 @@ Canonical form (authority body validated separately):
 
 ---
 
+# UniProt (UniProtKB accession)
+
+**Governing body:** UniProt Consortium  
+**Documentation:** [UniProt accession numbers](https://www.uniprot.org/help/accession_numbers)
+
+## Structure
+
+A UniProtKB accession uniquely identifies a protein record. Accessions are
+6 or 10 uppercase alphanumeric characters following UniProt-defined patterns.
+
+Examples:
+
+```
+P12345
+Q9H0H5
+A0A022YWF9
+```
+
+Preferred resolver URLs include:
+
+```
+https://www.uniprot.org/uniprot/P12345
+https://identifiers.org/uniprot/P12345
+```
+
+## Validation in scholid
+
+UniProt validation is **structural only**. Registry existence is not checked.
+
+Canonical form is the uppercase accession without version suffixes or entry
+name qualifiers. Wrapped URLs and lowercase accessions should be normalized
+with `normalize_scholid()` before classification.
+
+## Structural Regex
+
+```
+^(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})$
+```
+
+---
+
 # ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  

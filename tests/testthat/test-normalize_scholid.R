@@ -387,6 +387,53 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_uniprot strips wrappers and canonicalizes to uppercase accessions",
+    {
+        x <- c(
+            "P12345",
+            "https://www.uniprot.org/uniprot/P04637",
+            "https://identifiers.org/uniprot/Q9H0H5",
+            "uniprot:A0A022YWF9",
+            "p12345",
+            "P123",
+            "RRID:AB_262044",
+            NA
+        )
+
+        got <- normalize_uniprot(x)
+        exp <- c(
+            "P12345",
+            "P04637",
+            "Q9H0H5",
+            "A0A022YWF9",
+            "P12345",
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized UniProt outputs are valid UniProt accessions and classify as uniprot",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.uniprot.org/uniprot/P04637",
+                "uniprot:Q9H0H5"
+            ),
+            "uniprot"
+        )
+
+        testthat::expect_true(all(is_uniprot(x)))
+        testthat::expect_true(all(is_scholid(x, "uniprot")))
+        testthat::expect_true(all(classify_scholid(x) == "uniprot"))
+    }
+)
+
+testthat::test_that(
     "ARK normalization accepts plausible labeled and URL input forms",
     {
         x <- c(

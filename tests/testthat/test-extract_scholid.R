@@ -550,6 +550,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_uniprot finds accessions in text and URLs",
+    {
+        txt <- c(
+            "Protein P12345 and P04637.",
+            "Link https://www.uniprot.org/uniprot/Q9H0H5",
+            "uniprot:A0A022YWF9",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "uniprot"
+        )
+
+        testthat::expect_true(any(got[[1]] == "P12345"))
+        testthat::expect_true(any(got[[1]] == "P04637"))
+        testthat::expect_true(any(got[[2]] == "Q9H0H5"))
+        testthat::expect_true(any(got[[3]] == "A0A022YWF9"))
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_uniprot returns multiple matches from one string",
+    {
+        txt <- paste(
+            "proteins:",
+            "P12345",
+            "and https://identifiers.org/uniprot/P04637"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "uniprot"
+        )[[1]]
+
+        testthat::expect_true(any(got == "P12345"))
+        testthat::expect_true(any(got == "P04637"))
+    }
+)
+
+testthat::test_that(
+    "extract_uniprot normalizes lowercase tokens and rejects invalid candidates",
+    {
+        txt <- "see p12345, P123, and RRID:AB_262044 for details"
+
+        got <- extract_scholid(
+            txt,
+            "uniprot"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            "P12345"
+        )
+    }
+)
+
+testthat::test_that(
     "extract_ark rejects bare paths and short NAAN candidates",
     {
         txt <- "see 12148/btv1b8449691v and ark:/1234/btv1b8449691v for details"
@@ -1106,6 +1168,7 @@ testthat::test_that(
         "ISBN 0-306-40615-2",
         "ROR https://ror.org/01an7q238",
         "RRID:AB_262044",
+        "UniProt https://www.uniprot.org/uniprot/P12345",
         "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
         "ISNI 0000 0001 2146 438X"
     )
@@ -1122,6 +1185,7 @@ testthat::test_that(
     got_isb <- extract_scholid(txt, "isbn")
     got_ror <- extract_scholid(txt, "ror")
     got_rrid <- extract_scholid(txt, "rrid")
+    got_uniprot <- extract_scholid(txt, "uniprot")
     got_swhid <- extract_scholid(txt, "swhid")
     got_isni <- extract_scholid(txt, "isni")
 
@@ -1137,8 +1201,9 @@ testthat::test_that(
     testthat::expect_true(length(got_isb[[10]]) >= 1L)
     testthat::expect_true(length(got_ror[[11]]) >= 1L)
     testthat::expect_true(length(got_rrid[[12]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[13]]) >= 1L)
-    testthat::expect_true(length(got_isni[[14]]) >= 1L)
+    testthat::expect_true(length(got_uniprot[[13]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[14]]) >= 1L)
+    testthat::expect_true(length(got_isni[[15]]) >= 1L)
     }
 )
 

@@ -294,6 +294,57 @@ normalize_orcid <- function(x) {
 }
 
 
+#' Normalize UniProt accession numbers
+#'
+#' @description
+#' Normalizes UniProtKB accession numbers from UniProt or identifiers.org
+#' URLs, `uniprot:`-prefixed strings, or bare accessions to canonical uppercase
+#' form.
+#'
+#' Normalization requires structurally valid accession numbers. Registry
+#' existence is not checked.
+#'
+#' @param x A vector of UniProt values.
+#'
+#' @return A character vector of normalized UniProt accessions. Invalid or
+#'   unsupported inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_uniprot <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+    y <- sub("[.,;:!?]+$", "", y)
+
+    bare_pat <- .uniprot_pat()
+    has_marker <- grepl("uniprot\\.org/(?:uniprot|uniprotkb)/", y, ignore.case = TRUE) |
+        grepl("identifiers\\.org/uniprot/", y, ignore.case = TRUE) |
+        grepl("(?i)^uniprot:", y, perl = TRUE) |
+        grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub(
+        "^https?://(?:www\\.)?uniprot\\.org/(?:uniprot|uniprotkb)/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://identifiers\\.org/uniprot/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub("(?i)^uniprot:", "", y, perl = TRUE)
+    y <- toupper(y)
+
+    y[!is.na(y) & !is_uniprot(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ROR identifiers
 #'
 #' @description

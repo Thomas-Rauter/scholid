@@ -251,6 +251,28 @@ is_swhid <- function(x) {
 }
 
 
+#' Check UniProt accession numbers
+#'
+#' Tests whether values are valid UniProtKB accession numbers in canonical
+#' uppercase form. Validation is structural only; registry existence is not
+#' checked.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_uniprot <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_uniprot_strict,
+        logical(1)
+    )
+    init$out
+}
+
+
 #' Check ROR identifiers
 #'
 #' Tests whether values are valid ROR iDs, including checksum.
@@ -477,6 +499,11 @@ is_pmcid <- function(x) {
         return(FALSE)
     }
 
+    # UniProtKB 6-character accessions share P/O/Q/G + digit prefixes with OpenAlex keys.
+    if (grepl(.uniprot_pat(), x, perl = TRUE)) {
+        return(FALSE)
+    }
+
     identical(x, toupper(x))
 }
 
@@ -488,6 +515,16 @@ is_pmcid <- function(x) {
 #' @noRd
 .ark_pat <- function() {
     .scholid_registry()[["ark"]]$pat
+}
+
+
+#' Return the UniProt validation pattern from the registry
+#'
+#' @return A single regular expression pattern string.
+#'
+#' @noRd
+.uniprot_pat <- function() {
+    .scholid_registry()[["uniprot"]]$pat
 }
 
 
@@ -524,6 +561,41 @@ is_pmcid <- function(x) {
 #' @noRd
 .bibcode_pat <- function() {
     .scholid_registry()[["bibcode"]]$pat
+}
+
+
+#' Strict UniProt validator
+#'
+#' @description
+#' Validates canonical uppercase UniProtKB accession numbers (`P12345`,
+#' `A0A022YWF9`). Wrapped URLs and lowercase accessions are rejected; use
+#' `normalize_uniprot()` first.
+#'
+#' @param x A single character string in canonical form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_uniprot_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- trimws(x)
+    if (grepl("^https?://", x, ignore.case = TRUE)) {
+        return(FALSE)
+    }
+
+    if (grepl("[[:space:]/|:]", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    if (!identical(x, toupper(x))) {
+        return(FALSE)
+    }
+
+    pat <- .uniprot_pat()
+    grepl(pat, x, perl = TRUE)
 }
 
 

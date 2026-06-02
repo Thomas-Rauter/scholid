@@ -22,6 +22,7 @@ testthat::test_that(
               "rrid",
               "uniprot",
               "refseq",
+              "sra",
               "isbn",
               "issn",
               "pmcid",

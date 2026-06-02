@@ -955,6 +955,101 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_sra accepts canonical uppercase SRA accessions",
+    {
+        x <- c(
+            "SRR1553610",
+            "SRX1234567",
+            "SRP006081",
+            "ERR1234567",
+            "DRR1234567"
+        )
+
+        testthat::expect_identical(
+            is_sra(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_sra rejects URLs, lowercase, short tails, and RefSeq-like strings",
+    {
+        x <- c(
+            "SRR1553610",
+            "https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
+            "srr1553610",
+            "SRR123",
+            "NM_001744.6",
+            "not-sra",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_sra(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_sra for type sra",
+    {
+        x <- c("SRR1553610", "srr1553610", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "sra"),
+            is_sra(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "SRA normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "SRR1553610",
+            "https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
+            "https://identifiers.org/sra/SRX1234567",
+            "sra:SRP006081",
+            "srr1553610",
+            "SRR123",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "sra"),
+            c(
+                "SRR1553610",
+                "SRR1553610",
+                "SRX1234567",
+                "SRP006081",
+                "SRR1553610",
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized SRA outputs validate and classify as sra",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
+                "sra:SRX1234567"
+            ),
+            "sra"
+        )
+
+        testthat::expect_true(all(is_sra(x)))
+        testthat::expect_true(all(is_scholid(x, "sra")))
+        testthat::expect_true(all(classify_scholid(x) == "sra"))
+    }
+)
+
+testthat::test_that(
     "is_isni accepts canonical compact checksum-valid ISNIs",
     {
         x <- c(

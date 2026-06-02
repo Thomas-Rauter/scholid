@@ -483,6 +483,53 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_sra strips wrappers and canonicalizes to uppercase accessions",
+    {
+        x <- c(
+            "SRR1553610",
+            "https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
+            "https://identifiers.org/sra/SRX1234567",
+            "sra:SRP006081",
+            "srr1553610",
+            "SRR123",
+            "NM_001744.6",
+            NA
+        )
+
+        got <- normalize_sra(x)
+        exp <- c(
+            "SRR1553610",
+            "SRR1553610",
+            "SRX1234567",
+            "SRP006081",
+            "SRR1553610",
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized SRA outputs are valid SRA accessions and classify as sra",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
+                "sra:SRX1234567"
+            ),
+            "sra"
+        )
+
+        testthat::expect_true(all(is_sra(x)))
+        testthat::expect_true(all(is_scholid(x, "sra")))
+        testthat::expect_true(all(classify_scholid(x) == "sra"))
+    }
+)
+
+testthat::test_that(
     "ARK normalization accepts plausible labeled and URL input forms",
     {
         x <- c(

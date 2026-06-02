@@ -189,6 +189,30 @@ extract_refseq <- function(text) {
 }
 
 
+#' Extract SRA accession numbers from text
+#'
+#' @description
+#' Extracts SRA accessions from free text or URLs.
+#'
+#' Extracted SRA candidates are cleaned to remove URL prefixes and trailing
+#' prose punctuation where necessary, and only structurally valid accessions
+#' are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted SRA accessions.
+#'
+#' @noRd
+extract_sra <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "sra",
+        clean_fn    = .clean_extracted_sra,
+        validate_fn = is_sra
+    )
+}
+
+
 #' Extract ROR identifiers from text
 #'
 #' @description
@@ -618,6 +642,30 @@ extract_pmcid <- function(text) {
         ignore.case = TRUE
     )
     x <- sub("(?i)^refseq:", "", x, perl = TRUE)
+    toupper(x)
+}
+
+
+.clean_extracted_sra <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/sra/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://identifiers\\.org/sra/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub("(?i)^sra:", "", x, perl = TRUE)
     toupper(x)
 }
 

@@ -396,6 +396,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical SRA accessions",
+    {
+        x <- c(
+            "SRR1553610",
+            "SRX1234567",
+            "SRP006081"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("sra", "sra", "sra")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped SRA accessions",
+    {
+        x <- c(
+            "https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
+            "sra:SRX1234567",
+            "https://identifiers.org/sra/SRP006081"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("sra", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects lowercase bare SRA accessions via normalization",
+    {
+        x <- "srr1553610"
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            "sra"
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects malformed SRA candidates",
+    {
+        x <- c(
+            "SRR123",
+            "not-sra"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical compact ISNIs",
     {
         x <- c(

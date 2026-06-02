@@ -166,6 +166,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical SRA accessions",
+    {
+        x <- c(
+            "SRR1553610",
+            "SRX1234567",
+            "SRP006081"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("sra", "sra", "sra")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical compact ISNIs",
     {
         x <- c(

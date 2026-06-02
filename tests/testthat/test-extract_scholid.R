@@ -674,6 +674,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_sra finds accessions in text and URLs",
+    {
+        txt <- c(
+            "Run SRR1553610 and experiment SRX1234567.",
+            "Link https://www.ncbi.nlm.nih.gov/sra/SRP006081",
+            "sra:SRS123456",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "sra"
+        )
+
+        testthat::expect_true(any(got[[1]] == "SRR1553610"))
+        testthat::expect_true(any(got[[1]] == "SRX1234567"))
+        testthat::expect_true(any(got[[2]] == "SRP006081"))
+        testthat::expect_true(any(got[[3]] == "SRS123456"))
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_sra returns multiple matches from one string",
+    {
+        txt <- paste(
+            "records:",
+            "SRR1553610",
+            "and https://identifiers.org/sra/SRX1234567"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "sra"
+        )[[1]]
+
+        testthat::expect_true(any(got == "SRR1553610"))
+        testthat::expect_true(any(got == "SRX1234567"))
+    }
+)
+
+testthat::test_that(
+    "extract_sra normalizes lowercase tokens and rejects invalid candidates",
+    {
+        txt <- "see srr1553610, SRR123, and NM_001744.6 for details"
+
+        got <- extract_scholid(
+            txt,
+            "sra"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            "SRR1553610"
+        )
+    }
+)
+
+testthat::test_that(
     "extract_ark rejects bare paths and short NAAN candidates",
     {
         txt <- "see 12148/btv1b8449691v and ark:/1234/btv1b8449691v for details"
@@ -1232,6 +1294,7 @@ testthat::test_that(
         "RRID:AB_262044",
         "UniProt https://www.uniprot.org/uniprot/P12345",
         "RefSeq https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
+        "SRA https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
         "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
         "ISNI 0000 0001 2146 438X"
     )
@@ -1250,6 +1313,7 @@ testthat::test_that(
     got_rrid <- extract_scholid(txt, "rrid")
     got_uniprot <- extract_scholid(txt, "uniprot")
     got_refseq <- extract_scholid(txt, "refseq")
+    got_sra <- extract_scholid(txt, "sra")
     got_swhid <- extract_scholid(txt, "swhid")
     got_isni <- extract_scholid(txt, "isni")
 
@@ -1267,8 +1331,9 @@ testthat::test_that(
     testthat::expect_true(length(got_rrid[[12]]) >= 1L)
     testthat::expect_true(length(got_uniprot[[13]]) >= 1L)
     testthat::expect_true(length(got_refseq[[14]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[15]]) >= 1L)
-    testthat::expect_true(length(got_isni[[16]]) >= 1L)
+    testthat::expect_true(length(got_sra[[15]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[16]]) >= 1L)
+    testthat::expect_true(length(got_isni[[17]]) >= 1L)
     }
 )
 

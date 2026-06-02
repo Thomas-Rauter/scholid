@@ -48,6 +48,7 @@
     refseq_core_pat <- paste0(
         "(?:", refseq_prefix_pat, ")_[A-Z0-9]+\\.[0-9]+"
     )
+    sra_core_pat <- "[SED]R[RXSP][0-9]{5,}"
 
     list(
         doi = list(
@@ -197,8 +198,20 @@
                 "(?![[:alnum:]_\\-])"
             )
         ),
+        sra = list(
+            order = 40L,
+            pat   = paste0("^", sra_core_pat, "$"),
+            extract_pat = paste0(
+                "(?i)(?<![[:alnum:]_])",
+                "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/sra/|",
+                "https?://identifiers\\.org/sra/|",
+                "sra:)?",
+                sra_core_pat,
+                "(?![[:alnum:]_\\-])"
+            )
+        ),
         isbn = list(
-            order       = 40L,
+            order       = 41L,
             extract_pat = "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
         ),
         issn = list(

@@ -350,6 +350,53 @@ normalized with `normalize_scholid()` before classification.
 
 ---
 
+# SRA (Sequence Read Archive accession)
+
+**Governing body:** INSDC Sequence Read Archive (NCBI, EBI, DDBJ)  
+**Documentation:** [Search in SRA Entrez](https://www.ncbi.nlm.nih.gov/sra/docs/srasearch/)
+
+## Structure
+
+An SRA accession identifies a study, sample, experiment, or run in the
+INSDC archives. The format is a three-letter prefix (source database plus
+entity type) followed by digits.
+
+Examples:
+
+```
+SRP006081
+SRS123456
+SRX1234567
+SRR1553610
+ERR1234567
+DRR1234567
+```
+
+Preferred resolver URLs include:
+
+```
+https://www.ncbi.nlm.nih.gov/sra/SRR1553610
+https://identifiers.org/sra/SRR1553610
+```
+
+## Validation in scholid
+
+SRA validation is **structural only**. Registry existence is not checked.
+
+Canonical form is the uppercase accession without version suffix. The first
+letter denotes the source archive (`S` NCBI, `E` EBI, `D` DDBJ); the third
+letter denotes entity type (`P` study, `S` sample, `X` experiment, `R` run).
+Wrapped URLs and lowercase accessions should be normalized with
+`normalize_scholid()` before classification.
+
+## Structural Regex
+
+```
+^[SED]R[RXSP][0-9]{5,}$
+```
+
+---
+
 # ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  

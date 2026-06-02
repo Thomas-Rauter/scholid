@@ -261,6 +261,30 @@ extract_bioproject <- function(text) {
 }
 
 
+#' Extract genome assembly accession numbers from text
+#'
+#' @description
+#' Extracts INSDC assembly accessions from free text or URLs.
+#'
+#' Extracted assembly candidates are cleaned to remove URL prefixes and
+#' trailing prose punctuation where necessary, and only structurally valid
+#' accessions are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted assembly accessions.
+#'
+#' @noRd
+extract_assembly <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "assembly",
+        clean_fn    = .clean_extracted_assembly,
+        validate_fn = is_assembly
+    )
+}
+
+
 #' Extract ROR identifiers from text
 #'
 #' @description
@@ -765,6 +789,31 @@ extract_pmcid <- function(text) {
     x <- sub("(?i)^bioproject:", "", x, perl = TRUE)
     x <- sub("(?i)^\\?term=", "", x, perl = TRUE)
     x <- sub("[?#&].*$", "", x)
+    toupper(x)
+}
+
+
+.clean_extracted_assembly <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:assembly|datasets/genome)/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://identifiers\\.org/insdc\\.(?:gca|gcf):",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub("(?i)^assembly:", "", x, perl = TRUE)
+    x <- sub("/+$", "", x)
     toupper(x)
 }
 

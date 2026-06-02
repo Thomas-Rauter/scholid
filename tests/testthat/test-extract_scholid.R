@@ -860,6 +860,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_assembly finds accessions in text and URLs",
+    {
+        txt <- c(
+            "Assembly GCF_000001405.40 and GCA_009914755.4.",
+            "Link https://www.ncbi.nlm.nih.gov/assembly/GCA_000001405.29",
+            "assembly:GCF_028878055.3",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "assembly"
+        )
+
+        testthat::expect_true(any(got[[1]] == "GCF_000001405.40"))
+        testthat::expect_true(any(got[[1]] == "GCA_009914755.4"))
+        testthat::expect_true(any(got[[2]] == "GCA_000001405.29"))
+        testthat::expect_true(any(got[[3]] == "GCF_028878055.3"))
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_assembly returns multiple matches from one string",
+    {
+        txt <- paste(
+            "assemblies:",
+            "GCF_000001405.40",
+            "and https://identifiers.org/insdc.gca:GCA_000001405.29"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "assembly"
+        )[[1]]
+
+        testthat::expect_true(any(got == "GCF_000001405.40"))
+        testthat::expect_true(any(got == "GCA_000001405.29"))
+    }
+)
+
+testthat::test_that(
+    "extract_assembly normalizes lowercase tokens and rejects invalid candidates",
+    {
+        txt <- "see gcf_000001405.40, GCF_12345.1, and NM_001744.6 for details"
+
+        got <- extract_scholid(
+            txt,
+            "assembly"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            "GCF_000001405.40"
+        )
+    }
+)
+
+testthat::test_that(
     "extract_ark rejects bare paths and short NAAN candidates",
     {
         txt <- "see 12148/btv1b8449691v and ark:/1234/btv1b8449691v for details"
@@ -1421,6 +1483,7 @@ testthat::test_that(
         "SRA https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
         "GEO https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
         "BioProject https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
+        "Assembly https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40",
         "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
         "ISNI 0000 0001 2146 438X"
     )
@@ -1442,6 +1505,7 @@ testthat::test_that(
     got_sra <- extract_scholid(txt, "sra")
     got_geo <- extract_scholid(txt, "geo")
     got_bioproject <- extract_scholid(txt, "bioproject")
+    got_assembly <- extract_scholid(txt, "assembly")
     got_swhid <- extract_scholid(txt, "swhid")
     got_isni <- extract_scholid(txt, "isni")
 
@@ -1462,8 +1526,9 @@ testthat::test_that(
     testthat::expect_true(length(got_sra[[15]]) >= 1L)
     testthat::expect_true(length(got_geo[[16]]) >= 1L)
     testthat::expect_true(length(got_bioproject[[17]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[18]]) >= 1L)
-    testthat::expect_true(length(got_isni[[19]]) >= 1L)
+    testthat::expect_true(length(got_assembly[[18]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[19]]) >= 1L)
+    testthat::expect_true(length(got_isni[[20]]) >= 1L)
     }
 )
 

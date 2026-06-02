@@ -43,6 +43,7 @@ testthat::test_that(
               "sra",
               "geo",
               "bioproject",
+              "assembly",
               "isbn",
               "issn",
               "pmcid"

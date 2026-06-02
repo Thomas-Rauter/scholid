@@ -1241,6 +1241,116 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_assembly accepts canonical uppercase GCA and GCF accessions with version",
+    {
+        x <- c(
+            "GCF_000001405.40",
+            "GCA_000001405.29",
+            "GCA_009914755.4"
+        )
+
+        testthat::expect_identical(
+            is_assembly(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_assembly rejects URLs, lowercase, missing version, and RefSeq-like strings",
+    {
+        x <- c(
+            "GCF_000001405.40",
+            "https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40",
+            "gcf_000001405.40",
+            "GCF_000001405",
+            "GCF_12345.1",
+            "NM_001744.6",
+            "not-assembly",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_assembly(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "classify_scholid distinguishes assembly from RefSeq accessions",
+    {
+        x <- c("GCF_000001405.40", "NM_001744.6")
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("assembly", "refseq")
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_assembly for type assembly",
+    {
+        x <- c("GCF_000001405.40", "gcf_000001405.40", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "assembly"),
+            is_assembly(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "assembly normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "GCF_000001405.40",
+            "https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40",
+            "https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_009914755.4/",
+            "https://identifiers.org/insdc.gcf:GCF_000001405.40",
+            "assembly:GCA_000001405.29",
+            "gcf_000001405.40",
+            "GCF_000001405",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "assembly"),
+            c(
+                "GCF_000001405.40",
+                "GCF_000001405.40",
+                "GCA_009914755.4",
+                "GCF_000001405.40",
+                "GCA_000001405.29",
+                "GCF_000001405.40",
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized assembly outputs validate and classify as assembly",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40",
+                "assembly:GCA_000001405.29"
+            ),
+            "assembly"
+        )
+
+        testthat::expect_true(all(is_assembly(x)))
+        testthat::expect_true(all(is_scholid(x, "assembly")))
+        testthat::expect_true(all(classify_scholid(x) == "assembly"))
+    }
+)
+
+testthat::test_that(
     "is_isni accepts canonical compact checksum-valid ISNIs",
     {
         x <- c(

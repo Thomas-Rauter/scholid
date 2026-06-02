@@ -360,6 +360,28 @@ is_bioproject <- function(x) {
 }
 
 
+#' Check genome assembly accession numbers
+#'
+#' Tests whether values are valid INSDC genome assembly accessions (`GCA_`,
+#' `GCF_`) in canonical uppercase form with a version suffix. Validation is
+#' structural only; registry existence is not checked.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_assembly <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_assembly_strict,
+        logical(1)
+    )
+    init$out
+}
+
+
 #' Check ROR identifiers
 #'
 #' Tests whether values are valid ROR iDs, including checksum.
@@ -655,6 +677,16 @@ is_pmcid <- function(x) {
 }
 
 
+#' Return the genome assembly validation pattern from the registry
+#'
+#' @return A single regular expression pattern string.
+#'
+#' @noRd
+.assembly_pat <- function() {
+    .scholid_registry()[["assembly"]]$pat
+}
+
+
 #' Canonicalize an ARK string to ark:/NAAN/Name form
 #'
 #' @param x A single ARK candidate string.
@@ -862,6 +894,41 @@ is_pmcid <- function(x) {
     }
 
     pat <- .bioproject_pat()
+    grepl(pat, x, perl = TRUE)
+}
+
+
+#' Strict genome assembly validator
+#'
+#' @description
+#' Validates canonical uppercase assembly accessions (`GCF_000001405.40`,
+#' `GCA_009914755.4`). Wrapped URLs and lowercase accessions are rejected; use
+#' `normalize_assembly()` first.
+#'
+#' @param x A single character string in canonical form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_assembly_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- trimws(x)
+    if (grepl("^https?://", x, ignore.case = TRUE)) {
+        return(FALSE)
+    }
+
+    if (grepl("[[:space:]/|:?&=]", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    if (!identical(x, toupper(x))) {
+        return(FALSE)
+    }
+
+    pat <- .assembly_pat()
     grepl(pat, x, perl = TRUE)
 }
 

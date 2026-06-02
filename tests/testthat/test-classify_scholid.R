@@ -220,6 +220,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical genome assembly accessions",
+    {
+        x <- c(
+            "GCF_000001405.40",
+            "GCA_000001405.29",
+            "GCA_009914755.4"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("assembly", "assembly", "assembly")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical compact ISNIs",
     {
         x <- c(

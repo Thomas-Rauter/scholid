@@ -55,6 +55,7 @@
     bioproject_core_pat <- paste0(
         "(?:", bioproject_prefix_pat, ")[0-9]{2,}"
     )
+    assembly_core_pat <- "GC[AF]_[0-9]{9}\\.[0-9]+"
 
     list(
         doi = list(
@@ -240,8 +241,20 @@
                 "(?![[:alnum:]_\\-])"
             )
         ),
+        assembly = list(
+            order = 43L,
+            pat   = paste0("^", assembly_core_pat, "$"),
+            extract_pat = paste0(
+                "(?i)(?<![[:alnum:]_])",
+                "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:assembly|datasets/genome)/|",
+                "https?://identifiers\\.org/insdc\\.(?:gca|gcf):|",
+                "assembly:)?",
+                assembly_core_pat,
+                "(?![[:alnum:]_\\-])"
+            )
+        ),
         isbn = list(
-            order       = 43L,
+            order       = 44L,
             extract_pat = "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
         ),
         issn = list(

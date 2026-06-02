@@ -626,6 +626,55 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_assembly strips wrappers and canonicalizes to uppercase accessions",
+    {
+        x <- c(
+            "GCF_000001405.40",
+            "https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40",
+            "https://www.ncbi.nlm.nih.gov/datasets/genome/GCA_009914755.4/",
+            "https://identifiers.org/insdc.gcf:GCF_000001405.40",
+            "assembly:GCA_000001405.29",
+            "gcf_000001405.40",
+            "GCF_000001405",
+            "NM_001744.6",
+            NA
+        )
+
+        got <- normalize_assembly(x)
+        exp <- c(
+            "GCF_000001405.40",
+            "GCF_000001405.40",
+            "GCA_009914755.4",
+            "GCF_000001405.40",
+            "GCA_000001405.29",
+            "GCF_000001405.40",
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized assembly outputs are valid assembly accessions and classify as assembly",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40",
+                "assembly:GCA_000001405.29"
+            ),
+            "assembly"
+        )
+
+        testthat::expect_true(all(is_assembly(x)))
+        testthat::expect_true(all(is_scholid(x, "assembly")))
+        testthat::expect_true(all(classify_scholid(x) == "assembly"))
+    }
+)
+
+testthat::test_that(
     "ARK normalization accepts plausible labeled and URL input forms",
     {
         x <- c(

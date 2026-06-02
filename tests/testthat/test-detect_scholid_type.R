@@ -582,6 +582,69 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical genome assembly accessions",
+    {
+        x <- c(
+            "GCF_000001405.40",
+            "GCA_000001405.29",
+            "GCA_009914755.4"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("assembly", "assembly", "assembly")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped genome assembly accessions",
+    {
+        x <- c(
+            "https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40",
+            "assembly:GCA_000001405.29",
+            "https://identifiers.org/insdc.gcf:GCF_028878055.3"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("assembly", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects lowercase bare assembly accessions via normalization",
+    {
+        x <- "gcf_000001405.40"
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            "assembly"
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects malformed genome assembly candidates",
+    {
+        x <- c(
+            "GCF_000001405",
+            "GCF_12345.1",
+            "not-assembly"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical compact ISNIs",
     {
         x <- c(

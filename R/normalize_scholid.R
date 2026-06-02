@@ -558,6 +558,62 @@ normalize_bioproject <- function(x) {
 }
 
 
+#' Normalize genome assembly accession numbers
+#'
+#' @description
+#' Normalizes INSDC assembly accessions from NCBI or identifiers.org URLs,
+#' `assembly:`-prefixed strings, or bare accessions to canonical uppercase form
+#' with a version suffix.
+#'
+#' Normalization requires structurally valid accession numbers. Registry
+#' existence is not checked.
+#'
+#' @param x A vector of assembly values.
+#'
+#' @return A character vector of normalized assembly accessions. Invalid or
+#'   unsupported inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_assembly <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+    y <- sub("[.,;:!?]+$", "", y)
+
+    bare_pat <- .assembly_pat()
+    has_marker <- grepl(
+        "ncbi\\.nlm\\.nih\\.gov/(?:assembly|datasets/genome)/",
+        y,
+        ignore.case = TRUE
+    ) |
+        grepl("identifiers\\.org/insdc\\.(?:gca|gcf):", y, ignore.case = TRUE) |
+        grepl("(?i)^assembly:", y, perl = TRUE) |
+        grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:assembly|datasets/genome)/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://identifiers\\.org/insdc\\.(?:gca|gcf):",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub("(?i)^assembly:", "", y, perl = TRUE)
+    y <- sub("/+$", "", y)
+    y <- toupper(y)
+
+    y[!is.na(y) & !is_assembly(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ROR identifiers
 #'
 #' @description

@@ -505,6 +505,59 @@ normalize_geo <- function(x) {
 }
 
 
+#' Normalize BioProject accession numbers
+#'
+#' @description
+#' Normalizes BioProject accessions from NCBI or identifiers.org URLs,
+#' `bioproject:`-prefixed strings, or bare accessions to canonical uppercase
+#' form.
+#'
+#' Normalization requires structurally valid accession numbers. Registry
+#' existence is not checked.
+#'
+#' @param x A vector of BioProject values.
+#'
+#' @return A character vector of normalized BioProject accessions. Invalid or
+#'   unsupported inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_bioproject <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+    y <- sub("[.,;:!?]+$", "", y)
+
+    bare_pat <- .bioproject_pat()
+    has_marker <- grepl("ncbi\\.nlm\\.nih\\.gov/bioproject", y, ignore.case = TRUE) |
+        grepl("identifiers\\.org/bioproject", y, ignore.case = TRUE) |
+        grepl("(?i)^bioproject:", y, perl = TRUE) |
+        grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/bioproject/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://identifiers\\.org/bioproject[:/]",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub("(?i)^bioproject:", "", y, perl = TRUE)
+    y <- sub("(?i)^\\?term=", "", y, perl = TRUE)
+    y <- sub("[?#].*$", "", y)
+    y <- toupper(y)
+
+    y[!is.na(y) & !is_bioproject(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ROR identifiers
 #'
 #' @description

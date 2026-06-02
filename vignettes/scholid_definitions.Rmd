@@ -440,6 +440,50 @@ Wrapped URLs and lowercase accessions should be normalized with
 
 ---
 
+# BioProject (INSDC BioProject accession)
+
+**Governing body:** INSDC BioProject (NCBI, EBI, DDBJ)  
+**Documentation:** [BioProject handbook](https://www.ncbi.nlm.nih.gov/books/NBK169438/)
+
+## Structure
+
+A BioProject accession identifies a research project that groups related
+sequence and sample records. The format is a five-letter INSDC prefix
+followed by digits.
+
+Examples:
+
+```
+PRJNA257197
+PRJEB12345
+PRJDB303
+```
+
+Preferred resolver URLs include:
+
+```
+https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197
+https://identifiers.org/bioproject/PRJNA257197
+```
+
+## Validation in scholid
+
+BioProject validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession. Known prefixes (`PRJNA`, `PRJEB`,
+`PRJDB`, `PRJDA`, `PRJEA`) are allowlisted. Wrapped URLs and lowercase
+accessions should be normalized with `normalize_scholid()` before
+classification.
+
+## Structural Regex
+
+```
+^(?:PRJNA|PRJEB|PRJDB|PRJDA|PRJEA)[0-9]{2,}$
+```
+
+---
+
 # ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  

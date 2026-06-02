@@ -1144,6 +1144,103 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_bioproject accepts canonical uppercase BioProject accessions",
+    {
+        x <- c(
+            "PRJNA257197",
+            "PRJEB12345",
+            "PRJDB303",
+            "PRJDA1234"
+        )
+
+        testthat::expect_identical(
+            is_bioproject(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_bioproject rejects URLs, lowercase, short tails, and GEO-like strings",
+    {
+        x <- c(
+            "PRJNA257197",
+            "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
+            "prjna257197",
+            "PRJNA1",
+            "PRJXX12345",
+            "GSE2553",
+            "not-bioproject",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_bioproject(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_bioproject for type bioproject",
+    {
+        x <- c("PRJNA257197", "prjna257197", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "bioproject"),
+            is_bioproject(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "BioProject normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "PRJNA257197",
+            "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
+            "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJEB12345",
+            "https://identifiers.org/bioproject/PRJDB303",
+            "bioproject:PRJDA1234",
+            "prjna257197",
+            "PRJNA1",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "bioproject"),
+            c(
+                "PRJNA257197",
+                "PRJNA257197",
+                "PRJEB12345",
+                "PRJDB303",
+                "PRJDA1234",
+                "PRJNA257197",
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized BioProject outputs validate and classify as bioproject",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
+                "bioproject:PRJEB12345"
+            ),
+            "bioproject"
+        )
+
+        testthat::expect_true(all(is_bioproject(x)))
+        testthat::expect_true(all(is_scholid(x, "bioproject")))
+        testthat::expect_true(all(classify_scholid(x) == "bioproject"))
+    }
+)
+
+testthat::test_that(
     "is_isni accepts canonical compact checksum-valid ISNIs",
     {
         x <- c(

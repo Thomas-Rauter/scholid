@@ -577,6 +577,55 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_bioproject strips wrappers and canonicalizes to uppercase accessions",
+    {
+        x <- c(
+            "PRJNA257197",
+            "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
+            "https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJEB12345",
+            "https://identifiers.org/bioproject/PRJDB303",
+            "bioproject:PRJDA1234",
+            "prjna257197",
+            "PRJNA1",
+            "GSE2553",
+            NA
+        )
+
+        got <- normalize_bioproject(x)
+        exp <- c(
+            "PRJNA257197",
+            "PRJNA257197",
+            "PRJEB12345",
+            "PRJDB303",
+            "PRJDA1234",
+            "PRJNA257197",
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized BioProject outputs are valid BioProject accessions and classify as bioproject",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
+                "bioproject:PRJEB12345"
+            ),
+            "bioproject"
+        )
+
+        testthat::expect_true(all(is_bioproject(x)))
+        testthat::expect_true(all(is_scholid(x, "bioproject")))
+        testthat::expect_true(all(classify_scholid(x) == "bioproject"))
+    }
+)
+
+testthat::test_that(
     "ARK normalization accepts plausible labeled and URL input forms",
     {
         x <- c(

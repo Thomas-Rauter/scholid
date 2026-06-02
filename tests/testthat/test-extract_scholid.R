@@ -798,6 +798,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_bioproject finds accessions in text and URLs",
+    {
+        txt <- c(
+            "Project PRJNA257197 and PRJEB12345.",
+            "Link https://www.ncbi.nlm.nih.gov/bioproject/PRJDB303",
+            "bioproject:PRJDA1234",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "bioproject"
+        )
+
+        testthat::expect_true(any(got[[1]] == "PRJNA257197"))
+        testthat::expect_true(any(got[[1]] == "PRJEB12345"))
+        testthat::expect_true(any(got[[2]] == "PRJDB303"))
+        testthat::expect_true(any(got[[3]] == "PRJDA1234"))
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_bioproject returns multiple matches from one string",
+    {
+        txt <- paste(
+            "projects:",
+            "PRJNA257197",
+            "and https://identifiers.org/bioproject/PRJEB12345"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "bioproject"
+        )[[1]]
+
+        testthat::expect_true(any(got == "PRJNA257197"))
+        testthat::expect_true(any(got == "PRJEB12345"))
+    }
+)
+
+testthat::test_that(
+    "extract_bioproject normalizes lowercase tokens and rejects invalid candidates",
+    {
+        txt <- "see prjna257197, PRJNA1, and GSE2553 for details"
+
+        got <- extract_scholid(
+            txt,
+            "bioproject"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            "PRJNA257197"
+        )
+    }
+)
+
+testthat::test_that(
     "extract_ark rejects bare paths and short NAAN candidates",
     {
         txt <- "see 12148/btv1b8449691v and ark:/1234/btv1b8449691v for details"
@@ -1358,6 +1420,7 @@ testthat::test_that(
         "RefSeq https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
         "SRA https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
         "GEO https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
+        "BioProject https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
         "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
         "ISNI 0000 0001 2146 438X"
     )
@@ -1378,6 +1441,7 @@ testthat::test_that(
     got_refseq <- extract_scholid(txt, "refseq")
     got_sra <- extract_scholid(txt, "sra")
     got_geo <- extract_scholid(txt, "geo")
+    got_bioproject <- extract_scholid(txt, "bioproject")
     got_swhid <- extract_scholid(txt, "swhid")
     got_isni <- extract_scholid(txt, "isni")
 
@@ -1397,8 +1461,9 @@ testthat::test_that(
     testthat::expect_true(length(got_refseq[[14]]) >= 1L)
     testthat::expect_true(length(got_sra[[15]]) >= 1L)
     testthat::expect_true(length(got_geo[[16]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[17]]) >= 1L)
-    testthat::expect_true(length(got_isni[[18]]) >= 1L)
+    testthat::expect_true(length(got_bioproject[[17]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[18]]) >= 1L)
+    testthat::expect_true(length(got_isni[[19]]) >= 1L)
     }
 )
 

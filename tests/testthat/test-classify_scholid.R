@@ -202,6 +202,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical BioProject accessions",
+    {
+        x <- c(
+            "PRJNA257197",
+            "PRJEB12345",
+            "PRJDB303"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("bioproject", "bioproject", "bioproject")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical compact ISNIs",
     {
         x <- c(

@@ -338,6 +338,28 @@ is_geo <- function(x) {
 }
 
 
+#' Check BioProject accession numbers
+#'
+#' Tests whether values are valid INSDC BioProject accessions in canonical
+#' uppercase form. Validation is structural only; registry existence is not
+#' checked.
+#'
+#' @param x A vector of values to check.
+#'
+#' @return A logical vector. `NA` inputs yield `NA`.
+#'
+#' @noRd
+is_bioproject <- function(x) {
+    init <- .scholid_init_na_logical(x)
+    init$out[init$ok] <- vapply(
+        init$x[init$ok],
+        .is_bioproject_strict,
+        logical(1)
+    )
+    init$out
+}
+
+
 #' Check ROR identifiers
 #'
 #' Tests whether values are valid ROR iDs, including checksum.
@@ -623,6 +645,16 @@ is_pmcid <- function(x) {
 }
 
 
+#' Return the BioProject validation pattern from the registry
+#'
+#' @return A single regular expression pattern string.
+#'
+#' @noRd
+.bioproject_pat <- function() {
+    .scholid_registry()[["bioproject"]]$pat
+}
+
+
 #' Canonicalize an ARK string to ark:/NAAN/Name form
 #'
 #' @param x A single ARK candidate string.
@@ -795,6 +827,41 @@ is_pmcid <- function(x) {
     }
 
     pat <- .geo_pat()
+    grepl(pat, x, perl = TRUE)
+}
+
+
+#' Strict BioProject validator
+#'
+#' @description
+#' Validates canonical uppercase BioProject accessions (`PRJNA257197`,
+#' `PRJEB12345`). Wrapped URLs and lowercase accessions are rejected; use
+#' `normalize_bioproject()` first.
+#'
+#' @param x A single character string in canonical form.
+#'
+#' @return A single logical value.
+#'
+#' @noRd
+.is_bioproject_strict <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return(FALSE)
+    }
+
+    x <- trimws(x)
+    if (grepl("^https?://", x, ignore.case = TRUE)) {
+        return(FALSE)
+    }
+
+    if (grepl("[[:space:]/|:?&=]", x, perl = TRUE)) {
+        return(FALSE)
+    }
+
+    if (!identical(x, toupper(x))) {
+        return(FALSE)
+    }
+
+    pat <- .bioproject_pat()
     grepl(pat, x, perl = TRUE)
 }
 

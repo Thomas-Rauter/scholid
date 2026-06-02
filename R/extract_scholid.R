@@ -237,6 +237,30 @@ extract_geo <- function(text) {
 }
 
 
+#' Extract BioProject accession numbers from text
+#'
+#' @description
+#' Extracts BioProject accessions from free text or URLs.
+#'
+#' Extracted BioProject candidates are cleaned to remove URL prefixes and
+#' trailing prose punctuation where necessary, and only structurally valid
+#' accessions are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted BioProject accessions.
+#'
+#' @noRd
+extract_bioproject <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "bioproject",
+        clean_fn    = .clean_extracted_bioproject,
+        validate_fn = is_bioproject
+    )
+}
+
+
 #' Extract ROR identifiers from text
 #'
 #' @description
@@ -714,6 +738,32 @@ extract_pmcid <- function(text) {
         ignore.case = TRUE
     )
     x <- sub("(?i)^geo:", "", x, perl = TRUE)
+    x <- sub("[?#&].*$", "", x)
+    toupper(x)
+}
+
+
+.clean_extracted_bioproject <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/bioproject/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://identifiers\\.org/bioproject[:/]",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub("(?i)^bioproject:", "", x, perl = TRUE)
+    x <- sub("(?i)^\\?term=", "", x, perl = TRUE)
     x <- sub("[?#&].*$", "", x)
     toupper(x)
 }

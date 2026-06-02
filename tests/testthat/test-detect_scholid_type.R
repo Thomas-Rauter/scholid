@@ -520,6 +520,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical BioProject accessions",
+    {
+        x <- c(
+            "PRJNA257197",
+            "PRJEB12345",
+            "PRJDB303"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("bioproject", "bioproject", "bioproject")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped BioProject accessions",
+    {
+        x <- c(
+            "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
+            "bioproject:PRJEB12345",
+            "https://identifiers.org/bioproject/PRJDB303"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("bioproject", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects lowercase bare BioProject accessions via normalization",
+    {
+        x <- "prjna257197"
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            "bioproject"
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects malformed BioProject candidates",
+    {
+        x <- c(
+            "PRJNA1",
+            "not-bioproject"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical compact ISNIs",
     {
         x <- c(

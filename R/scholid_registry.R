@@ -50,6 +50,11 @@
     )
     sra_core_pat <- "[SED]R[RXSP][0-9]{5,}"
     geo_core_pat <- "(?:GSE|GSM|GPL|GDS)[0-9]{2,}"
+    bioproject_prefixes <- c("PRJNA", "PRJEB", "PRJDB", "PRJDA", "PRJEA")
+    bioproject_prefix_pat <- paste(bioproject_prefixes, collapse = "|")
+    bioproject_core_pat <- paste0(
+        "(?:", bioproject_prefix_pat, ")[0-9]{2,}"
+    )
 
     list(
         doi = list(
@@ -223,8 +228,20 @@
                 "(?![[:alnum:]_\\-])"
             )
         ),
+        bioproject = list(
+            order = 42L,
+            pat   = paste0("^", bioproject_core_pat, "$"),
+            extract_pat = paste0(
+                "(?i)(?<![[:alnum:]_])",
+                "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/bioproject/(?:\\?term=)?|",
+                "https?://identifiers\\.org/bioproject[:/]|",
+                "bioproject:)?",
+                bioproject_core_pat,
+                "(?![[:alnum:]_\\-])"
+            )
+        ),
         isbn = list(
-            order       = 42L,
+            order       = 43L,
             extract_pat = "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
         ),
         issn = list(

@@ -24,6 +24,7 @@ testthat::test_that(
               "refseq",
               "sra",
               "geo",
+              "bioproject",
               "isbn",
               "issn",
               "pmcid",

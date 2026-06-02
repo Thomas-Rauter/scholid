@@ -458,6 +458,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "detect_scholid_type detects canonical GEO accessions",
+    {
+        x <- c(
+            "GSE2553",
+            "GSM313800",
+            "GPL96"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            c("geo", "geo", "geo")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects wrapped GEO accessions",
+    {
+        x <- c(
+            "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
+            "geo:GSM313800",
+            "https://identifiers.org/geo/GPL96"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_identical(
+            got,
+            rep("geo", length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type detects lowercase bare GEO accessions via normalization",
+    {
+        x <- "gse2553"
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            "geo"
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type rejects malformed GEO candidates",
+    {
+        x <- c(
+            "GSE1",
+            "not-geo"
+        )
+
+        got <- detect_scholid_type(x)
+
+        testthat::expect_true(all(is.na(got)))
+    }
+)
+
+testthat::test_that(
     "detect_scholid_type detects canonical compact ISNIs",
     {
         x <- c(

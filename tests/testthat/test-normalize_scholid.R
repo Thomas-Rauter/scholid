@@ -530,6 +530,53 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "normalize_geo strips wrappers and canonicalizes to uppercase accessions",
+    {
+        x <- c(
+            "GSE2553",
+            "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
+            "https://identifiers.org/geo/GSM313800",
+            "geo:GPL96",
+            "gse2553",
+            "GSE1",
+            "SRR1553610",
+            NA
+        )
+
+        got <- normalize_geo(x)
+        exp <- c(
+            "GSE2553",
+            "GSE2553",
+            "GSM313800",
+            "GPL96",
+            "GSE2553",
+            NA_character_,
+            NA_character_,
+            NA_character_
+        )
+
+        testthat::expect_identical(got, exp)
+    }
+)
+
+testthat::test_that(
+    "normalized GEO outputs are valid GEO accessions and classify as geo",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
+                "geo:GSM313800"
+            ),
+            "geo"
+        )
+
+        testthat::expect_true(all(is_geo(x)))
+        testthat::expect_true(all(is_scholid(x, "geo")))
+        testthat::expect_true(all(classify_scholid(x) == "geo"))
+    }
+)
+
+testthat::test_that(
     "ARK normalization accepts plausible labeled and URL input forms",
     {
         x <- c(

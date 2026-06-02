@@ -184,6 +184,24 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "classify_scholid classifies canonical GEO accessions",
+    {
+        x <- c(
+            "GSE2553",
+            "GSM313800",
+            "GPL96"
+        )
+
+        got <- classify_scholid(x)
+
+        testthat::expect_identical(
+            got,
+            c("geo", "geo", "geo")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical compact ISNIs",
     {
         x <- c(

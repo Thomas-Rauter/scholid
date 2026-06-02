@@ -41,6 +41,7 @@ testthat::test_that(
               "uniprot",
               "refseq",
               "sra",
+              "geo",
               "isbn",
               "issn",
               "pmcid"

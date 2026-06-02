@@ -397,6 +397,49 @@ Wrapped URLs and lowercase accessions should be normalized with
 
 ---
 
+# GEO (Gene Expression Omnibus accession)
+
+**Governing body:** NCBI GEO  
+**Documentation:** [GEO programmatic access](https://www.ncbi.nlm.nih.gov/geo/info/geo_paccess.html)
+
+## Structure
+
+A GEO accession identifies a curated dataset, series, sample, or platform
+record. The format is a three-letter entity prefix followed by digits.
+
+Examples:
+
+```
+GSE2553
+GSM313800
+GPL96
+GDS505
+```
+
+Preferred resolver URLs include:
+
+```
+https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553
+https://identifiers.org/geo/GSE2553
+```
+
+## Validation in scholid
+
+GEO validation is **structural only**. Registry existence is not checked.
+
+Canonical form is the uppercase accession. Supported entity prefixes are
+`GSE` (series), `GSM` (sample), `GPL` (platform), and `GDS` (dataset).
+Wrapped URLs and lowercase accessions should be normalized with
+`normalize_scholid()` before classification.
+
+## Structural Regex
+
+```
+^(?:GSE|GSM|GPL|GDS)[0-9]{2,}$
+```
+
+---
+
 # ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  

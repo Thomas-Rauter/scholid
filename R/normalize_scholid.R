@@ -450,6 +450,61 @@ normalize_sra <- function(x) {
 }
 
 
+#' Normalize GEO accession numbers
+#'
+#' @description
+#' Normalizes GEO accessions from NCBI or identifiers.org URLs,
+#' `geo:`-prefixed strings, or bare accessions to canonical uppercase form.
+#'
+#' Normalization requires structurally valid accession numbers. Registry
+#' existence is not checked.
+#'
+#' @param x A vector of GEO values.
+#'
+#' @return A character vector of normalized GEO accessions. Invalid or
+#'   unsupported inputs yield `NA_character_`.
+#'
+#' @noRd
+normalize_geo <- function(x) {
+    init <- .scholid_init_na_character(x)
+    y <- trimws(init$x[init$ok])
+    y <- sub("[.,;:!?]+$", "", y)
+
+    bare_pat <- .geo_pat()
+    has_marker <- grepl(
+        "ncbi\\.nlm\\.nih\\.gov/geo/query/acc\\.cgi",
+        y,
+        ignore.case = TRUE
+    ) |
+        grepl("identifiers\\.org/geo/", y, ignore.case = TRUE) |
+        grepl("(?i)^geo:", y, perl = TRUE) |
+        grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
+
+    y[!has_marker] <- NA_character_
+
+    y <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/geo/query/acc\\.cgi\\?acc=",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub(
+        "^https?://identifiers\\.org/geo/",
+        "",
+        y,
+        ignore.case = TRUE
+    )
+    y <- sub("(?i)^geo:", "", y, perl = TRUE)
+    y <- sub("[?#].*$", "", y)
+    y <- toupper(y)
+
+    y[!is.na(y) & !is_geo(y)] <- NA_character_
+
+    init$out[init$ok] <- y
+    init$out
+}
+
+
 #' Normalize ROR identifiers
 #'
 #' @description

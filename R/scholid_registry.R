@@ -49,6 +49,7 @@
         "(?:", refseq_prefix_pat, ")_[A-Z0-9]+\\.[0-9]+"
     )
     sra_core_pat <- "[SED]R[RXSP][0-9]{5,}"
+    geo_core_pat <- "(?:GSE|GSM|GPL|GDS)[0-9]{2,}"
 
     list(
         doi = list(
@@ -210,8 +211,20 @@
                 "(?![[:alnum:]_\\-])"
             )
         ),
+        geo = list(
+            order = 41L,
+            pat   = paste0("^", geo_core_pat, "$"),
+            extract_pat = paste0(
+                "(?i)(?<![[:alnum:]_])",
+                "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/geo/query/acc\\.cgi\\?acc=|",
+                "https?://identifiers\\.org/geo/|",
+                "geo:)?",
+                geo_core_pat,
+                "(?![[:alnum:]_\\-])"
+            )
+        ),
         isbn = list(
-            order       = 41L,
+            order       = 42L,
             extract_pat = "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
         ),
         issn = list(

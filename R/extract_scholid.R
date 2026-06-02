@@ -213,6 +213,30 @@ extract_sra <- function(text) {
 }
 
 
+#' Extract GEO accession numbers from text
+#'
+#' @description
+#' Extracts GEO accessions from free text or URLs.
+#'
+#' Extracted GEO candidates are cleaned to remove URL prefixes and trailing
+#' prose punctuation where necessary, and only structurally valid accessions
+#' are returned.
+#'
+#' @param text A character vector of text.
+#'
+#' @return A list of character vectors of extracted GEO accessions.
+#'
+#' @noRd
+extract_geo <- function(text) {
+    .scholid_extract_validated(
+        text        = text,
+        type        = "geo",
+        clean_fn    = .clean_extracted_geo,
+        validate_fn = is_geo
+    )
+}
+
+
 #' Extract ROR identifiers from text
 #'
 #' @description
@@ -666,6 +690,31 @@ extract_pmcid <- function(text) {
         ignore.case = TRUE
     )
     x <- sub("(?i)^sra:", "", x, perl = TRUE)
+    toupper(x)
+}
+
+
+.clean_extracted_geo <- function(x) {
+    if (is.na(x) || !nzchar(x)) {
+        return("")
+    }
+
+    x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
+    x <- trimws(x)
+    x <- sub(
+        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/geo/query/acc\\.cgi\\?acc=",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub(
+        "^https?://identifiers\\.org/geo/",
+        "",
+        x,
+        ignore.case = TRUE
+    )
+    x <- sub("(?i)^geo:", "", x, perl = TRUE)
+    x <- sub("[?#&].*$", "", x)
     toupper(x)
 }
 

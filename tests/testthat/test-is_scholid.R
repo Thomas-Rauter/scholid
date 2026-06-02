@@ -1050,6 +1050,100 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_geo accepts canonical uppercase GEO accessions",
+    {
+        x <- c(
+            "GSE2553",
+            "GSM313800",
+            "GPL96",
+            "GDS505"
+        )
+
+        testthat::expect_identical(
+            is_geo(x),
+            rep(TRUE, length(x))
+        )
+    }
+)
+
+testthat::test_that(
+    "is_geo rejects URLs, lowercase, short tails, and SRA-like strings",
+    {
+        x <- c(
+            "GSE2553",
+            "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
+            "gse2553",
+            "GSE1",
+            "SRR1553610",
+            "not-geo",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            is_geo(x),
+            c(TRUE, FALSE, FALSE, FALSE, FALSE, FALSE, NA)
+        )
+    }
+)
+
+testthat::test_that(
+    "is_scholid dispatches to is_geo for type geo",
+    {
+        x <- c("GSE2553", "gse2553", NA_character_)
+
+        testthat::expect_identical(
+            is_scholid(x, "geo"),
+            is_geo(x)
+        )
+    }
+)
+
+testthat::test_that(
+    "GEO normalization canonicalizes valid labeled and URL inputs",
+    {
+        x <- c(
+            "GSE2553",
+            "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
+            "https://identifiers.org/geo/GSM313800",
+            "geo:GPL96",
+            "gse2553",
+            "GSE1",
+            NA_character_
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "geo"),
+            c(
+                "GSE2553",
+                "GSE2553",
+                "GSM313800",
+                "GPL96",
+                "GSE2553",
+                NA_character_,
+                NA_character_
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalized GEO outputs validate and classify as geo",
+    {
+        x <- normalize_scholid(
+            c(
+                "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
+                "geo:GSM313800"
+            ),
+            "geo"
+        )
+
+        testthat::expect_true(all(is_geo(x)))
+        testthat::expect_true(all(is_scholid(x, "geo")))
+        testthat::expect_true(all(classify_scholid(x) == "geo"))
+    }
+)
+
+testthat::test_that(
     "is_isni accepts canonical compact checksum-valid ISNIs",
     {
         x <- c(

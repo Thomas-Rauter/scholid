@@ -736,6 +736,68 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "extract_geo finds accessions in text and URLs",
+    {
+        txt <- c(
+            "Series GSE2553 and sample GSM313800.",
+            "Link https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GPL96",
+            "geo:GDS505",
+            NA_character_
+        )
+
+        got <- extract_scholid(
+            txt,
+            "geo"
+        )
+
+        testthat::expect_true(any(got[[1]] == "GSE2553"))
+        testthat::expect_true(any(got[[1]] == "GSM313800"))
+        testthat::expect_true(any(got[[2]] == "GPL96"))
+        testthat::expect_true(any(got[[3]] == "GDS505"))
+        testthat::expect_identical(
+            got[[4]],
+            character(0)
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_geo returns multiple matches from one string",
+    {
+        txt <- paste(
+            "records:",
+            "GSE2553",
+            "and https://identifiers.org/geo/GSM313800"
+        )
+
+        got <- extract_scholid(
+            txt,
+            "geo"
+        )[[1]]
+
+        testthat::expect_true(any(got == "GSE2553"))
+        testthat::expect_true(any(got == "GSM313800"))
+    }
+)
+
+testthat::test_that(
+    "extract_geo normalizes lowercase tokens and rejects invalid candidates",
+    {
+        txt <- "see gse2553, GSE1, and SRR1553610 for details"
+
+        got <- extract_scholid(
+            txt,
+            "geo"
+        )[[1]]
+
+        testthat::expect_identical(
+            got,
+            "GSE2553"
+        )
+    }
+)
+
+testthat::test_that(
     "extract_ark rejects bare paths and short NAAN candidates",
     {
         txt <- "see 12148/btv1b8449691v and ark:/1234/btv1b8449691v for details"
@@ -1295,6 +1357,7 @@ testthat::test_that(
         "UniProt https://www.uniprot.org/uniprot/P12345",
         "RefSeq https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
         "SRA https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
+        "GEO https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
         "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
         "ISNI 0000 0001 2146 438X"
     )
@@ -1314,6 +1377,7 @@ testthat::test_that(
     got_uniprot <- extract_scholid(txt, "uniprot")
     got_refseq <- extract_scholid(txt, "refseq")
     got_sra <- extract_scholid(txt, "sra")
+    got_geo <- extract_scholid(txt, "geo")
     got_swhid <- extract_scholid(txt, "swhid")
     got_isni <- extract_scholid(txt, "isni")
 
@@ -1332,8 +1396,9 @@ testthat::test_that(
     testthat::expect_true(length(got_uniprot[[13]]) >= 1L)
     testthat::expect_true(length(got_refseq[[14]]) >= 1L)
     testthat::expect_true(length(got_sra[[15]]) >= 1L)
-    testthat::expect_true(length(got_swhid[[16]]) >= 1L)
-    testthat::expect_true(length(got_isni[[17]]) >= 1L)
+    testthat::expect_true(length(got_geo[[16]]) >= 1L)
+    testthat::expect_true(length(got_swhid[[17]]) >= 1L)
+    testthat::expect_true(length(got_isni[[18]]) >= 1L)
     }
 )
 

@@ -226,6 +226,133 @@ Canonical form (authority body validated separately):
 
 ------------------------------------------------------------------------
 
+## UniProt (UniProtKB accession)
+
+**Governing body:** UniProt Consortium  
+**Documentation:** [UniProt accession
+numbers](https://www.uniprot.org/help/accession_numbers)
+
+### Structure
+
+A UniProtKB accession uniquely identifies a protein record. Accessions
+are 6 or 10 uppercase alphanumeric characters following UniProt-defined
+patterns.
+
+Examples:
+
+    P12345
+    Q9H0H5
+    A0A022YWF9
+
+Preferred resolver URLs include:
+
+    https://www.uniprot.org/uniprot/P12345
+    https://identifiers.org/uniprot/P12345
+
+### Validation in scholid
+
+UniProt validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession without version suffixes or
+entry name qualifiers. Wrapped URLs and lowercase accessions should be
+normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})$
+
+------------------------------------------------------------------------
+
+## RefSeq (NCBI Reference Sequence accession)
+
+**Governing body:** NCBI RefSeq  
+**Documentation:** [RefSeq accession
+format](https://www.ncbi.nlm.nih.gov/refseq/key/#accessions)
+
+### Structure
+
+A RefSeq accession uniquely identifies a curated sequence record. The
+format is a two-letter molecule-type prefix, an underscore, an
+alphanumeric accession body, a period, and a version number.
+
+Examples:
+
+    NM_001744.6
+    NP_001735.1
+    NC_003619.1
+    NZ_CASIGT010000001.1
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6
+    https://www.ncbi.nlm.nih.gov/protein/NP_001735.1
+    https://identifiers.org/refseq/NM_001744.6
+
+### Validation in scholid
+
+RefSeq validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession with version suffix. Known
+RefSeq prefixes are allowlisted. Wrapped URLs and lowercase accessions
+should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^(?:AC|AP|NC|NG|NM|NP|NR|NT|NW|NZ|XM|XP|XR|YP|WP)_[A-Z0-9]+\.[0-9]+$
+
+------------------------------------------------------------------------
+
+## SRA (Sequence Read Archive accession)
+
+**Governing body:** INSDC Sequence Read Archive (NCBI, EBI, DDBJ)  
+**Documentation:** [Search in SRA
+Entrez](https://www.ncbi.nlm.nih.gov/sra/docs/srasearch/)
+
+### Structure
+
+An SRA accession identifies a study, sample, experiment, or run in the
+INSDC archives. The format is a three-letter prefix (source database
+plus entity type) followed by digits.
+
+Examples:
+
+    SRP006081
+    SRS123456
+    SRX1234567
+    SRR1553610
+    ERR1234567
+    DRR1234567
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/sra/SRR1553610
+    https://identifiers.org/sra/SRR1553610
+
+### Validation in scholid
+
+SRA validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession without version suffix. The
+first letter denotes the source archive (`S` NCBI, `E` EBI, `D` DDBJ);
+the third letter denotes entity type (`P` study, `S` sample, `X`
+experiment, `R` run). Wrapped URLs and lowercase accessions should be
+normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^[SED]R[RXSP][0-9]{5,}$
+
+------------------------------------------------------------------------
+
 ## ISBN (International Standard Book Number)
 
 **Governing body:** International ISBN Agency  

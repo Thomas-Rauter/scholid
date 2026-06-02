@@ -41,8 +41,8 @@ scholid::scholid_types()
 ```
 
     ##  [1] "doi"      "arxiv"    "bibcode"  "openalex" "swhid"    "ark"     
-    ##  [7] "isni"     "orcid"    "ror"      "rrid"     "isbn"     "issn"    
-    ## [13] "pmcid"    "pmid"
+    ##  [7] "isni"     "orcid"    "ror"      "rrid"     "uniprot"  "refseq"  
+    ## [13] "sra"      "isbn"     "issn"     "pmcid"    "pmid"
 
 ## Detect: `is_scholid()`
 

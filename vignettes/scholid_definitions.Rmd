@@ -283,7 +283,7 @@ Canonical compact form:
 # RRID (Research Resource Identifier)
 
 **Governing body:** Resource Identification Initiative (SciCrunch)  
-**Documentation:** [RRID guidelines](https://rrid.site/about/guidelines)
+**Documentation:** [RRID Initiative](https://www.rrids.org/)
 
 ## Structure
 
@@ -378,7 +378,7 @@ explicitly rejects UniProt-shaped strings).
 # RefSeq (NCBI Reference Sequence accession)
 
 **Governing body:** NCBI RefSeq  
-**Documentation:** [RefSeq accession format](https://www.ncbi.nlm.nih.gov/refseq/key/#accessions)
+**Documentation:** [RefSeq accession prefixes](https://www.ncbi.nlm.nih.gov/books/NBK21091/table/ch18.T.refseq_accession_numbers_and_mole/?report=objectonly)
 
 ## Structure
 

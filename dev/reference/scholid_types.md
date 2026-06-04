@@ -1,7 +1,12 @@
 # Supported scholid identifier types
 
 Returns the set of identifier types supported by the scholid package in
-classification priority order (most specific first).
+classification priority order (most specific first). The package
+currently supports twenty types (from DOI and ORCID through life-science
+and archive identifiers). For per-type formats, validation rules, and
+classification precedence, see the *How Scholarly Identifiers Are
+Defined* vignette
+([`vignette("scholid_definitions", package = "scholid")`](https://thomas-rauter.github.io/scholid/articles/scholid_definitions.md)).
 
 ## Usage
 

@@ -11,12 +11,12 @@ Source:
 [`DESCRIPTION`](https://github.com/Thomas-Rauter/scholid/blob/main/DESCRIPTION)
 
 Rauter T (2026). *scholid: Scholarly and Academic Identifier Utilities*.
-R package version 0.1.1, <https://thomas-rauter.github.io/scholid/>.
+R package version 0.2.0, <https://thomas-rauter.github.io/scholid/>.
 
     @Manual{,
       title = {scholid: Scholarly and Academic Identifier Utilities},
       author = {Thomas Rauter},
       year = {2026},
-      note = {R package version 0.1.1},
+      note = {R package version 0.2.0},
       url = {https://thomas-rauter.github.io/scholid/},
     }

@@ -7,6 +7,7 @@ Detection first attempts classification based on canonical identifier
 syntax (see classify_scholid()). If no match is found, the function
 attempts per-type normalization (see normalize_scholid()) and returns
 the first type for which normalization yields a non-missing result.
+PMID is checked last as a fallback when no more specific type matches.
 Use normalize_scholid() to convert detected values to canonical form
 once the identifier type is known."><meta property="og:description" content="Performs best-effort detection of scholarly identifier types from possibly
 wrapped identifier strings (e.g., URLs or labels).
@@ -16,6 +17,7 @@ Detection first attempts classification based on canonical identifier
 syntax (see classify_scholid()). If no match is found, the function
 attempts per-type normalization (see normalize_scholid()) and returns
 the first type for which normalization yields a non-missing result.
+PMID is checked last as a fallback when no more specific type matches.
 Use normalize_scholid() to convert detected values to canonical form
 once the identifier type is known."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -25,7 +27,7 @@ once the identifier type is known."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">scholid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,7 +63,8 @@ identifier type, or <code>NA_character_</code> if no supported type matches.</p>
 <p>Detection first attempts classification based on canonical identifier
 syntax (see <code><a href="classify_scholid.html">classify_scholid()</a></code>). If no match is found, the function
 attempts per-type normalization (see <code><a href="normalize_scholid.html">normalize_scholid()</a></code>) and returns
-the first type for which normalization yields a non-missing result.</p>
+the first type for which normalization yields a non-missing result.
+PMID is checked last as a fallback when no more specific type matches.</p>
 <p>Use <code><a href="normalize_scholid.html">normalize_scholid()</a></code> to convert detected values to canonical form
 once the identifier type is known.</p>
     </div>

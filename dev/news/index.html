@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">scholid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,47 @@
       <small>Source: <a href="https://github.com/Thomas-Rauter/scholid/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="scholid-020">scholid 0.2.0<a class="anchor" aria-label="anchor" href="#scholid-020"></a></h2>
+<div class="section level3">
+<h3 id="new-identifier-types-0-2-0">New identifier types<a class="anchor" aria-label="anchor" href="#new-identifier-types-0-2-0"></a></h3>
+<p>The package now supports 20 identifier types (up from 7 in 0.1.1). Each type provides structural validation, normalization from URLs and labels, and extraction from free text via the existing <code><a href="../reference/is_scholid.html">is_scholid()</a></code>, <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>, <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code>, <code><a href="../reference/classify_scholid.html">classify_scholid()</a></code>, and <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> APIs.</p>
+<p>New types in this release:</p>
+<ul><li>
+<strong>ROR</strong> — Research Organization Registry iDs (checksum-validated)</li>
+<li>
+<strong>RRID</strong> — Research Resource Identifiers</li>
+<li>
+<strong>SWHID</strong> — Software Heritage persistent identifiers</li>
+<li>
+<strong>OpenAlex</strong> — OpenAlex entity keys (<code>W</code>, <code>A</code>, <code>S</code>, …)</li>
+<li>
+<strong>bibcode</strong> — SAO/NASA ADS bibliographic codes</li>
+<li>
+<strong>ISNI</strong> — International Standard Name Identifier (compact form; hyphenated ORCID-shaped strings remain <code>orcid</code>)</li>
+<li>
+<strong>ARK</strong> — Archival Resource Keys (<code>ark:/NAAN/Name</code>)</li>
+<li>
+<strong>UniProt</strong> — UniProtKB accessions</li>
+<li>
+<strong>refseq</strong> — NCBI RefSeq accessions (versioned)</li>
+<li>
+<strong>sra</strong> — INSDC Sequence Read Archive accessions (<code>SRR</code>, <code>SRX</code>, <code>SRP</code>, …)</li>
+<li>
+<strong>geo</strong> — NCBI GEO accessions (<code>GSE</code>, <code>GSM</code>, <code>GPL</code>, <code>GDS</code>)</li>
+<li>
+<strong>bioproject</strong> — INSDC BioProject accessions (<code>PRJNA</code>, <code>PRJEB</code>, …)</li>
+<li>
+<strong>assembly</strong> — INSDC genome assembly accessions (<code>GCA_</code>, <code>GCF_</code>, versioned)</li>
+</ul><p>Identifier definitions and validation rules are documented in the <code>scholid_definitions</code> vignette.</p>
+</div>
+<div class="section level3">
+<h3 id="internal-improvements-0-2-0">Internal improvements<a class="anchor" aria-label="anchor" href="#internal-improvements-0-2-0"></a></h3>
+<ul><li>Introduced a central identifier registry as the single source of truth for type names, classification order, extraction patterns, and per-type metadata.</li>
+<li>Refactored per-type implementations to reduce duplication; exported APIs dispatch by naming convention (<code>is_&lt;type&gt;</code>, <code>normalize_&lt;type&gt;</code>, <code>extract_&lt;type&gt;</code>).</li>
+<li>Optimized <code><a href="../reference/classify_scholid.html">classify_scholid()</a></code> and <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> to avoid redundant work when resolving types.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.1.1" id="scholid-011">scholid 0.1.1<a class="anchor" aria-label="anchor" href="#scholid-011"></a></h2><p class="text-muted">CRAN release: 2026-04-24</p>
 <div class="section level3">

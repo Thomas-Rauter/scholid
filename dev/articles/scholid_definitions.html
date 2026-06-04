@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">scholid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -82,11 +82,180 @@ exist?)</li>
 </ul>
 <p>The functions in <code>scholid</code> validate identifiers at the
 <strong>structural</strong> level and verify checksums where defined
-(ORCID, ROR, ISBN, ISSN). They do not check registry or online
-existence. The regexes shown below describe the structural form that an
-identifier must match; checksum rules are documented separately for
-relevant types.</p>
+(ORCID, ROR, ISNI, ISBN, ISSN). They do not check registry or online
+existence. The regexes in each section describe the
+<strong>canonical</strong> form that <code><a href="../reference/is_scholid.html">is_scholid()</a></code> expects;
+wrapped URLs and labels should be normalized with
+<code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> first. Checksum rules are documented
+separately where they apply.</p>
+<div class="section level3">
+<h3 id="classification-order">Classification order<a class="anchor" aria-label="anchor" href="#classification-order"></a>
+</h3>
+<p><code><a href="../reference/classify_scholid.html">classify_scholid()</a></code> and
+<code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> walk types in the order returned by
+<code><a href="../reference/scholid_types.html">scholid_types()</a></code> (most specific first). The first matching
+type wins. This matters when patterns overlap: for example, OpenAlex is
+checked before PMID, and six-character UniProt accessions such as
+<code>P12345</code> are not treated as OpenAlex keys.</p>
+<p>PMID is a <strong>fallback</strong> type (<code>detect_last</code> in
+the registry): bare digit strings are only classified or detected as
+PMID when no more specific type matches. During extraction, PMID
+candidates use 4–9 digits and do not match digits immediately following
+<code>PMC</code>.</p>
+<p>For the authoritative type list and order, call
+<code><a href="../reference/scholid_types.html">scholid_types()</a></code> in R.</p>
+</div>
+<div class="section level3">
+<h3 id="supported-types-overview">Supported types (overview)<a class="anchor" aria-label="anchor" href="#supported-types-overview"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="18%">
+<col width="28%">
+<col width="31%">
+<col width="21%">
+</colgroup>
+<thead><tr class="header">
+<th>Type</th>
+<th>Example</th>
+<th>Checksum</th>
+<th>Notes</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td><code>doi</code></td>
+<td><code>10.1000/182</code></td>
+<td>No</td>
+<td>Prefix <code>10.</code>; opaque suffix</td>
+</tr>
+<tr class="even">
+<td><code>arxiv</code></td>
+<td><code>2101.00001v2</code></td>
+<td>No</td>
+<td>Modern or legacy archive form</td>
+</tr>
+<tr class="odd">
+<td><code>bibcode</code></td>
+<td><code>1992ApJ...400L...1W</code></td>
+<td>No</td>
+<td>Fixed 19 characters</td>
+</tr>
+<tr class="even">
+<td><code>openalex</code></td>
+<td><code>W2741809807</code></td>
+<td>No</td>
+<td>Not UniProt-shaped 6-char accessions</td>
+</tr>
+<tr class="odd">
+<td><code>swhid</code></td>
+<td><code>swh:1:cnt:94a9ed02…</code></td>
+<td>No</td>
+<td>Requires <code>swh:</code> prefix; optional qualifiers</td>
+</tr>
+<tr class="even">
+<td><code>ark</code></td>
+<td><code>ark:/12148/btv1b8449691v</code></td>
+<td>No</td>
+<td>Requires <code>ark:</code> label; 5-digit NAAN</td>
+</tr>
+<tr class="odd">
+<td><code>isni</code></td>
+<td><code>000000012146438X</code></td>
+<td>Yes</td>
+<td>Compact 16 characters</td>
+</tr>
+<tr class="even">
+<td><code>orcid</code></td>
+<td><code>0000-0002-1825-0097</code></td>
+<td>Yes</td>
+<td>Hyphenated canonical form</td>
+</tr>
+<tr class="odd">
+<td><code>ror</code></td>
+<td><code>01an7q238</code></td>
+<td>Yes</td>
+<td>Lowercase Crockford base32</td>
+</tr>
+<tr class="even">
+<td><code>rrid</code></td>
+<td><code>RRID:AB_262044</code></td>
+<td>No</td>
+<td>
+<code>RRID:</code> prefix; authority allowlist</td>
+</tr>
+<tr class="odd">
+<td><code>uniprot</code></td>
+<td><code>P12345</code></td>
+<td>No</td>
+<td>Uppercase; no version suffix</td>
+</tr>
+<tr class="even">
+<td><code>refseq</code></td>
+<td><code>NM_001744.6</code></td>
+<td>No</td>
+<td>Prefix allowlist; version required</td>
+</tr>
+<tr class="odd">
+<td><code>sra</code></td>
+<td><code>SRR1553610</code></td>
+<td>No</td>
+<td>INSDC <code>S</code>/<code>E</code>/<code>D</code> + <code>R</code>
++ entity letter</td>
+</tr>
+<tr class="even">
+<td><code>geo</code></td>
+<td><code>GSE2553</code></td>
+<td>No</td>
+<td>
+<code>GSE</code>, <code>GSM</code>, <code>GPL</code>, or
+<code>GDS</code>
+</td>
+</tr>
+<tr class="odd">
+<td><code>bioproject</code></td>
+<td><code>PRJNA257197</code></td>
+<td>No</td>
+<td>INSDC <code>PRJ*</code> prefixes</td>
+</tr>
+<tr class="even">
+<td><code>assembly</code></td>
+<td><code>GCF_000001405.40</code></td>
+<td>No</td>
+<td>
+<code>GCA_</code> or <code>GCF_</code>; nine digits + version</td>
+</tr>
+<tr class="odd">
+<td><code>isbn</code></td>
+<td><code>9780306406157</code></td>
+<td>Yes</td>
+<td>ISBN-10 or ISBN-13</td>
+</tr>
+<tr class="even">
+<td><code>issn</code></td>
+<td><code>2434-561X</code></td>
+<td>Yes</td>
+<td>Hyphenated canonical display</td>
+</tr>
+<tr class="odd">
+<td><code>pmcid</code></td>
+<td><code>PMC1234567</code></td>
+<td>No</td>
+<td>Literal <code>PMC</code> prefix</td>
+</tr>
+<tr class="even">
+<td><code>pmid</code></td>
+<td><code>12345678</code></td>
+<td>No</td>
+<td>Fallback; excludes valid ISBNs</td>
+</tr>
+</tbody>
+</table>
+<p>The sections below follow a consistent layout:
+<strong>Structure</strong>, <strong>Validation in scholid</strong>,
+<strong>Checksum</strong> (if applicable), and <strong>Structural
+regex</strong>.</p>
 <hr>
+</div>
 </div>
 <div class="section level2">
 <h2 id="doi-digital-object-identifier">DOI (Digital Object Identifier)<a class="anchor" aria-label="anchor" href="#doi-digital-object-identifier"></a>
@@ -124,19 +293,17 @@ relevant types.</p>
 </div>
 </div>
 <div class="section level3">
-<h3 id="important-properties">Important Properties<a class="anchor" aria-label="anchor" href="#important-properties"></a>
+<h3 id="validation-in-scholid">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid"></a>
 </h3>
-<ul>
-<li>No checksum.</li>
-<li>The suffix is opaque.</li>
-<li>Structural validation cannot confirm existence.</li>
-<li>DOI resolution requires registry lookup (e.g., via doi.org).</li>
-</ul>
+<p>DOI validation is <strong>structural only</strong>. There is no
+checksum. Registry existence is not checked. Wrapped forms
+(<code>https://doi.org/…</code>, <code>doi:</code> labels) should be
+normalized before classification.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex"></a>
 </h3>
-<p>A commonly accepted structural regex:</p>
+<p>Canonical form (as enforced by <code><a href="../reference/is_scholid.html">is_scholid()</a></code>):</p>
 <pre><code>^10\.\d{4,9}/\S+$</code></pre>
 <p>This checks: - Prefix starts with <code>10.</code> - 4–9 digits - A
 slash - Non-whitespace suffix</p>
@@ -164,6 +331,14 @@ spaces in blocks of four:</p>
 characters but are canonicalized in <code>scholid</code> with hyphens.
 Compact checksum-valid 16-character strings are treated as ISNI;
 hyphenated strings are treated as ORCID.</p>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid-1">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-1"></a>
+</h3>
+<p>ISNI validation requires a <strong>checksum-valid</strong> compact
+16-character string. Hyphenated ORCID-shaped input is not accepted as
+ISNI; normalize or classify as ORCID instead. Registry existence is not
+checked.</p>
 </div>
 <div class="section level3">
 <h3 id="checksum">Checksum<a class="anchor" aria-label="anchor" href="#checksum"></a>
@@ -210,9 +385,19 @@ A structurally correct ORCID may still be invalid if the checksum does
 not match.</p>
 </div>
 <div class="section level3">
+<h3 id="validation-in-scholid-2">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-2"></a>
+</h3>
+<p>ORCID validation requires a <strong>checksum-valid</strong>
+hyphenated iD. Unhyphenated 16-character strings are not accepted as
+ORCID by <code><a href="../reference/is_scholid.html">is_scholid()</a></code>; if they match the ISNI compact
+pattern and checksum, they classify as <code>isni</code> instead.
+Wrapped <code>https://orcid.org/</code> URLs should be normalized
+first.</p>
+</div>
+<div class="section level3">
 <h3 id="structural-regex-2">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-2"></a>
 </h3>
-<p>Hyphenated form:</p>
+<p>Hyphenated canonical form (used by <code><a href="../reference/is_scholid.html">is_scholid()</a></code>):</p>
 <pre><code>^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$</code></pre>
 <p>Unhyphenated internal form:</p>
 <pre><code>^\d{15}[\dX]$</code></pre>
@@ -240,9 +425,16 @@ seven characters using Crockford base32 encoding and ISO/IEC 7064 MOD
 97-10 rules, matching ROR’s identifier generation implementation.</p>
 </div>
 <div class="section level3">
+<h3 id="validation-in-scholid-3">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-3"></a>
+</h3>
+<p>ROR validation requires a <strong>checksum-valid</strong> lowercase
+compact iD. <code>https://ror.org/</code> URLs should be normalized
+before classification. Registry existence is not checked.</p>
+</div>
+<div class="section level3">
 <h3 id="structural-regex-3">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-3"></a>
 </h3>
-<p>Compact form:</p>
+<p>Canonical compact form:</p>
 <pre><code>^0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}$</code></pre>
 <hr>
 </div>
@@ -269,7 +461,7 @@ accession:</p>
 <pre><code>https://scicrunch.org/resolver/RRID:AB_262044</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid"></a>
+<h3 id="validation-in-scholid-4">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-4"></a>
 </h3>
 <p>RRID validation is <strong>structural only</strong>. There is no
 checksum algorithm, and registry existence is not checked.</p>
@@ -284,8 +476,11 @@ are rejected.</p>
 <div class="section level3">
 <h3 id="structural-regex-4">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-4"></a>
 </h3>
-<p>Canonical form (authority body validated separately):</p>
-<pre><code>^RRID:.+$</code></pre>
+<p>Canonical prefix (body matched against an authority allowlist, not
+<code>.+</code>):</p>
+<pre><code>^RRID:(?:AB_\d+|CVCL_[0-9A-Z]+|SCR_\d+|…)$</code></pre>
+<p>The full allowlist is defined in the package registry; see the RRID
+implementation for the current authority patterns.</p>
 <hr>
 </div>
 </div>
@@ -309,7 +504,7 @@ UniProt-defined patterns.</p>
 https://identifiers.org/uniprot/P12345</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-1">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-1"></a>
+<h3 id="validation-in-scholid-5">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-5"></a>
 </h3>
 <p>UniProt validation is <strong>structural only</strong>. Registry
 existence is not checked.</p>
@@ -317,6 +512,10 @@ existence is not checked.</p>
 entry name qualifiers. Wrapped URLs and lowercase accessions should be
 normalized with <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> before
 classification.</p>
+<p>Six-character accessions such as <code>P12345</code> are
+<strong>not</strong> accepted as OpenAlex keys (OpenAlex is checked
+earlier in classification order, but <code>is_openalex()</code>
+explicitly rejects UniProt-shaped strings).</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-5">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-5"></a>
@@ -347,7 +546,7 @@ https://www.ncbi.nlm.nih.gov/protein/NP_001735.1
 https://identifiers.org/refseq/NM_001744.6</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-2">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-2"></a>
+<h3 id="validation-in-scholid-6">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-6"></a>
 </h3>
 <p>RefSeq validation is <strong>structural only</strong>. Registry
 existence is not checked.</p>
@@ -355,6 +554,9 @@ existence is not checked.</p>
 RefSeq prefixes are allowlisted. Wrapped URLs and lowercase accessions
 should be normalized with <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> before
 classification.</p>
+<p><code>GCA_</code> / <code>GCF_</code> genome assembly accessions are
+a separate type (<code>assembly</code>) and are not matched as
+RefSeq.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-6">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-6"></a>
@@ -387,7 +589,7 @@ plus entity type) followed by digits.</p>
 https://identifiers.org/sra/SRR1553610</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-3">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-3"></a>
+<h3 id="validation-in-scholid-7">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-7"></a>
 </h3>
 <p>SRA validation is <strong>structural only</strong>. Registry
 existence is not checked.</p>
@@ -427,7 +629,7 @@ digits.</p>
 https://identifiers.org/geo/GSE2553</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-4">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-4"></a>
+<h3 id="validation-in-scholid-8">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-8"></a>
 </h3>
 <p>GEO validation is <strong>structural only</strong>. Registry
 existence is not checked.</p>
@@ -465,7 +667,7 @@ prefix followed by digits.</p>
 https://identifiers.org/bioproject/PRJNA257197</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-5">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-5"></a>
+<h3 id="validation-in-scholid-9">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-9"></a>
 </h3>
 <p>BioProject validation is <strong>structural only</strong>. Registry
 existence is not checked.</p>
@@ -505,7 +707,7 @@ https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/
 https://identifiers.org/insdc.gcf:GCF_000001405.40</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-6">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-6"></a>
+<h3 id="validation-in-scholid-10">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-10"></a>
 </h3>
 <p>Assembly validation is <strong>structural only</strong>. Registry
 existence is not checked.</p>
@@ -514,6 +716,9 @@ existence is not checked.</p>
 exactly nine digits in the accession body. Wrapped URLs and lowercase
 accessions should be normalized with <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>
 before classification.</p>
+<p>RefSeq gene and protein accessions (<code>NM_</code>,
+<code>NP_</code>, …) are validated separately and are not accepted as
+<code>assembly</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-10">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-10"></a>
@@ -554,9 +759,17 @@ before classification.</p>
 </div>
 </div>
 <div class="section level3">
+<h3 id="validation-in-scholid-11">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-11"></a>
+</h3>
+<p>ISBN validation requires a <strong>checksum-valid</strong> ISBN-10 or
+ISBN-13 in compact form (no hyphens or spaces in canonical output).
+Labeled or spaced input should be normalized first. Registry existence
+is not checked.</p>
+</div>
+<div class="section level3">
 <h3 id="structural-regex-11">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-11"></a>
 </h3>
-<p>ISBN-10:</p>
+<p>ISBN-10 (canonical compact):</p>
 <pre><code>^\d{9}[\dX]$</code></pre>
 <p>ISBN-13:</p>
 <pre><code>^\d{13}$</code></pre>
@@ -585,9 +798,17 @@ before classification.</p>
 </div>
 </div>
 <div class="section level3">
+<h3 id="validation-in-scholid-12">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-12"></a>
+</h3>
+<p>ISSN validation requires a <strong>checksum-valid</strong> ISSN.
+Canonical form uses a hyphen after the fourth digit
+(<code>1234-567X</code>). Extraction targets hyphenated tokens;
+normalize for compact checks. Registry existence is not checked.</p>
+</div>
+<div class="section level3">
 <h3 id="structural-regex-12">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-12"></a>
 </h3>
-<p>Hyphenated:</p>
+<p>Hyphenated (common in extraction):</p>
 <pre><code>^\d{4}-\d{3}[\dX]$</code></pre>
 <p>Compact form:</p>
 <pre><code>^\d{7}[\dX]$</code></pre>
@@ -622,8 +843,18 @@ before classification.</p>
 <pre><code><span><span class="va">hep</span><span class="op">-</span><span class="va">th</span><span class="op">/</span><span class="fl">9901001</span></span></code></pre>
 <p>Structural regex:</p>
 <pre><code>^[a-z\-]+/\d{7}(v\d+)?$</code></pre>
-<hr>
 </div>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid-13">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-13"></a>
+</h3>
+<p>arXiv validation is <strong>structural only</strong>. Both modern
+(<code>YYMM.NNNNN</code>) and legacy (<code>archive/YYMMNNN</code>)
+forms are accepted. Optional version suffix <code>vN</code> is allowed.
+Wrapped <code>arXiv:</code> labels and <code>https://arxiv.org/</code>
+URLs should be normalized before classification. No checksum; registry
+existence is not checked.</p>
+<hr>
 </div>
 </div>
 <div class="section level2">
@@ -666,7 +897,7 @@ with <code>.</code>
 <pre><code>https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-7">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-7"></a>
+<h3 id="validation-in-scholid-14">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-14"></a>
 </h3>
 <p>Bibcode validation is <strong>structural only</strong>. There is no
 checksum algorithm, and ADS existence is not checked.</p>
@@ -708,7 +939,7 @@ canonicalizes them to uppercase.</p>
 <span><span class="va">I97018004</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-8">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-8"></a>
+<h3 id="validation-in-scholid-15">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-15"></a>
 </h3>
 <p>OpenAlex validation is <strong>structural only</strong>. There is no
 checksum algorithm, and registry existence is not checked.</p>
@@ -716,6 +947,9 @@ checksum algorithm, and registry existence is not checked.</p>
 keys are accepted only when they match the structural pattern; wrapped
 URLs should be normalized with <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> before
 classification.</p>
+<p>Six-character keys that match the UniProt accession pattern (for
+example <code>P12345</code>) are <strong>rejected</strong> by
+<code>is_openalex()</code> to avoid overlap with UniProt.</p>
 <p>Works, authors, and institutions in OpenAlex often also have DOI,
 ORCID, or ROR identifiers respectively; those types are checked earlier
 during classification.</p>
@@ -759,7 +993,7 @@ ark:/13030/654xz321</code></pre>
 <code>scholid</code> canonicalizes to <code>ark:/</code>.</p>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-9">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-9"></a>
+<h3 id="validation-in-scholid-16">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-16"></a>
 </h3>
 <p>ARK validation is <strong>structural only</strong>. Resolver
 existence is not checked.</p>
@@ -805,7 +1039,7 @@ identifier</li>
 <pre><code>https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></pre>
 </div>
 <div class="section level3">
-<h3 id="validation-in-scholid-10">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-10"></a>
+<h3 id="validation-in-scholid-17">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-17"></a>
 </h3>
 <p>SWHID validation is <strong>structural only</strong>. The embedded
 hash is an intrinsic content identifier, but verifying that it matches
@@ -832,15 +1066,40 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 <div class="section level3">
 <h3 id="structure-16">Structure<a class="anchor" aria-label="anchor" href="#structure-16"></a>
 </h3>
-<ul>
-<li>Pure integer</li>
-<li>Variable length</li>
-<li>No checksum</li>
-</ul>
+<p>A PMID is a decimal integer assigned by PubMed. There is no
+checksum.</p>
 <p>Example:</p>
 <pre><code><span><span class="fl">12345678</span></span></code></pre>
-<p>Structural regex:</p>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid-18">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-18"></a>
+</h3>
+<p>PMID validation is intentionally <strong>permissive</strong> at the
+character level: canonical form is digits only (<code>^\d+$</code>), but
+<code><a href="../reference/is_scholid.html">is_scholid()</a></code> also <strong>rejects values that are valid
+ISBNs</strong> to reduce cross-type false positives.</p>
+<p>Because bare digit strings are ambiguous, PMID is registered as a
+<strong>fallback</strong> type (<code>detect_last</code>):
+<code><a href="../reference/classify_scholid.html">classify_scholid()</a></code> and the primary pass of
+<code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> try other types first. Use PMID only
+when nothing more specific matches.</p>
+<p>For <strong>extraction</strong>, candidates are <strong>4–9
+digits</strong> and must not immediately follow the literal
+<code>PMC</code> (so <code>PMC12345</code> does not yield a PMID
+<code>12345</code>).</p>
+<p>Wrapped forms such as <code>PMID: 12345678</code> should be detected
+via <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> and normalized before strict
+validation.</p>
+</div>
+<div class="section level3">
+<h3 id="structural-regex-17">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-17"></a>
+</h3>
+<p>Canonical form accepted by <code><a href="../reference/is_scholid.html">is_scholid()</a></code> (after ISBN
+exclusion):</p>
 <pre><code>^\d+$</code></pre>
+<p>Extraction pattern (digit run length and <code>PMC</code>
+boundary):</p>
+<pre><code>(?&lt;![[:alnum:]_./-]|PMC)\d{4,9}(?![[:alnum:]_]|[-/.][[:alnum:]_])</code></pre>
 <hr>
 </div>
 </div>
@@ -852,9 +1111,27 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 <h3 id="structure-17">Structure<a class="anchor" aria-label="anchor" href="#structure-17"></a>
 </h3>
 <pre><code><span><span class="va">PMC1234567</span></span></code></pre>
-<p>Components: - Literal prefix <code>PMC</code> - One or more
-digits</p>
-<p>Structural regex:</p>
+<p>Components:</p>
+<ul>
+<li>Literal prefix <code>PMC</code>
+</li>
+<li>One or more digits</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="validation-in-scholid-19">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-19"></a>
+</h3>
+<p>PMCID validation is <strong>structural only</strong>: canonical form
+is <code>PMC</code> followed by digits. There is no checksum. Registry
+existence is not checked.</p>
+<p>PMCIDs are checked <strong>before</strong> PMID in classification
+order, so <code>PMC1234567</code> is never classified as a bare PMID.
+Extraction uses a dedicated <code>PMC</code> prefix pattern.</p>
+</div>
+<div class="section level3">
+<h3 id="structural-regex-18">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-18"></a>
+</h3>
+<p>Canonical form:</p>
 <pre><code>^PMC\d+$</code></pre>
 </div>
 </div>

@@ -12,7 +12,8 @@ syntax (see
 If no match is found, the function attempts per-type normalization (see
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md))
 and returns the first type for which normalization yields a non-missing
-result.
+result. PMID is checked last as a fallback when no more specific type
+matches.
 
 Use
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)

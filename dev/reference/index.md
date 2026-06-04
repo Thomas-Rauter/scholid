@@ -1,5 +1,13 @@
 # Package index
 
+## Package
+
+Package overview and vignette links.
+
+- [`scholid`](https://thomas-rauter.github.io/scholid/reference/scholid-package.md)
+  [`scholid-package`](https://thomas-rauter.github.io/scholid/reference/scholid-package.md)
+  : Scholarly and Academic Identifier Utilities
+
 ## User Available Functions
 
 Documentation for all user-facing functions (for internal functions, see

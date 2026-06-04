@@ -3,9 +3,9 @@
 Vectorized predicate that tests whether values are valid scholarly
 identifiers of a given supported type.
 
-For identifier types with checksum algorithms (e.g., ORCID, ROR, ISBN,
-ISSN), checksum correctness is verified. The same checksum rules apply
-to
+For identifier types with checksum algorithms (e.g., ORCID, ROR, ISNI,
+ISBN, ISSN), checksum correctness is verified. The same checksum rules
+apply to
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md).
 
 The main difference from normalization is input form: `is_scholid()`

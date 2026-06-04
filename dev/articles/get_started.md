@@ -45,6 +45,11 @@ scholid::scholid_types()
     ## [11] "uniprot"    "refseq"     "sra"        "geo"        "bioproject"
     ## [16] "assembly"   "isbn"       "issn"       "pmcid"      "pmid"
 
+For per-type formats, validation rules, and classification order, see
+the **How Scholarly Identifiers Are Defined** vignette
+([`vignette("scholid_definitions", package = "scholid")`](https://thomas-rauter.github.io/scholid/articles/scholid_definitions.md)),
+also linked from the package site as *About identifiers*.
+
 ## Detect: `is_scholid()`
 
 [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)

@@ -263,7 +263,7 @@ Canonical compact form:
 ## RRID (Research Resource Identifier)
 
 **Governing body:** Resource Identification Initiative (SciCrunch)  
-**Documentation:** [RRID guidelines](https://rrid.site/about/guidelines)
+**Documentation:** [RRID Initiative](https://www.rrids.org/)
 
 ### Structure
 
@@ -353,7 +353,7 @@ OpenAlex keys (OpenAlex is checked earlier in classification order, but
 
 **Governing body:** NCBI RefSeq  
 **Documentation:** [RefSeq accession
-format](https://www.ncbi.nlm.nih.gov/refseq/key/#accessions)
+prefixes](https://www.ncbi.nlm.nih.gov/books/NBK21091/table/ch18.T.refseq_accession_numbers_and_mole/?report=objectonly)
 
 ### Structure
 

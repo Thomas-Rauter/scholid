@@ -7,12 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Scholarly and Academic Identifier Utilities • scholid</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Scholarly and Academic Identifier Utilities">
-<meta name="description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings. Provides lightweight, dependency-free helpers for common identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers. Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
-<meta property="og:description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings. Provides lightweight, dependency-free helpers for common identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv identifiers, and PubMed identifiers. Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
+<meta name="description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings. Provides lightweight, dependency-free helpers for twenty identifier types, including DOIs, ORCID iDs, ISBNs, ISSNs, arXiv and PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK, SWHID, and selected life-science accessions (UniProt, RefSeq, SRA, GEO, BioProject, and genome assemblies). Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. Use scholid_types() for the authoritative type list. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
+<meta property="og:description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings. Provides lightweight, dependency-free helpers for twenty identifier types, including DOIs, ORCID iDs, ISBNs, ISSNs, arXiv and PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK, SWHID, and selected life-science accessions (UniProt, RefSeq, SRA, GEO, BioProject, and genome assemblies). Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. Use scholid_types() for the authoritative type list. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -22,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="index.html">scholid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,7 @@
 <div class="page-header"><h1 id="scholid">scholid<a class="anchor" aria-label="anchor" href="#scholid"></a>
 </h1></div>
 <p><a href="https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/Thomas-Rauter/scholid/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R-CMD-check"></a> <a href="https://app.codecov.io/gh/Thomas-Rauter/scholid" class="external-link"><img src="https://img.shields.io/codecov/c/github/Thomas-Rauter/scholid?branch=main&amp;logo=codecov" alt="Codecov test coverage"></a> <a href="https://CRAN.R-project.org/package=scholid" class="external-link"><img src="https://img.shields.io/badge/CRAN%20since-Feb%202026-blue" alt="CRAN since"></a> <a href="https://CRAN.R-project.org/package=scholid" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/scholid" alt="CRAN downloads"></a> <a href="https://CRAN.R-project.org/package=scholid" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/last-month/scholid" alt="CRAN downloads"></a></p>
-<p><code>scholid</code> provides lightweight, dependency-free utilities for working with scholarly identifiers in R. The package is designed as a small, well-tested foundation that can be safely reused by other packages and data workflows.</p>
+<p><code>scholid</code> provides lightweight, dependency-free utilities for working with scholarly identifiers in R. The package is designed as a small, well-tested foundation that can be safely reused by other packages and data workflows. It supports twenty identifier types — see Scope and <code><a href="reference/scholid_types.html">scholid_types()</a></code>.</p>
 <p>See the full documentation at the <a href="https://thomas-rauter.github.io/scholid/">scholid website</a>.</p>
 <p>For online lookup, conversion, metadata retrieval, and linked identifier discovery, see <a href="https://thomas-rauter.github.io/scholidonline/"><code>scholidonline</code></a>.</p>
 <div class="section level2">
@@ -68,12 +68,25 @@
 <p>The package focuses on common identifier systems used in scholarly communication:</p>
 <ul>
 <li>DOI</li>
+<li>arXiv</li>
+<li>ADS bibcode</li>
+<li>OpenAlex</li>
+<li>Software Heritage (SWHID)</li>
+<li>ARK</li>
+<li>ISNI</li>
 <li>ORCID iD</li>
+<li>ROR</li>
+<li>RRID</li>
+<li>UniProt</li>
+<li>RefSeq</li>
+<li>SRA</li>
+<li>GEO</li>
+<li>BioProject</li>
+<li>Genome assembly (GCA/GCF)</li>
 <li>ISBN</li>
 <li>ISSN</li>
-<li>arXiv</li>
-<li>PubMed (PMID)</li>
 <li>PubMed Central (PMCID)</li>
+<li>PubMed (PMID)</li>
 </ul>
 </div>
 <div class="section level2">
@@ -85,32 +98,32 @@
 <col width="50%">
 <col width="50%">
 </colgroup>
-<thead><tr class="header">
+<thead><tr>
 <th>Function</th>
 <th>Purpose</th>
 </tr></thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code><a href="reference/scholid_types.html">scholid_types()</a></code></td>
 <td>List supported scholarly identifier types</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>is_scholid(x, type)</code></td>
 <td>Test whether values conform to a given identifier type</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>normalize_scholid(x, type)</code></td>
 <td>Normalize identifiers to canonical form</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>extract_scholid(text, type)</code></td>
 <td>Extract identifiers of a given type from free text</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>classify_scholid(x)</code></td>
 <td>Guess the identifier type of each input value</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>detect_scholid_type(x)</code></td>
 <td>Detect identifier types from canonical or wrapped input values</td>
 </tr>
@@ -123,7 +136,10 @@
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># list supported scholarly identifier types</span></span>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/scholid_types.html">scholid_types</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="do">## [1] "arxiv" "doi"   "isbn"  "issn"  "orcid" "pmcid" "pmid"</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="do">##  [1] "doi"        "arxiv"      "bibcode"    "openalex"   "swhid"     </span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a><span class="do">##  [6] "ark"        "isni"       "orcid"      "ror"        "rrid"      </span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a><span class="do">## [11] "uniprot"    "refseq"     "sra"        "geo"        "bioproject"</span></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="do">## [16] "assembly"   "isbn"       "issn"       "pmcid"      "pmid"</span></span></code></pre></div>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># test whether values match a given identifier type</span></span>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/is_scholid.html">is_scholid</a></span><span class="op">(</span></span>

@@ -13,9 +13,64 @@ between:
 - **Checksum validity** (does the control digit verify?)
 - **Registry validity** (does the identifier actually exist?)
 
-The functions in `scholid` operate at the **structural level**. The
-regexes shown below describe the structural form that an identifier must
-match.
+The functions in `scholid` validate identifiers at the **structural**
+level and verify checksums where defined (ORCID, ROR, ISNI, ISBN, ISSN).
+They do not check registry or online existence. The regexes in each
+section describe the **canonical** form that
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+expects; wrapped URLs and labels should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+first. Checksum rules are documented separately where they apply.
+
+### Classification order
+
+[`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md)
+and
+[`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+walk types in the order returned by
+[`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
+(most specific first). The first matching type wins. This matters when
+patterns overlap: for example, OpenAlex is checked before PMID, and
+six-character UniProt accessions such as `P12345` are not treated as
+OpenAlex keys.
+
+PMID is a **fallback** type (`detect_last` in the registry): bare digit
+strings are only classified or detected as PMID when no more specific
+type matches. During extraction, PMID candidates use 4–9 digits and do
+not match digits immediately following `PMC`.
+
+For the authoritative type list and order, call
+[`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
+in R.
+
+### Supported types (overview)
+
+| Type | Example | Checksum | Notes |
+|----|----|----|----|
+| `doi` | `10.1000/182` | No | Prefix `10.`; opaque suffix |
+| `arxiv` | `2101.00001v2` | No | Modern or legacy archive form |
+| `bibcode` | `1992ApJ...400L...1W` | No | Fixed 19 characters |
+| `openalex` | `W2741809807` | No | Not UniProt-shaped 6-char accessions |
+| `swhid` | `swh:1:cnt:94a9ed02…` | No | Requires `swh:` prefix; optional qualifiers |
+| `ark` | `ark:/12148/btv1b8449691v` | No | Requires `ark:` label; 5-digit NAAN |
+| `isni` | `000000012146438X` | Yes | Compact 16 characters |
+| `orcid` | `0000-0002-1825-0097` | Yes | Hyphenated canonical form |
+| `ror` | `01an7q238` | Yes | Lowercase Crockford base32 |
+| `rrid` | `RRID:AB_262044` | No | `RRID:` prefix; authority allowlist |
+| `uniprot` | `P12345` | No | Uppercase; no version suffix |
+| `refseq` | `NM_001744.6` | No | Prefix allowlist; version required |
+| `sra` | `SRR1553610` | No | INSDC `S`/`E`/`D` + `R` + entity letter |
+| `geo` | `GSE2553` | No | `GSE`, `GSM`, `GPL`, or `GDS` |
+| `bioproject` | `PRJNA257197` | No | INSDC `PRJ*` prefixes |
+| `assembly` | `GCF_000001405.40` | No | `GCA_` or `GCF_`; nine digits + version |
+| `isbn` | `9780306406157` | Yes | ISBN-10 or ISBN-13 |
+| `issn` | `2434-561X` | Yes | Hyphenated canonical display |
+| `pmcid` | `PMC1234567` | No | Literal `PMC` prefix |
+| `pmid` | `12345678` | No | Fallback; excludes valid ISBNs |
+
+The sections below follow a consistent layout: **Structure**,
+**Validation in scholid**, **Checksum** (if applicable), and
+**Structural regex**.
 
 ------------------------------------------------------------------------
 
@@ -52,21 +107,70 @@ Example:
     10.1000/182
     10.1038/s41586-020-2649-2
 
-### Important Properties
+### Validation in scholid
 
-- No checksum.
-- The suffix is opaque.
-- Structural validation cannot confirm existence.
-- DOI resolution requires registry lookup (e.g., via doi.org).
+DOI validation is **structural only**. There is no checksum. Registry
+existence is not checked. Wrapped forms (`https://doi.org/…`, `doi:`
+labels) should be normalized before classification.
 
 ### Structural Regex
 
-A commonly accepted structural regex:
+Canonical form (as enforced by
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)):
 
     ^10\.\d{4,9}/\S+$
 
 This checks: - Prefix starts with `10.` - 4–9 digits - A slash -
 Non-whitespace suffix
+
+------------------------------------------------------------------------
+
+## ISNI (International Standard Name Identifier)
+
+**Governing body:** ISNI International Agency  
+**Standard:** ISO 27729  
+**Documentation:** [ISNI](https://isni.org/)
+
+### Structure
+
+An ISNI uniquely identifies public identities of contributors to media
+content. The identifier is 16 characters: 15 decimal digits plus a check
+character.
+
+Compact canonical form:
+
+    000000012146438X
+
+Human-readable presentation uses an `ISNI` prefix and spaces in blocks
+of four:
+
+    ISNI 0000 0001 2146 438X
+
+Preferred resolver URLs include:
+
+    https://isni.org/isni/000000012146438X
+
+ORCID iDs use the same ISO/IEC 7064 MOD 11-2 checksum on 16 characters
+but are canonicalized in `scholid` with hyphens. Compact checksum-valid
+16-character strings are treated as ISNI; hyphenated strings are treated
+as ORCID.
+
+### Validation in scholid
+
+ISNI validation requires a **checksum-valid** compact 16-character
+string. Hyphenated ORCID-shaped input is not accepted as ISNI; normalize
+or classify as ORCID instead. Registry existence is not checked.
+
+### Checksum
+
+Uses ISO/IEC 7064 MOD 11-2, identical to ORCID. The check character may
+be `0`–`9` or `X`.
+
+### Structural Regex
+
+Compact canonical form:
+
+    ^\d{15}[\dX]$
 
 ------------------------------------------------------------------------
 
@@ -98,15 +202,367 @@ Uses ISO 7064 Mod 11-2 algorithm.
 A structurally correct ORCID may still be invalid if the checksum does
 not match.
 
+### Validation in scholid
+
+ORCID validation requires a **checksum-valid** hyphenated iD.
+Unhyphenated 16-character strings are not accepted as ORCID by
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md);
+if they match the ISNI compact pattern and checksum, they classify as
+`isni` instead. Wrapped `https://orcid.org/` URLs should be normalized
+first.
+
 ### Structural Regex
 
-Hyphenated form:
+Hyphenated canonical form (used by
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)):
 
     ^\d{4}-\d{4}-\d{4}-\d{3}[\dX]$
 
 Unhyphenated internal form:
 
     ^\d{15}[\dX]$
+
+------------------------------------------------------------------------
+
+## ROR (Research Organization Registry)
+
+**Governing body:** ROR Community  
+**Documentation:** [ROR identifier
+pattern](https://ror.readme.io/docs/identifier)
+
+### Structure
+
+A ROR iD is a 9-character lowercase string:
+
+    0abcdef94
+
+Preferred external form is the full URL:
+
+    https://ror.org/01an7q238
+
+### Checksum
+
+The last two characters are a checksum derived from the preceding seven
+characters using Crockford base32 encoding and ISO/IEC 7064 MOD 97-10
+rules, matching ROR’s identifier generation implementation.
+
+### Validation in scholid
+
+ROR validation requires a **checksum-valid** lowercase compact iD.
+`https://ror.org/` URLs should be normalized before classification.
+Registry existence is not checked.
+
+### Structural Regex
+
+Canonical compact form:
+
+    ^0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}$
+
+------------------------------------------------------------------------
+
+## RRID (Research Resource Identifier)
+
+**Governing body:** Resource Identification Initiative (SciCrunch)  
+**Documentation:** [RRID Initiative](https://www.rrids.org/)
+
+### Structure
+
+A RRID cites a research resource such as an antibody, cell line, model
+organism, software tool, or plasmid. The canonical form includes the
+literal `RRID:` prefix followed by an authority-specific accession:
+
+    RRID:AB_262044
+    RRID:CVCL_2260
+    RRID:SCR_007358
+    RRID:IMSR_JAX:000664
+    RRID:MGI:3840442
+    RRID:Addgene_80088
+
+Preferred resolver URLs include:
+
+    https://scicrunch.org/resolver/RRID:AB_262044
+
+### Validation in scholid
+
+RRID validation is **structural only**. There is no checksum algorithm,
+and registry existence is not checked.
+
+To limit false positives, `scholid` accepts only canonical
+`RRID:`-prefixed forms and validates the accession body against a
+conservative allowlist of known RRID authority prefixes (for example
+`AB`, `CVCL`, `SCR`, `IMSR`, `MGI`, `Addgene`). Bare local IDs such as
+`AB_262044` without the `RRID:` prefix are rejected.
+
+### Structural Regex
+
+Canonical prefix (body matched against an authority allowlist, not
+`.+`):
+
+    ^RRID:(?:AB_\d+|CVCL_[0-9A-Z]+|SCR_\d+|…)$
+
+The full allowlist is defined in the package registry; see the RRID
+implementation for the current authority patterns.
+
+------------------------------------------------------------------------
+
+## UniProt (UniProtKB accession)
+
+**Governing body:** UniProt Consortium  
+**Documentation:** [UniProt accession
+numbers](https://www.uniprot.org/help/accession_numbers)
+
+### Structure
+
+A UniProtKB accession uniquely identifies a protein record. Accessions
+are 6 or 10 uppercase alphanumeric characters following UniProt-defined
+patterns.
+
+Examples:
+
+    P12345
+    Q9H0H5
+    A0A022YWF9
+
+Preferred resolver URLs include:
+
+    https://www.uniprot.org/uniprot/P12345
+    https://identifiers.org/uniprot/P12345
+
+### Validation in scholid
+
+UniProt validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession without version suffixes or
+entry name qualifiers. Wrapped URLs and lowercase accessions should be
+normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+Six-character accessions such as `P12345` are **not** accepted as
+OpenAlex keys (OpenAlex is checked earlier in classification order, but
+`is_openalex()` explicitly rejects UniProt-shaped strings).
+
+### Structural Regex
+
+    ^(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})$
+
+------------------------------------------------------------------------
+
+## RefSeq (NCBI Reference Sequence accession)
+
+**Governing body:** NCBI RefSeq  
+**Documentation:** [RefSeq accession
+prefixes](https://www.ncbi.nlm.nih.gov/books/NBK21091/table/ch18.T.refseq_accession_numbers_and_mole/?report=objectonly)
+
+### Structure
+
+A RefSeq accession uniquely identifies a curated sequence record. The
+format is a two-letter molecule-type prefix, an underscore, an
+alphanumeric accession body, a period, and a version number.
+
+Examples:
+
+    NM_001744.6
+    NP_001735.1
+    NC_003619.1
+    NZ_CASIGT010000001.1
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6
+    https://www.ncbi.nlm.nih.gov/protein/NP_001735.1
+    https://identifiers.org/refseq/NM_001744.6
+
+### Validation in scholid
+
+RefSeq validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession with version suffix. Known
+RefSeq prefixes are allowlisted. Wrapped URLs and lowercase accessions
+should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+`GCA_` / `GCF_` genome assembly accessions are a separate type
+(`assembly`) and are not matched as RefSeq.
+
+### Structural Regex
+
+    ^(?:AC|AP|NC|NG|NM|NP|NR|NT|NW|NZ|XM|XP|XR|YP|WP)_[A-Z0-9]+\.[0-9]+$
+
+------------------------------------------------------------------------
+
+## SRA (Sequence Read Archive accession)
+
+**Governing body:** INSDC Sequence Read Archive (NCBI, EBI, DDBJ)  
+**Documentation:** [Search in SRA
+Entrez](https://www.ncbi.nlm.nih.gov/sra/docs/srasearch/)
+
+### Structure
+
+An SRA accession identifies a study, sample, experiment, or run in the
+INSDC archives. The format is a three-letter prefix (source database
+plus entity type) followed by digits.
+
+Examples:
+
+    SRP006081
+    SRS123456
+    SRX1234567
+    SRR1553610
+    ERR1234567
+    DRR1234567
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/sra/SRR1553610
+    https://identifiers.org/sra/SRR1553610
+
+### Validation in scholid
+
+SRA validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession without version suffix. The
+first letter denotes the source archive (`S` NCBI, `E` EBI, `D` DDBJ);
+the third letter denotes entity type (`P` study, `S` sample, `X`
+experiment, `R` run). Wrapped URLs and lowercase accessions should be
+normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^[SED]R[RXSP][0-9]{5,}$
+
+------------------------------------------------------------------------
+
+## GEO (Gene Expression Omnibus accession)
+
+**Governing body:** NCBI GEO  
+**Documentation:** [GEO programmatic
+access](https://www.ncbi.nlm.nih.gov/geo/info/geo_paccess.html)
+
+### Structure
+
+A GEO accession identifies a curated dataset, series, sample, or
+platform record. The format is a three-letter entity prefix followed by
+digits.
+
+Examples:
+
+    GSE2553
+    GSM313800
+    GPL96
+    GDS505
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553
+    https://identifiers.org/geo/GSE2553
+
+### Validation in scholid
+
+GEO validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession. Supported entity prefixes are
+`GSE` (series), `GSM` (sample), `GPL` (platform), and `GDS` (dataset).
+Wrapped URLs and lowercase accessions should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^(?:GSE|GSM|GPL|GDS)[0-9]{2,}$
+
+------------------------------------------------------------------------
+
+## BioProject (INSDC BioProject accession)
+
+**Governing body:** INSDC BioProject (NCBI, EBI, DDBJ)  
+**Documentation:** [BioProject
+handbook](https://www.ncbi.nlm.nih.gov/books/NBK169438/)
+
+### Structure
+
+A BioProject accession identifies a research project that groups related
+sequence and sample records. The format is a five-letter INSDC prefix
+followed by digits.
+
+Examples:
+
+    PRJNA257197
+    PRJEB12345
+    PRJDB303
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197
+    https://identifiers.org/bioproject/PRJNA257197
+
+### Validation in scholid
+
+BioProject validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession. Known prefixes (`PRJNA`,
+`PRJEB`, `PRJDB`, `PRJDA`, `PRJEA`) are allowlisted. Wrapped URLs and
+lowercase accessions should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+### Structural Regex
+
+    ^(?:PRJNA|PRJEB|PRJDB|PRJDA|PRJEA)[0-9]{2,}$
+
+------------------------------------------------------------------------
+
+## Genome assembly (INSDC GCA/GCF accession)
+
+**Governing body:** INSDC / NCBI Assembly  
+**Documentation:** [Genome assembly
+accessions](https://www.ncbi.nlm.nih.gov/datasets/docs/v2/data-processing/policies-annotation/genome-processing/version-status/)
+
+### Structure
+
+A genome assembly accession identifies a collection of sequences
+comprising an assembled genome. GenBank assemblies use the `GCA_`
+prefix; NCBI RefSeq assembly counterparts use `GCF_`. The accession body
+is nine digits followed by a version number.
+
+Examples:
+
+    GCF_000001405.40
+    GCA_000001405.29
+    GCA_009914755.4
+
+Preferred resolver URLs include:
+
+    https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40
+    https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/
+    https://identifiers.org/insdc.gcf:GCF_000001405.40
+
+### Validation in scholid
+
+Assembly validation is **structural only**. Registry existence is not
+checked.
+
+Canonical form is the uppercase accession with version suffix. Only
+`GCA_` and `GCF_` prefixes are accepted, with exactly nine digits in the
+accession body. Wrapped URLs and lowercase accessions should be
+normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+RefSeq gene and protein accessions (`NM_`, `NP_`, …) are validated
+separately and are not accepted as `assembly`.
+
+### Structural Regex
+
+    ^GC[AF]_[0-9]{9}\.[0-9]+$
 
 ------------------------------------------------------------------------
 
@@ -137,9 +593,16 @@ Example:
 
     9780306406157
 
+### Validation in scholid
+
+ISBN validation requires a **checksum-valid** ISBN-10 or ISBN-13 in
+compact form (no hyphens or spaces in canonical output). Labeled or
+spaced input should be normalized first. Registry existence is not
+checked.
+
 ### Structural Regex
 
-ISBN-10:
+ISBN-10 (canonical compact):
 
     ^\d{9}[\dX]$
 
@@ -170,9 +633,16 @@ Internal numeric form:
 
     1234567X
 
+### Validation in scholid
+
+ISSN validation requires a **checksum-valid** ISSN. Canonical form uses
+a hyphen after the fourth digit (`1234-567X`). Extraction targets
+hyphenated tokens; normalize for compact checks. Registry existence is
+not checked.
+
 ### Structural Regex
 
-Hyphenated:
+Hyphenated (common in extraction):
 
     ^\d{4}-\d{3}[\dX]$
 
@@ -218,6 +688,212 @@ Structural regex:
 
     ^[a-z\-]+/\d{7}(v\d+)?$
 
+### Validation in scholid
+
+arXiv validation is **structural only**. Both modern (`YYMM.NNNNN`) and
+legacy (`archive/YYMMNNN`) forms are accepted. Optional version suffix
+`vN` is allowed. Wrapped `arXiv:` labels and `https://arxiv.org/` URLs
+should be normalized before classification. No checksum; registry
+existence is not checked.
+
+------------------------------------------------------------------------
+
+## ADS Bibcode
+
+**Authority:** SAO/NASA Astrophysics Data System (ADS)  
+**Documentation:** [ADS bibliographic
+codes](https://adsabs.harvard.edu/abs_doc/help_pages/data.html)
+
+### Structure
+
+An ADS bibcode is a fixed **19-character** identifier for bibliographic
+records in astronomy and related fields. The format follows SIMBAD/NED
+conventions:
+
+    YYYYJJJJJVVVVM PPPPA
+
+Where:
+
+- `YYYY` — publication year (four digits)
+- `JJJJJ` — journal abbreviation, left-justified, padded with `.`
+- `VVVV` — volume, right-justified, padded with `.`
+- `M` — qualifier (e.g. `L` for letters)
+- `PPPP` — page, right-justified, padded with `.`
+- `A` — first letter of the first author’s surname
+
+Example:
+
+    1992ApJ...400L...1W
+
+Preferred resolver URLs include:
+
+    https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W
+
+### Validation in scholid
+
+Bibcode validation is **structural only**. There is no checksum
+algorithm, and ADS existence is not checked.
+
+To limit false positives, `scholid` requires exactly 19 characters, a
+letter in the journal field, and a letter as the final author-initial
+character. Case is preserved in canonical form.
+
+### Structural Regex
+
+    ^\d{4}[A-Za-z0-9.]{14}[A-Za-z]$
+
+------------------------------------------------------------------------
+
+## OpenAlex ID
+
+**Governing body:** OurResearch (OpenAlex)  
+**Documentation:** [OpenAlex key
+concepts](https://developers.openalex.org/guides/key-concepts)
+
+### Structure
+
+Every OpenAlex entity has a persistent ID. The official form is a URL:
+
+    https://openalex.org/W2741809807
+
+The short key (`W2741809807`) is commonly used in API calls and tabular
+data. Keys are case-insensitive; `scholid` canonicalizes them to
+uppercase.
+
+A key consists of:
+
+- a single letter prefix indicating entity type (`W`, `A`, `S`, `I`,
+  `T`, `K`, `P`, `F`, or `G`)
+- a numeric tail (at least five digits)
+
+Examples:
+
+    W2741809807
+    A5023888391
+    I97018004
+
+### Validation in scholid
+
+OpenAlex validation is **structural only**. There is no checksum
+algorithm, and registry existence is not checked.
+
+Deprecated concept IDs (`C` prefix) are not accepted. Bare keys are
+accepted only when they match the structural pattern; wrapped URLs
+should be normalized with
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+before classification.
+
+Six-character keys that match the UniProt accession pattern (for example
+`P12345`) are **rejected** by `is_openalex()` to avoid overlap with
+UniProt.
+
+Works, authors, and institutions in OpenAlex often also have DOI, ORCID,
+or ROR identifiers respectively; those types are checked earlier during
+classification.
+
+### Structural Regex
+
+Canonical uppercase key:
+
+    ^[WASTIKPFG][0-9]{5,}$
+
+------------------------------------------------------------------------
+
+## ARK (Archival Resource Key)
+
+**Governing body:** ARK Alliance  
+**Documentation:** [ARK specification](https://arks.org/)
+
+### Structure
+
+An ARK is a persistent identifier for digital, physical, or abstract
+objects. The core identifier has the form:
+
+    ark:/NAAN/Name[Qualifier]
+
+Where:
+
+- `NAAN` — Name Assigning Authority Number (in `scholid`, five digits)
+- `Name` — opaque name assigned by the authority
+- `Qualifier` — optional hierarchical (`/`) or variant (`.`) suffix
+
+Examples:
+
+    ark:/12148/btv1b8449691v/f29
+    ark:/13030/654xz321
+
+Resolver URLs often embed the ARK after the host, for example:
+
+    https://n2t.net/ark:/12148/btv1b8449691v
+
+The labels `ark:` and `ark:/` are equivalent; `scholid` canonicalizes to
+`ark:/`.
+
+### Validation in scholid
+
+ARK validation is **structural only**. Resolver existence is not
+checked.
+
+To limit false positives, `scholid` requires an explicit `ark:` label, a
+five-digit NAAN, and a non-empty name body. Bare paths without the
+`ark:` prefix are rejected.
+
+### Structural Regex
+
+Canonical form:
+
+    ^ark:/[0-9]{5}/[0-9A-Za-z][0-9A-Za-z._/=-]*$
+
+------------------------------------------------------------------------
+
+## SWHID (SoftWare Hash IDentifier)
+
+**Governing body:** Software Heritage  
+**Standard:** ISO/IEC 18670  
+**Documentation:** [SWHID
+specification](https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html)
+
+### Structure
+
+A SWHID identifies a software artifact archived by Software Heritage.
+The core identifier has four colon-separated fields:
+
+    swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
+
+Where:
+
+- `swh` is the scheme prefix
+- `1` is the scheme version
+- `cnt` is the object type (`cnt`, `dir`, `rev`, `rel`, or `snp`)
+- the final field is a 40-character lowercase hex SHA-1 intrinsic
+  identifier
+
+Optional qualifiers may follow, separated by semicolons:
+
+    swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;origin=https://example.org/repo.git;path=/src/main.c;lines=9-15
+
+Resolver URLs include:
+
+    https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
+
+### Validation in scholid
+
+SWHID validation is **structural only**. The embedded hash is an
+intrinsic content identifier, but verifying that it matches the
+referenced artifact requires access to the artifact itself and is not
+performed by `scholid`.
+
+To limit false positives, `scholid` requires the explicit `swh:` prefix
+and rejects bare 40-character hex strings (for example Git commit
+hashes). Known qualifier keys (`origin`, `visit`, `anchor`, `path`,
+`lines`) are validated conservatively when present.
+
+### Structural Regex
+
+Core form:
+
+    ^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$
+
 ------------------------------------------------------------------------
 
 ## PMID (PubMed Identifier)
@@ -226,17 +902,46 @@ Structural regex:
 
 ### Structure
 
-- Pure integer
-- Variable length
-- No checksum
+A PMID is a decimal integer assigned by PubMed. There is no checksum.
 
 Example:
 
     12345678
 
-Structural regex:
+### Validation in scholid
+
+PMID validation is intentionally **permissive** at the character level:
+canonical form is digits only (`^\d+$`), but
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+also **rejects values that are valid ISBNs** to reduce cross-type false
+positives.
+
+Because bare digit strings are ambiguous, PMID is registered as a
+**fallback** type (`detect_last`):
+[`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md)
+and the primary pass of
+[`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+try other types first. Use PMID only when nothing more specific matches.
+
+For **extraction**, candidates are **4–9 digits** and must not
+immediately follow the literal `PMC` (so `PMC12345` does not yield a
+PMID `12345`).
+
+Wrapped forms such as `PMID: 12345678` should be detected via
+[`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+and normalized before strict validation.
+
+### Structural Regex
+
+Canonical form accepted by
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+(after ISBN exclusion):
 
     ^\d+$
+
+Extraction pattern (digit run length and `PMC` boundary):
+
+    (?<![[:alnum:]_./-]|PMC)\d{4,9}(?![[:alnum:]_]|[-/.][[:alnum:]_])
 
 ------------------------------------------------------------------------
 
@@ -248,8 +953,23 @@ Structural regex:
 
     PMC1234567
 
-Components: - Literal prefix `PMC` - One or more digits
+Components:
 
-Structural regex:
+- Literal prefix `PMC`
+- One or more digits
+
+### Validation in scholid
+
+PMCID validation is **structural only**: canonical form is `PMC`
+followed by digits. There is no checksum. Registry existence is not
+checked.
+
+PMCIDs are checked **before** PMID in classification order, so
+`PMC1234567` is never classified as a bare PMID. Extraction uses a
+dedicated `PMC` prefix pattern.
+
+### Structural Regex
+
+Canonical form:
 
     ^PMC\d+$

@@ -5,17 +5,19 @@ values to a canonical form (e.g., removing URL prefixes, labels, or
 separators).
 
 Normalization requires that inputs match the expected identifier
-structure. For identifier types with checksum algorithms, normalization
-also requires checksum-valid values. Inputs that do not meet these
-requirements yield `NA_character_`.
+structure. For identifier types with checksum algorithms (ORCID, ROR,
+ISNI, ISBN, ISSN), normalization also requires checksum-valid values.
+Inputs that do not meet these requirements yield `NA_character_`.
 
 Normalized outputs are canonical, type-specific representations of valid
 identifiers.
 
 Use
 [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
-to test whether values are fully valid identifiers, including checksum
-verification where applicable.
+to test whether already-canonical values are valid identifiers of a
+given type. Both functions apply checksum verification where applicable;
+normalization additionally accepts wrapped input forms and returns
+canonical strings.
 
 ## Usage
 

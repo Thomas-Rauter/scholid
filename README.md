@@ -14,7 +14,8 @@ downloads](https://cranlogs.r-pkg.org/badges/last-month/scholid)](https://CRAN.R
 `scholid` provides lightweight, dependency-free utilities for working
 with scholarly identifiers in R. The package is designed as a small,
 well-tested foundation that can be safely reused by other packages and
-data workflows.
+data workflows. It supports twenty identifier types — see Scope and
+`scholid_types()`.
 
 See the full documentation at the [scholid
 website](https://thomas-rauter.github.io/scholid/).
@@ -37,12 +38,25 @@ The package focuses on common identifier systems used in scholarly
 communication:
 
 - DOI
+- arXiv
+- ADS bibcode
+- OpenAlex
+- Software Heritage (SWHID)
+- ARK
+- ISNI
 - ORCID iD
+- ROR
+- RRID
+- UniProt
+- RefSeq
+- SRA
+- GEO
+- BioProject
+- Genome assembly (GCA/GCF)
 - ISBN
 - ISSN
-- arXiv
-- PubMed (PMID)
 - PubMed Central (PMCID)
+- PubMed (PMID)
 
 ## Interface
 
@@ -64,7 +78,10 @@ User-available functions:
 scholid::scholid_types()
 ```
 
-    ## [1] "arxiv" "doi"   "isbn"  "issn"  "orcid" "pmcid" "pmid"
+    ##  [1] "doi"        "arxiv"      "bibcode"    "openalex"   "swhid"     
+    ##  [6] "ark"        "isni"       "orcid"      "ror"        "rrid"      
+    ## [11] "uniprot"    "refseq"     "sra"        "geo"        "bioproject"
+    ## [16] "assembly"   "isbn"       "issn"       "pmcid"      "pmid"
 
 ``` r
 # test whether values match a given identifier type

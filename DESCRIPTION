@@ -1,7 +1,7 @@
 Package: scholid
 Type: Package
 Title: Scholarly and Academic Identifier Utilities
-Version: 0.1.1
+Version: 0.2.0
 Language: en-US
 Authors@R:
     person("Thomas", "Rauter",
@@ -9,12 +9,15 @@ Authors@R:
            role = c("aut", "cre", "fnd"),
            comment = c(ORCID = "0009-0004-5578-3628"))
 Description: Detects, normalizes, classifies, and extracts scholarly identifier
-    strings. Provides lightweight, dependency-free helpers for common
-    identifier systems such as DOIs, ORCID iDs, ISBNs, ISSNs, arXiv
-    identifiers, and PubMed identifiers. Functions are vectorized,
-    predictable, and suitable as low-level building blocks for other R
-    packages and data workflows. For online lookup, conversion, metadata
-    retrieval, and linked identifier discovery, see 'scholidonline'.
+    strings. Provides lightweight, dependency-free helpers for twenty
+    identifier types, including DOIs, ORCID iDs, ISBNs, ISSNs, arXiv and
+    PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK,
+    SWHID, and selected life-science accessions (UniProt, RefSeq, SRA, GEO,
+    BioProject, and genome assemblies). Functions are vectorized, predictable,
+    and suitable as low-level building blocks for other R packages and data
+    workflows. Use 'scholid_types()' for the authoritative type list. For
+    online lookup, conversion, metadata retrieval, and linked identifier
+    discovery, see 'scholidonline'.
 License: MIT + file LICENSE
 URL: https://thomas-rauter.github.io/scholid/,
     https://thomas-rauter.github.io/scholidonline/

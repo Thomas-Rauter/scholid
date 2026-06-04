@@ -5,9 +5,10 @@
 #' For each element of the input, the function returns the first matching
 #' identifier type, or `NA_character_` if no supported type matches.
 #'
-#' Classification is based on canonical identifier syntax. Wrapped forms
-#' (e.g., URLs or labels) should be normalized first with
-#' `normalize_scholid()`.
+#' Classification is based on canonical identifier syntax. Types are checked
+#' in the order returned by [scholid_types()] (most specific first); the first
+#' match wins. Wrapped forms (e.g., URLs or labels) should be normalized first
+#' with `normalize_scholid()`.
 #'
 #' @param x A vector of candidate identifier values.
 #'
@@ -19,6 +20,8 @@
 #' classify_scholid(c("10.1000/182", "0000-0002-1825-0097", "not an id"))
 #' classify_scholid(normalize_scholid("https://doi.org/10.1000/182", "doi"))
 #'
+#' @seealso [detect_scholid_type()], [scholid_types()],
+#'   [scholid_definitions](articles/scholid_definitions.html)
 #' @export
 classify_scholid <- function(x) {
     .scholid_check_x(

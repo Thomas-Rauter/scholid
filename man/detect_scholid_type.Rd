@@ -25,6 +25,7 @@ Detection first attempts classification based on canonical identifier
 syntax (see \code{\link[=classify_scholid]{classify_scholid()}}). If no match is found, the function
 attempts per-type normalization (see \code{\link[=normalize_scholid]{normalize_scholid()}}) and returns
 the first type for which normalization yields a non-missing result.
+PMID is checked last as a fallback when no more specific type matches.
 
 Use \code{\link[=normalize_scholid]{normalize_scholid()}} to convert detected values to canonical form
 once the identifier type is known.

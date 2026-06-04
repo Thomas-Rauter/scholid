@@ -11,6 +11,7 @@
 #' syntax (see [classify_scholid()]). If no match is found, the function
 #' attempts per-type normalization (see [normalize_scholid()]) and returns
 #' the first type for which normalization yields a non-missing result.
+#' PMID is checked last as a fallback when no more specific type matches.
 #'
 #' Use [normalize_scholid()] to convert detected values to canonical form
 #' once the identifier type is known.

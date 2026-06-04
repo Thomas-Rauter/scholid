@@ -5,9 +5,9 @@
 #' to a canonical form (e.g., removing URL prefixes, labels, or separators).
 #'
 #' Normalization requires that inputs match the expected identifier structure.
-#' For identifier types with checksum algorithms, normalization also requires
-#' checksum-valid values. Inputs that do not meet these requirements yield
-#' `NA_character_`.
+#' For identifier types with checksum algorithms (ORCID, ROR, ISNI, ISBN, ISSN),
+#' normalization also requires checksum-valid values. Inputs that do not meet
+#' these requirements yield `NA_character_`.
 #'
 #' Normalized outputs are canonical, type-specific representations of valid
 #' identifiers.

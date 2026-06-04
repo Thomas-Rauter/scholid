@@ -29,6 +29,11 @@ navbar:
       href: news/index.html
 
 reference:
+  - title: Package
+    desc: Package overview and vignette links.
+    contents:
+      - scholid-package
+
   - title: User Available Functions
     desc: >
       Documentation for all user-facing functions (for internal functions,

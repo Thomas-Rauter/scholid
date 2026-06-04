@@ -43,6 +43,11 @@ implementations such as `is_doi()`, `normalize_orcid()`, and
 scholid::scholid_types()
 ```
 
+For per-type formats, validation rules, and classification order, see the
+**How Scholarly Identifiers Are Defined** vignette
+(`vignette("scholid_definitions", package = "scholid")`), also linked from
+the package site as *About identifiers*.
+
 ## Detect: `is_scholid()`
 
 `is_scholid()` checks whether each value is a valid identifier of a

@@ -14,9 +14,9 @@ the authoritative list and classification order.
 \section{Vignettes}{
 
 \itemize{
-\item \href{articles/get_started.html}{Getting started} introduces the exported
+\item \href{../doc/get_started.html}{Getting started} introduces the exported
 functions and typical workflows for mixed identifier data.
-\item \href{articles/scholid_definitions.html}{scholid_definitions} (\emph{About
+\item \href{../doc/scholid_definitions.html}{scholid_definitions} (\emph{About
 identifiers}) documents per-type formats, validation rules, and
 classification precedence.
 }

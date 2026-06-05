@@ -21,7 +21,7 @@
 #' classify_scholid(normalize_scholid("https://doi.org/10.1000/182", "doi"))
 #'
 #' @seealso [detect_scholid_type()], [scholid_types()],
-#'   [scholid_definitions](articles/scholid_definitions.html)
+#'   [scholid_definitions](../doc/scholid_definitions.html)
 #' @export
 classify_scholid <- function(x) {
     .scholid_check_x(

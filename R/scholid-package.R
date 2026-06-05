@@ -8,9 +8,9 @@
 #'
 #' @section Vignettes:
 #'
-#' - [Getting started](articles/get_started.html) introduces the exported
+#' - [Getting started](../doc/get_started.html) introduces the exported
 #'   functions and typical workflows for mixed identifier data.
-#' - [scholid_definitions](articles/scholid_definitions.html) (*About
+#' - [scholid_definitions](../doc/scholid_definitions.html) (*About
 #'   identifiers*) documents per-type formats, validation rules, and
 #'   classification precedence.
 #'

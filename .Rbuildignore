@@ -1,4 +1,5 @@
 ^renv$
+^releases$
 ^renv\.lock$
 ^.*\.Rproj$
 ^\.Rproj\.user$

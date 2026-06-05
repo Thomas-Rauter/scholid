@@ -31,5 +31,5 @@ classify_scholid(normalize_scholid("https://doi.org/10.1000/182", "doi"))
 }
 \seealso{
 \code{\link[=detect_scholid_type]{detect_scholid_type()}}, \code{\link[=scholid_types]{scholid_types()}},
-\href{articles/scholid_definitions.html}{scholid_definitions}
+\href{../doc/scholid_definitions.html}{scholid_definitions}
 }

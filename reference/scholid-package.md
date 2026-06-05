@@ -9,11 +9,11 @@ for the authoritative list and classification order.
 ## Vignettes
 
 - [Getting
-  started](https://thomas-rauter.github.io/scholid/reference/articles/get_started.md)
+  started](https://thomas-rauter.github.io/scholid/doc/get_started.md)
   introduces the exported functions and typical workflows for mixed
   identifier data.
 
-- [scholid_definitions](https://thomas-rauter.github.io/scholid/reference/articles/scholid_definitions.md)
+- [scholid_definitions](https://thomas-rauter.github.io/scholid/doc/scholid_definitions.md)
   (*About identifiers*) documents per-type formats, validation rules,
   and classification precedence.
 

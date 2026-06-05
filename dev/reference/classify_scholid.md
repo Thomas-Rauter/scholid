@@ -33,7 +33,7 @@ found.
 
 [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md),
 [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md),
-[scholid_definitions](https://thomas-rauter.github.io/scholid/reference/articles/scholid_definitions.md)
+[scholid_definitions](https://thomas-rauter.github.io/scholid/doc/scholid_definitions.md)
 
 ## Examples
 

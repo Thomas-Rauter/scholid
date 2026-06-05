@@ -2,6 +2,8 @@
 
 ## scholid 0.2.0
 
+CRAN release: 2026-06-04
+
 ### New identifier types
 
 The package now supports 20 identifier types (up from 7 in 0.1.1). Each

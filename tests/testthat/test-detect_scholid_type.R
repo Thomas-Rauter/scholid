@@ -889,14 +889,15 @@ testthat::test_that(
     {
         x <- c(
             "0000000218250097",
-            "20493630",
+            "2049-3630",
+            "ISSN 20493630",
             "9780306406157",
             "12345678"
         )
 
         testthat::expect_identical(
             detect_scholid_type(x),
-            c("isni", "issn", "isbn", "pmid")
+            c("isni", "issn", "issn", "isbn", "pmid")
         )
     }
 )
@@ -906,12 +907,15 @@ testthat::test_that(
     {
         x <- c(
             "12345678",
-            "PMID: 12345678"
+            "PMID: 12345678",
+            "20493630",
+            "29456894",
+            "17170141"
         )
 
         testthat::expect_identical(
             detect_scholid_type(x),
-            c("pmid", "pmid")
+            c("pmid", "pmid", "pmid", "pmid", "pmid")
         )
     }
 )

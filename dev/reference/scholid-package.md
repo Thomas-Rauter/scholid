@@ -2,9 +2,9 @@
 
 `scholid` provides lightweight, dependency-free utilities for detecting,
 normalizing, classifying, and extracting scholarly identifier strings.
-The package supports twenty identifier types; see
+See
 [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
-for the authoritative list and classification order.
+for the supported identifier types and their classification order.
 
 ## Vignettes
 

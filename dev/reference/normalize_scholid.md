@@ -17,7 +17,8 @@ Use
 to test whether already-canonical values are valid identifiers of a
 given type. Both functions apply checksum verification where applicable;
 normalization additionally accepts wrapped input forms and returns
-canonical strings.
+canonical strings. Invisible characters, such as a soft hyphen or a byte
+order mark, are removed before normalization.
 
 ## Usage
 

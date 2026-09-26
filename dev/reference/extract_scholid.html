@@ -5,15 +5,19 @@ character vector of matches (possibly length 0). NA inputs yield an empty
 character vector.
 Matches are returned as extracted identifier tokens from the text.
 Surrounding prose punctuation or markup fragments may be removed where
-necessary to isolate the identifier. Use normalize_scholid() to convert
-identifiers to canonical form."><meta property="og:description" content="Extract identifiers of a single supported type from free text.
+necessary to isolate the identifier. Invisible characters, such as a
+soft hyphen or a byte order mark, are removed from the text before
+matching. Use normalize_scholid() to convert identifiers to canonical
+form."><meta property="og:description" content="Extract identifiers of a single supported type from free text.
 The result is a list with one element per input element. Each element is a
 character vector of matches (possibly length 0). NA inputs yield an empty
 character vector.
 Matches are returned as extracted identifier tokens from the text.
 Surrounding prose punctuation or markup fragments may be removed where
-necessary to isolate the identifier. Use normalize_scholid() to convert
-identifiers to canonical form."></head><body>
+necessary to isolate the identifier. Invisible characters, such as a
+soft hyphen or a byte order mark, are removed from the text before
+matching. Use normalize_scholid() to convert identifiers to canonical
+form."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -56,8 +60,10 @@ character vector of matches (possibly length 0). <code>NA</code> inputs yield an
 character vector.</p>
 <p>Matches are returned as extracted identifier tokens from the text.
 Surrounding prose punctuation or markup fragments may be removed where
-necessary to isolate the identifier. Use <code><a href="normalize_scholid.html">normalize_scholid()</a></code> to convert
-identifiers to canonical form.</p>
+necessary to isolate the identifier. Invisible characters, such as a
+soft hyphen or a byte order mark, are removed from the text before
+matching. Use <code><a href="normalize_scholid.html">normalize_scholid()</a></code> to convert identifiers to canonical
+form.</p>
     </div>
 
     <div class="section level2">

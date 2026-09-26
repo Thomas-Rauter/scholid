@@ -1,5 +1,37 @@
 # Changelog
 
+## scholid (development version)
+
+### Bug fixes
+
+- Rejected identifiers containing invisible characters, such as soft
+  hyphens and byte order marks, in
+  [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+  and
+  [`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md).
+  [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md),
+  [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md),
+  and
+  [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
+  now remove those characters before normalizing or matching.
+
+- Fixed
+  [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+  reporting bare 8-digit PMIDs such as `29456894` as `issn` when their
+  digits happened to pass the ISSN checksum. Bare compact strings are
+  now detected as ISSN only with a hyphen (`2434-561X`) or an `ISSN`
+  label, so a bare `2434561X` is no longer detected.
+  `normalize_scholid(x, "issn")` is unchanged.
+
+### Internal improvements
+
+- Sped up
+  [`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md),
+  [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md),
+  and
+  [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
+  by checking whole vectors instead of one string at a time.
+
 ## scholid 0.2.0
 
 CRAN release: 2026-06-04

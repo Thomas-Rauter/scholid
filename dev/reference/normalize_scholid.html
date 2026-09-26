@@ -10,7 +10,8 @@ identifiers.
 Use is_scholid() to test whether already-canonical values are valid
 identifiers of a given type. Both functions apply checksum verification
 where applicable; normalization additionally accepts wrapped input forms
-and returns canonical strings."><meta property="og:description" content="Vectorized normalizer that converts supported scholarly identifier values
+and returns canonical strings. Invisible characters, such as a soft
+hyphen or a byte order mark, are removed before normalization."><meta property="og:description" content="Vectorized normalizer that converts supported scholarly identifier values
 to a canonical form (e.g., removing URL prefixes, labels, or separators).
 Normalization requires that inputs match the expected identifier structure.
 For identifier types with checksum algorithms (ORCID, ROR, ISNI, ISBN, ISSN),
@@ -21,7 +22,8 @@ identifiers.
 Use is_scholid() to test whether already-canonical values are valid
 identifiers of a given type. Both functions apply checksum verification
 where applicable; normalization additionally accepts wrapped input forms
-and returns canonical strings."></head><body>
+and returns canonical strings. Invisible characters, such as a soft
+hyphen or a byte order mark, are removed before normalization."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -69,7 +71,8 @@ identifiers.</p>
 <p>Use <code><a href="is_scholid.html">is_scholid()</a></code> to test whether already-canonical values are valid
 identifiers of a given type. Both functions apply checksum verification
 where applicable; normalization additionally accepts wrapped input forms
-and returns canonical strings.</p>
+and returns canonical strings. Invisible characters, such as a soft
+hyphen or a byte order mark, are removed before normalization.</p>
     </div>
 
     <div class="section level2">

@@ -640,6 +640,14 @@ a hyphen after the fourth digit (`1234-567X`). Extraction targets
 hyphenated tokens; normalize for compact checks. Registry existence is
 not checked.
 
+[`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+only reports `issn` when the input carries ISSN context: the hyphen
+(`2434-561X`) or an `ISSN` label (`ISSN 2434561X`). Bare compact forms
+are not detected as ISSN, because checksum-valid 8-digit strings collide
+with PMIDs: `29456894` is detected as `pmid`, and `2434561X` is not
+detected at all. When the type is known, `normalize_scholid(x, "issn")`
+still accepts the compact form.
+
 ### Structural Regex
 
 Hyphenated (common in extraction):

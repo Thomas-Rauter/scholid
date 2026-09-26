@@ -7,7 +7,9 @@ normalize_scholid().
 The main difference from normalization is input form: is_scholid()
 expects values in canonical (or near-canonical) form. Wrapped values
 such as URLs or prefixed labels should be normalized first with
-normalize_scholid().
+normalize_scholid(). Values that contain an invisible character, such
+as a soft hyphen or a byte order mark, are not canonical and return
+FALSE.
 Inputs that are NA yield NA. Non-matching values return FALSE."><meta property="og:description" content="Vectorized predicate that tests whether values are valid scholarly
 identifiers of a given supported type.
 For identifier types with checksum algorithms (e.g., ORCID, ROR, ISNI, ISBN,
@@ -16,7 +18,9 @@ normalize_scholid().
 The main difference from normalization is input form: is_scholid()
 expects values in canonical (or near-canonical) form. Wrapped values
 such as URLs or prefixed labels should be normalized first with
-normalize_scholid().
+normalize_scholid(). Values that contain an invisible character, such
+as a soft hyphen or a byte order mark, are not canonical and return
+FALSE.
 Inputs that are NA yield NA. Non-matching values return FALSE."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -62,7 +66,9 @@ ISSN), checksum correctness is verified. The same checksum rules apply to
 <p>The main difference from normalization is input form: <code>is_scholid()</code>
 expects values in canonical (or near-canonical) form. Wrapped values
 such as URLs or prefixed labels should be normalized first with
-<code><a href="normalize_scholid.html">normalize_scholid()</a></code>.</p>
+<code><a href="normalize_scholid.html">normalize_scholid()</a></code>. Values that contain an invisible character, such
+as a soft hyphen or a byte order mark, are not canonical and return
+<code>FALSE</code>.</p>
 <p>Inputs that are <code>NA</code> yield <code>NA</code>. Non-matching values return <code>FALSE</code>.</p>
     </div>
 

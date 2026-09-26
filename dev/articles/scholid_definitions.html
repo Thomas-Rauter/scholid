@@ -805,6 +805,14 @@ is not checked.</p>
 Canonical form uses a hyphen after the fourth digit
 (<code>1234-567X</code>). Extraction targets hyphenated tokens;
 normalize for compact checks. Registry existence is not checked.</p>
+<p><code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> only reports <code>issn</code>
+when the input carries ISSN context: the hyphen (<code>2434-561X</code>)
+or an <code>ISSN</code> label (<code>ISSN 2434561X</code>). Bare compact
+forms are not detected as ISSN, because checksum-valid 8-digit strings
+collide with PMIDs: <code>29456894</code> is detected as
+<code>pmid</code>, and <code>2434561X</code> is not detected at all.
+When the type is known, <code>normalize_scholid(x, "issn")</code> still
+accepts the compact form.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-12">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-12"></a>

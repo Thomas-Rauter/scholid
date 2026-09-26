@@ -11,10 +11,9 @@ A character vector of supported identifier type strings.
 }
 \description{
 Returns the set of identifier types supported by the scholid package in
-classification priority order (most specific first). The package currently
-supports twenty types (from DOI and ORCID through life-science and archive
-identifiers). For per-type formats, validation rules, and classification
-precedence, see the \emph{How Scholarly Identifiers Are Defined} vignette
+classification priority order (most specific first). For per-type formats,
+validation rules, and classification precedence, see the \emph{How Scholarly
+Identifiers Are Defined} vignette
 (\code{vignette("scholid_definitions", package = "scholid")}).
 }
 \examples{

@@ -13,4 +13,8 @@
 ^\.Rprofile$
 ^LICENSE\.md$
 ^tarball_storage$
-^scholid\.code-workspace$
+^\.scholid\.code-workspace$
+^AGENTS\.md$
+^CLAUDE\.md$
+^CONTEXT\.md$
+^\.cursor$

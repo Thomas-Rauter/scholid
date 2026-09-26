@@ -8,8 +8,8 @@
 \description{
 \code{scholid} provides lightweight, dependency-free utilities for detecting,
 normalizing, classifying, and extracting scholarly identifier strings.
-The package supports twenty identifier types; see \code{\link[=scholid_types]{scholid_types()}} for
-the authoritative list and classification order.
+See \code{\link[=scholid_types]{scholid_types()}} for the supported identifier types and their
+classification order.
 }
 \section{Vignettes}{
 

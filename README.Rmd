@@ -16,7 +16,7 @@ editor_options:
 `scholid` provides lightweight, dependency-free utilities for working with
 scholarly identifiers in R. The package is designed as a small, well-tested
 foundation that can be safely reused by other packages and data workflows.
-It supports twenty identifier types — see Scope and `scholid_types()`.
+For the supported identifier types, see Scope and `scholid_types()`.
 
 See the full documentation at the
 [scholid website](https://thomas-rauter.github.io/scholid/).

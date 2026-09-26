@@ -9,4 +9,4 @@ renv/
 dev/
 docs/
 scholid.Rproj
-scholid.code-workspace
+.scholid.code-workspace

@@ -13,7 +13,7 @@
 #' @noRd
 is_doi <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(init$x[init$ok], .is_doi_strict, logical(1))
+    init$out[init$ok] <- .is_doi_strict(init$x[init$ok])
     init$out
 }
 
@@ -36,13 +36,9 @@ is_orcid <- function(x) {
     valid <- grepl(pat, y)
     res <- rep(FALSE, length(y))
 
-    res[valid] <- vapply(
-        y[valid],
-        function(id) {
-            .iso7064_mod11_2_valid(gsub("-", "", id))
-        },
-        logical(1)
-    )
+    if (any(valid)) {
+        res[valid] <- .iso7064_mod11_2_valid(gsub("-", "", y[valid]))
+    }
     init$out[init$ok] <- res
     init$out
 }
@@ -61,11 +57,7 @@ is_orcid <- function(x) {
 #' @noRd
 is_isni <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_isni_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_isni_strict(init$x[init$ok])
     init$out
 }
 
@@ -81,36 +73,16 @@ is_isni <- function(x) {
 #' @noRd
 is_isbn <- function(x) {
     init <- .scholid_init_na_logical(x)
+    y <- init$x[init$ok]
+    res <- rep(FALSE, length(y))
+    fmt <- .isbn_format_ok(y)
 
-    is10 <- function(s) {
-        if (!grepl("^\\d{9}[0-9X]$", s)) return(FALSE)
-        d <- strsplit(s, "")[[1]]
-        v <- as.integer(d[1:9])
-
-        s9 <- sum(v * 10:2)
-        cdn <- (11 - (s9 %% 11)) %% 11
-        cd <- if (cdn == 10) "X" else as.character(cdn)
-
-        cd == d[10]
+    if (any(fmt)) {
+        compact <- toupper(gsub("[- ]", "", y[fmt]))
+        res[fmt] <- .isbn10_valid(compact) | .isbn13_valid(compact)
     }
 
-    is13 <- function(s) {
-        if (!grepl("^\\d{13}$", s)) return(FALSE)
-        d <- as.integer(strsplit(s, "")[[1]])
-        r <- sum(d[1:12] * rep(c(1, 3), 6))
-        cd <- (10 - (r %% 10)) %% 10
-        cd == d[13]
-    }
-
-    init$out[init$ok] <- vapply(init$x[init$ok], function(s) {
-        if (!.isbn_format_ok(s)) {
-            return(FALSE)
-        }
-
-        compact <- toupper(gsub("[- ]", "", s))
-        is10(compact) || is13(compact)
-    }, logical(1))
-
+    init$out[init$ok] <- res
     init$out
 }
 
@@ -129,17 +101,24 @@ is_issn <- function(x) {
 
     pat <- "^\\d{4}-\\d{3}[0-9X]$"
     y <- init$x[init$ok]
+    res <- grepl(pat, y)
 
-    chk <- function(s) {
-        d <- strsplit(gsub("-", "", s), "")[[1]]
-        v <- as.integer(d[1:7])
-        r <- sum(v * 8:2) %% 11
-        cd <- if (r == 0) "0" else if (r == 1) "X" else as.character(11 - r)
-        cd == d[8]
+    if (any(res)) {
+        compact <- gsub("-", "", y[res])
+        acc <- rep(0, sum(res))
+        w <- 8:2
+        for (i in seq_len(7L)) {
+            acc <- acc + as.integer(substr(compact, i, i)) * w[[i]]
+        }
+        r <- acc %% 11
+        cd <- ifelse(
+            r == 0,
+            "0",
+            ifelse(r == 1, "X", as.character(11 - r))
+        )
+        res[res] <- cd == substr(compact, 8L, 8L)
     }
 
-    res <- grepl(pat, y)
-    res[res] <- vapply(y[res], chk, logical(1))
     init$out[init$ok] <- res
     init$out
 }
@@ -177,11 +156,7 @@ is_arxiv <- function(x) {
 #' @noRd
 is_ark <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_ark_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_ark_strict(init$x[init$ok])
     init$out
 }
 
@@ -199,11 +174,7 @@ is_ark <- function(x) {
 #' @noRd
 is_bibcode <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_bibcode_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_bibcode_strict(init$x[init$ok])
     init$out
 }
 
@@ -220,11 +191,7 @@ is_bibcode <- function(x) {
 #' @noRd
 is_openalex <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_openalex_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_openalex_strict(init$x[init$ok])
     init$out
 }
 
@@ -242,11 +209,7 @@ is_openalex <- function(x) {
 #' @noRd
 is_swhid <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_swhid_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_swhid_strict(init$x[init$ok])
     init$out
 }
 
@@ -264,11 +227,7 @@ is_swhid <- function(x) {
 #' @noRd
 is_uniprot <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_uniprot_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_uniprot_strict(init$x[init$ok])
     init$out
 }
 
@@ -286,11 +245,7 @@ is_uniprot <- function(x) {
 #' @noRd
 is_refseq <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_refseq_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_refseq_strict(init$x[init$ok])
     init$out
 }
 
@@ -308,11 +263,7 @@ is_refseq <- function(x) {
 #' @noRd
 is_sra <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_sra_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_sra_strict(init$x[init$ok])
     init$out
 }
 
@@ -329,11 +280,7 @@ is_sra <- function(x) {
 #' @noRd
 is_geo <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_geo_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_geo_strict(init$x[init$ok])
     init$out
 }
 
@@ -351,11 +298,7 @@ is_geo <- function(x) {
 #' @noRd
 is_bioproject <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_bioproject_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_bioproject_strict(init$x[init$ok])
     init$out
 }
 
@@ -373,11 +316,7 @@ is_bioproject <- function(x) {
 #' @noRd
 is_assembly <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_assembly_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_assembly_strict(init$x[init$ok])
     init$out
 }
 
@@ -393,11 +332,7 @@ is_assembly <- function(x) {
 #' @noRd
 is_ror <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_ror_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_ror_strict(init$x[init$ok])
     init$out
 }
 
@@ -415,11 +350,7 @@ is_ror <- function(x) {
 #' @noRd
 is_rrid <- function(x) {
     init <- .scholid_init_na_logical(x)
-    init$out[init$ok] <- vapply(
-        init$x[init$ok],
-        .is_rrid_strict,
-        logical(1)
-    )
+    init$out[init$ok] <- .is_rrid_strict(init$x[init$ok])
     init$out
 }
 
@@ -469,43 +400,39 @@ is_pmcid <- function(x) {
 # Level 2 functions (functions called by level 1 functions) definitions --------
 
 
-#' Validate a compact 16-character ISO/IEC 7064 MOD 11-2 identifier
+#' Validate compact 16-character ISO/IEC 7064 MOD 11-2 identifiers
 #'
 #' @description
-#' Internal helper shared by ORCID and ISNI validators. The input must be a
+#' Internal helper shared by ORCID and ISNI validators. Each value must be a
 #' 16-character string of digits with an optional `X` check character.
 #'
-#' @param compact A single compact 16-character identifier string.
+#' @param compact A character vector of compact 16-character identifiers.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `compact`.
 #'
 #' @noRd
 .iso7064_mod11_2_valid <- function(compact) {
-    if (is.na(compact) || nchar(compact) != 16L) {
-        return(FALSE)
+    res <- rep(FALSE, length(compact))
+    ok <- !is.na(compact) & nchar(compact) == 16L
+    if (!any(ok)) {
+        return(res)
     }
 
-    d <- strsplit(compact, "")[[1]]
-    if (!all(grepl("[0-9]", d[1:15]))) {
-        return(FALSE)
+    y <- compact[ok]
+    shape <- grepl("^[0-9]{15}[0-9X]$", y)
+    if (!any(shape)) {
+        return(res)
     }
 
-    if (!grepl("^[0-9X]$", d[16])) {
-        return(FALSE)
+    z <- y[shape]
+    acc <- rep(0L, length(z))
+    for (i in seq_len(15L)) {
+        acc <- (acc + as.integer(substr(z, i, i))) * 2L
     }
-
-    s <- 0L
-    for (i in seq_len(15)) {
-        s <- (s + as.integer(d[i])) * 2L
-    }
-    r <- (12L - (s %% 11L)) %% 11L
-    cd <- if (r == 10L) {
-        "X"
-    } else {
-        as.character(r)
-    }
-
-    identical(cd, d[16])
+    r <- (12L - (acc %% 11L)) %% 11L
+    cd <- ifelse(r == 10L, "X", as.character(r))
+    res[which(ok)[shape]] <- cd == substr(z, 16L, 16L)
+    res
 }
 
 
@@ -526,28 +453,27 @@ is_pmcid <- function(x) {
 #' ORCID-style strings and wrapped forms are rejected; use
 #' `normalize_isni()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_isni_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
     }
 
-    x <- trimws(x)
-    if (grepl("[[:space:]-]", x, perl = TRUE)) {
-        return(FALSE)
+    y <- trimws(x[ok])
+    sep <- grepl("[[:space:]-]", y, perl = TRUE)
+    y <- toupper(y)
+    hit <- !sep & grepl(.isni_pat(), y, perl = TRUE)
+    if (any(hit)) {
+        hit[hit] <- .iso7064_mod11_2_valid(y[hit])
     }
-
-    x <- toupper(x)
-    pat <- .isni_pat()
-    if (!grepl(pat, x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    .iso7064_mod11_2_valid(x)
+    res[which(ok)] <- hit
+    res
 }
 
 
@@ -588,32 +514,27 @@ is_pmcid <- function(x) {
 #' Validates canonical uppercase OpenAlex keys (`W2741809807`). Wrapped URLs
 #' and lowercase keys are rejected; use `normalize_openalex()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_openalex_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
     }
 
-    x <- trimws(x)
-    if (grepl("[[:space:]]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    pat <- .openalex_key_pat()
-    if (!grepl(pat, x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    # UniProtKB 6-character accessions share P/O/Q/G + digit prefixes with OpenAlex keys.
-    if (grepl(.uniprot_pat(), x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    identical(x, toupper(x))
+    y <- trimws(x[ok])
+    # UniProtKB 6-character accessions share P/O/Q/G + digit prefixes
+    # with OpenAlex keys.
+    res[which(ok)] <- !grepl("[[:space:]]", y, perl = TRUE) &
+        grepl(.openalex_key_pat(), y, perl = TRUE) &
+        !grepl(.uniprot_pat(), y, perl = TRUE) &
+        (y == toupper(y))
+    res[is.na(res)] <- FALSE
+    res
 }
 
 
@@ -687,29 +608,65 @@ is_pmcid <- function(x) {
 }
 
 
-#' Canonicalize an ARK string to ark:/NAAN/Name form
+#' Canonicalize ARK strings to ark:/NAAN/Name form
 #'
-#' @param x A single ARK candidate string.
+#' @param x A character vector of ARK candidates.
 #'
-#' @return A canonical ARK string, or `NA_character_` if no ARK label is present.
+#' @return A character vector of canonical ARK strings, with `NA_character_`
+#'   where no ARK label is present.
 #'
 #' @noRd
 .canonicalize_ark <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(NA_character_)
+    out <- rep(NA_character_, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(out)
     }
 
-    x <- trimws(x)
-    pos <- regexpr("(?i)ark:", x, perl = TRUE)[1]
-    if (pos < 1L) {
-        return(NA_character_)
+    y <- trimws(x[ok])
+    pos <- regexpr("(?i)ark:", y, perl = TRUE)
+    found <- !is.na(pos) & pos > 0L
+    if (!any(found)) {
+        return(out)
     }
 
-    x <- substr(x, pos, nchar(x))
-    x <- sub("(?i)^ark:/*", "ark:/", x, perl = TRUE)
-    x <- sub("[.,;:!?]+$", "", x)
-    x <- sub("[?#].*$", "", x)
-    x
+    z <- substr(y[found], pos[found], nchar(y[found]))
+    z <- sub("(?i)^ark:/*", "ark:/", z, perl = TRUE)
+    z <- sub("[.,;:!?]+$", "", z)
+    z <- sub("[?#].*$", "", z)
+    out[which(ok)[found]] <- z
+    out
+}
+
+
+#' Strict structural check for canonical uppercase tokens
+#'
+#' @description
+#' Vectorized check used by accession validators. Missing and empty values
+#' are rejected. A leading URL, a character matching `reject_pat`, or any
+#' lowercase letter is rejected. Remaining values must match `pat`.
+#'
+#' @param x A character vector.
+#' @param pat Validation pattern.
+#' @param reject_pat Pattern of disallowed characters.
+#'
+#' @return A logical vector the same length as `x`.
+#'
+#' @noRd
+.is_upper_token <- function(x, pat, reject_pat) {
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
+    }
+
+    y <- trimws(x[ok])
+    res[which(ok)] <- !grepl("^https?://", y, ignore.case = TRUE) &
+        !grepl(reject_pat, y, perl = TRUE) &
+        (y == toupper(y)) &
+        grepl(pat, y, perl = TRUE)
+    res[is.na(res)] <- FALSE
+    res
 }
 
 
@@ -730,31 +687,17 @@ is_pmcid <- function(x) {
 #' `A0A022YWF9`). Wrapped URLs and lowercase accessions are rejected; use
 #' `normalize_uniprot()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_uniprot_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
-    }
-
-    x <- trimws(x)
-    if (grepl("^https?://", x, ignore.case = TRUE)) {
-        return(FALSE)
-    }
-
-    if (grepl("[[:space:]/|:]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    if (!identical(x, toupper(x))) {
-        return(FALSE)
-    }
-
-    pat <- .uniprot_pat()
-    grepl(pat, x, perl = TRUE)
+    .is_upper_token(
+        x,
+        pat = .uniprot_pat(),
+        reject_pat = "[[:space:]/|:]"
+    )
 }
 
 
@@ -765,31 +708,17 @@ is_pmcid <- function(x) {
 #' `NP_001735.1`). Wrapped URLs and lowercase accessions are rejected; use
 #' `normalize_refseq()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_refseq_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
-    }
-
-    x <- trimws(x)
-    if (grepl("^https?://", x, ignore.case = TRUE)) {
-        return(FALSE)
-    }
-
-    if (grepl("[[:space:]/|:]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    if (!identical(x, toupper(x))) {
-        return(FALSE)
-    }
-
-    pat <- .refseq_pat()
-    grepl(pat, x, perl = TRUE)
+    .is_upper_token(
+        x,
+        pat = .refseq_pat(),
+        reject_pat = "[[:space:]/|:]"
+    )
 }
 
 
@@ -800,31 +729,17 @@ is_pmcid <- function(x) {
 #' `SRX1234567`). Wrapped URLs and lowercase accessions are rejected; use
 #' `normalize_sra()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_sra_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
-    }
-
-    x <- trimws(x)
-    if (grepl("^https?://", x, ignore.case = TRUE)) {
-        return(FALSE)
-    }
-
-    if (grepl("[[:space:]/|:]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    if (!identical(x, toupper(x))) {
-        return(FALSE)
-    }
-
-    pat <- .sra_pat()
-    grepl(pat, x, perl = TRUE)
+    .is_upper_token(
+        x,
+        pat = .sra_pat(),
+        reject_pat = "[[:space:]/|:]"
+    )
 }
 
 
@@ -835,31 +750,17 @@ is_pmcid <- function(x) {
 #' `GPL96`). Wrapped URLs and lowercase accessions are rejected; use
 #' `normalize_geo()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_geo_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
-    }
-
-    x <- trimws(x)
-    if (grepl("^https?://", x, ignore.case = TRUE)) {
-        return(FALSE)
-    }
-
-    if (grepl("[[:space:]/|:?&=]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    if (!identical(x, toupper(x))) {
-        return(FALSE)
-    }
-
-    pat <- .geo_pat()
-    grepl(pat, x, perl = TRUE)
+    .is_upper_token(
+        x,
+        pat = .geo_pat(),
+        reject_pat = "[[:space:]/|:?&=]"
+    )
 }
 
 
@@ -870,31 +771,17 @@ is_pmcid <- function(x) {
 #' `PRJEB12345`). Wrapped URLs and lowercase accessions are rejected; use
 #' `normalize_bioproject()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_bioproject_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
-    }
-
-    x <- trimws(x)
-    if (grepl("^https?://", x, ignore.case = TRUE)) {
-        return(FALSE)
-    }
-
-    if (grepl("[[:space:]/|:?&=]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    if (!identical(x, toupper(x))) {
-        return(FALSE)
-    }
-
-    pat <- .bioproject_pat()
-    grepl(pat, x, perl = TRUE)
+    .is_upper_token(
+        x,
+        pat = .bioproject_pat(),
+        reject_pat = "[[:space:]/|:?&=]"
+    )
 }
 
 
@@ -905,31 +792,17 @@ is_pmcid <- function(x) {
 #' `GCA_009914755.4`). Wrapped URLs and lowercase accessions are rejected; use
 #' `normalize_assembly()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_assembly_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
-    }
-
-    x <- trimws(x)
-    if (grepl("^https?://", x, ignore.case = TRUE)) {
-        return(FALSE)
-    }
-
-    if (grepl("[[:space:]/|:?&=]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    if (!identical(x, toupper(x))) {
-        return(FALSE)
-    }
-
-    pat <- .assembly_pat()
-    grepl(pat, x, perl = TRUE)
+    .is_upper_token(
+        x,
+        pat = .assembly_pat(),
+        reject_pat = "[[:space:]/|:?&=]"
+    )
 }
 
 
@@ -939,32 +812,31 @@ is_pmcid <- function(x) {
 #' Validates canonical `ark:/NAAN/Name` identifiers. Wrapped URLs and bare
 #' paths without the `ark:` label are rejected; use `normalize_ark()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_ark_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
     }
 
-    x <- trimws(x)
-    if (grepl("^https?://", x, ignore.case = TRUE)) {
-        return(FALSE)
+    y <- trimws(x[ok])
+    cand <- !grepl("^https?://", y, ignore.case = TRUE) &
+        grepl("(?i)^ark:", y, perl = TRUE)
+    good <- rep(FALSE, length(y))
+    if (any(cand)) {
+        canon <- .canonicalize_ark(y[cand])
+        good[cand] <- !is.na(canon) &
+            !grepl("[[:space:]]", canon, perl = TRUE) &
+            grepl(.ark_pat(), canon, perl = TRUE)
     }
-
-    if (!grepl("(?i)^ark:", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    x <- .canonicalize_ark(x)
-    if (is.na(x) || grepl("[[:space:]]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    pat <- .ark_pat()
-    grepl(pat, x, perl = TRUE)
+    res[which(ok)] <- good
+    res[is.na(res)] <- FALSE
+    res
 }
 
 
@@ -974,76 +846,52 @@ is_pmcid <- function(x) {
 #' Validates canonical 19-character ADS bibcodes (`YYYYJJJJJVVVVM PPPPA`).
 #' Wrapped URLs are rejected; use `normalize_bibcode()` first.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_bibcode_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
     }
 
-    x <- trimws(x)
-    if (nchar(x) != 19L) {
-        return(FALSE)
-    }
-
-    if (grepl("[[:space:]]", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    pat <- .bibcode_pat()
-    if (!grepl(pat, x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    journal <- substr(x, 5L, 9L)
-    grepl("[A-Za-z]", journal, perl = TRUE)
+    y <- trimws(x[ok])
+    journal <- substr(y, 5L, 9L)
+    res[which(ok)] <- nchar(y) == 19L &
+        !grepl("[[:space:]]", y, perl = TRUE) &
+        grepl(.bibcode_pat(), y, perl = TRUE) &
+        grepl("[A-Za-z]", journal, perl = TRUE)
+    res[is.na(res)] <- FALSE
+    res
 }
 
 
 #' Strict DOI validator
 #'
-#' @param x A single character string.
+#' @param x A character vector.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_doi_strict <- function(x) {
-    if (!nzchar(x)) {
-        return(FALSE)
+    res <- !is.na(x) & nzchar(x)
+    if (!any(res)) {
+        return(rep(FALSE, length(x)))
     }
 
-    # Broad DOI structure
+    y <- x[res]
     pat <- .scholid_registry()[["doi"]]$pat
-    if (!grepl(pat, x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    # Reject obvious markup contamination
-    if (grepl("[\"']", x, perl = TRUE)) {
-        return(FALSE)
-    }
-    if (grepl("</", x, perl = TRUE)) {
-        return(FALSE)
-    }
-    if (grepl(">[^[:space:]]*<", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    # Reject obvious trailing wrapper characters
-    if (grepl("[<>()\\[\\]{}]$", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    # Reject a DOI immediately followed by letters after an unmatched closer,
-    # e.g. 10.1000/182)yy
-    if (grepl("[)\\]}>][[:alpha:]]+$", x, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    TRUE
+    res[res] <- grepl(pat, y, perl = TRUE) &
+        !grepl("[\"']", y, perl = TRUE) &
+        !grepl("</", y, perl = TRUE) &
+        !grepl(">[^[:space:]]*<", y, perl = TRUE) &
+        !grepl("[<>()\\[\\]{}]$", y, perl = TRUE) &
+        !grepl("[)\\]}>][[:alpha:]]+$", y, perl = TRUE)
+    res[is.na(res)] <- FALSE
+    res
 }
 
 
@@ -1089,32 +937,42 @@ is_pmcid <- function(x) {
 
 #' Strict ROR validator
 #'
-#' @param x A single character string in canonical compact form.
+#' @param x A character vector in canonical compact form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_ror_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
     }
 
-    x <- tolower(trimws(x))
+    y <- tolower(trimws(x[ok]))
     pat <- .scholid_registry()[["ror"]]$pat
-    if (!grepl(pat, x, perl = TRUE)) {
-        return(FALSE)
+    hit <- grepl(pat, y, perl = TRUE)
+    if (any(hit)) {
+        cand <- y[hit]
+        body_num <- vapply(
+            substr(cand, 2L, 7L),
+            .crockford_base32_decode,
+            integer(1),
+            USE.NAMES = FALSE
+        )
+        known <- !is.na(body_num)
+        good <- rep(FALSE, length(cand))
+        if (any(known)) {
+            expected <- sprintf(
+                "%02d",
+                98L - (as.numeric(body_num[known]) * 100) %% 97
+            )
+            good[known] <- substr(cand[known], 8L, 9L) == expected
+        }
+        hit[hit] <- good
     }
-
-    body_num <- .crockford_base32_decode(substr(x, 2L, 7L))
-    if (is.na(body_num)) {
-        return(FALSE)
-    }
-
-    expected <- sprintf(
-        "%02d",
-        98L - (as.numeric(body_num) * 100) %% 97
-    )
-    identical(substr(x, 8L, 9L), expected)
+    res[which(ok)] <- hit
+    res
 }
 
 
@@ -1135,32 +993,36 @@ is_pmcid <- function(x) {
 #' of known authority body patterns. Bare local IDs without the `RRID:` prefix
 #' are rejected.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_rrid_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
     }
 
-    x <- trimws(x)
-    if (!grepl("^RRID:", x)) {
-        return(FALSE)
+    y <- trimws(x[ok])
+    has <- grepl("^RRID:", y)
+    body <- substr(y, 6L, nchar(y))
+    hit <- has & nzchar(body)
+    if (any(hit)) {
+        b <- body[hit]
+        matched <- rep(FALSE, length(b))
+        for (p in .rrid_body_patterns()) {
+            matched <- matched | grepl(
+                paste0("^", p, "$"),
+                b,
+                perl = TRUE
+            )
+        }
+        hit[hit] <- matched
     }
-
-    body <- substr(x, 6L, nchar(x))
-    if (!nzchar(body)) {
-        return(FALSE)
-    }
-
-    patterns <- .rrid_body_patterns()
-    any(vapply(
-        patterns,
-        function(p) grepl(paste0("^", p, "$"), body, perl = TRUE),
-        logical(1)
-    ))
+    res[which(ok)] <- hit
+    res
 }
 
 
@@ -1174,26 +1036,37 @@ is_pmcid <- function(x) {
 }
 
 
-#' Split a SWHID into core and qualifier segments
+#' Split SWHIDs into core and qualifier segments
 #'
-#' @param x A single compact SWHID string without surrounding whitespace.
+#' @param x A character vector of compact SWHID strings.
 #'
-#' @return A list with `core` and `qualifiers` character strings.
+#' @return A list with `core` and `qualifiers` character vectors, each the
+#'   same length as `x`. Qualifiers are `""` when a value has no semicolon.
 #'
 #' @noRd
 .swhid_split <- function(x) {
-    pos <- regexpr(";", x, fixed = TRUE)[1]
-
-    if (pos == -1L) {
+    n <- length(x)
+    core <- as.character(x)
+    qual <- rep("", n)
+    ok <- !is.na(x)
+    if (!any(ok)) {
         return(list(
-            core        = x,
-            qualifiers  = ""
+            core       = core,
+            qualifiers = qual
         ))
     }
 
+    pos <- rep(-1L, n)
+    pos[ok] <- regexpr(";", x[ok], fixed = TRUE)
+    has <- !is.na(pos) & pos > 0L
+    if (any(has)) {
+        core[has] <- substr(x[has], 1L, pos[has] - 1L)
+        qual[has] <- substr(x[has], pos[has] + 1L, nchar(x[has]))
+    }
+
     list(
-        core        = substr(x, 1L, pos - 1L),
-        qualifiers  = substr(x, pos + 1L, nchar(x))
+        core       = core,
+        qualifiers = qual
     )
 }
 
@@ -1260,36 +1133,47 @@ is_pmcid <- function(x) {
 }
 
 
-#' Canonicalize a compact SWHID string
+#' Canonicalize compact SWHID strings
 #'
 #' @description
 #' Lowercases the core identifier and embedded visit/anchor qualifier cores.
 #' The input must already be whitespace-free.
 #'
-#' @param x A single compact SWHID string.
+#' @param x A character vector of compact SWHID strings.
 #'
-#' @return A canonical SWHID string.
+#' @return A character vector of canonical SWHID strings.
 #'
 #' @noRd
 .canonicalize_swhid <- function(x) {
     parts <- .swhid_split(x)
     core <- tolower(parts$core)
-
-    if (!nzchar(parts$qualifiers)) {
-        return(core)
+    out <- core
+    has_q <- !is.na(parts$qualifiers) & nzchar(parts$qualifiers)
+    if (!any(has_q)) {
+        return(out)
     }
 
-    qual_parts <- strsplit(parts$qualifiers, ";", fixed = TRUE)[[1]]
-    qual_parts <- vapply(qual_parts, function(part) {
-        if (grepl("^(visit|anchor)=", part, perl = TRUE)) {
-            prefix <- sub("=.*$", "=", part)
-            paste0(prefix, tolower(sub("^[^=]+=", "", part)))
-        } else {
-            part
-        }
-    }, character(1))
-
-    paste0(core, ";", paste(qual_parts, collapse = ";"))
+    idx <- which(has_q)
+    out[idx] <- vapply(idx, function(i) {
+        qual_parts <- strsplit(
+            parts$qualifiers[[i]],
+            ";",
+            fixed = TRUE
+        )[[1]]
+        qual_parts <- vapply(qual_parts, function(part) {
+            if (grepl("^(visit|anchor)=", part, perl = TRUE)) {
+                prefix <- sub("=.*$", "=", part)
+                paste0(
+                    prefix,
+                    tolower(sub("^[^=]+=", "", part))
+                )
+            } else {
+                part
+            }
+        }, character(1))
+        paste0(core[[i]], ";", paste(qual_parts, collapse = ";"))
+    }, character(1), USE.NAMES = FALSE)
+    out
 }
 
 
@@ -1301,33 +1185,41 @@ is_pmcid <- function(x) {
 #' known keys and pass conservative value checks. Bare 40-character hex strings
 #' without the `swh:` prefix are rejected.
 #'
-#' @param x A single character string in canonical form.
+#' @param x A character vector in canonical form.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .is_swhid_strict <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
     }
 
-    x <- gsub("[[:space:]]+", "", trimws(x))
-
-    if (!grepl("^swh:", x)) {
-        return(FALSE)
+    y <- gsub("[[:space:]]+", "", trimws(x[ok]))
+    has <- grepl("^swh:", y)
+    good <- rep(FALSE, length(y))
+    if (any(has)) {
+        parts <- .swhid_split(y[has])
+        core_ok <- grepl(.swhid_core_pat(), parts$core, perl = TRUE)
+        qual_ok <- core_ok
+        need <- core_ok & nzchar(parts$qualifiers)
+        if (any(need)) {
+            qual_ok[need] <- vapply(
+                parts$qualifiers[need],
+                .is_swhid_qualifiers_valid,
+                logical(1)
+            )
+        }
+        good[has] <- qual_ok
     }
-
-    parts <- .swhid_split(x)
-
-    if (!grepl(.swhid_core_pat(), parts$core, perl = TRUE)) {
-        return(FALSE)
-    }
-
-    .is_swhid_qualifiers_valid(parts$qualifiers)
+    res[which(ok)] <- good
+    res
 }
 
 
-#' Check whether an ISBN string has an acceptable input format
+#' Check whether ISBN strings have an acceptable input format
 #'
 #' @description
 #' Returns `TRUE` for compact ISBN-10 and ISBN-13 strings, and for grouped
@@ -1336,42 +1228,94 @@ is_pmcid <- function(x) {
 #' This check validates input formatting only. It does not verify the ISBN
 #' checksum.
 #'
-#' @param x A single candidate ISBN string.
+#' @param x A character vector of candidate ISBN strings.
 #'
-#' @return A single logical value.
+#' @return A logical vector the same length as `x`.
 #'
 #' @noRd
 .isbn_format_ok <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return(FALSE)
+    res <- rep(FALSE, length(x))
+    ok <- !is.na(x) & nzchar(x)
+    if (!any(ok)) {
+        return(res)
     }
 
-    # compact forms
-    if (grepl("^\\d{9}[0-9Xx]$", x) || grepl("^\\d{13}$", x)) {
-        return(TRUE)
+    y <- x[ok]
+    compact_form <- grepl("^\\d{9}[0-9Xx]$", y) | grepl("^\\d{13}$", y)
+    out <- compact_form
+    rest <- !compact_form
+    if (any(rest)) {
+        z <- y[rest]
+        keep <- grepl("^[0-9Xx -]+$", z) &
+            !grepl("(^[- ]|[- ]$|[- ]{2,}|[- ]{2,})", z)
+        grouped <- rep(FALSE, length(z))
+        if (any(keep)) {
+            w <- z[keep]
+            body <- gsub("[- ]", "", w)
+            n <- nchar(body)
+            is10 <- n == 10L & grepl(
+                "^[0-9]+([ -][0-9]+){2}[ -][0-9Xx]$",
+                w
+            )
+            is13 <- n == 13L & grepl("^97[89]([ -][0-9]+){4}$", w)
+            grouped[keep] <- is10 | is13
+        }
+        out[rest] <- grouped
     }
 
-    # formatted forms: digits/X separated by single spaces or hyphens,
-    # with 10 or 13 ISBN characters total after stripping separators
-    if (!grepl("^[0-9Xx -]+$", x)) {
-        return(FALSE)
-    }
-    if (grepl("(^[- ]|[- ]$|[- ]{2,}|[- ]{2,})", x)) {
-        return(FALSE)
-    }
+    res[which(ok)] <- out
+    res
+}
 
-    compact <- gsub("[- ]", "", x)
-    n <- nchar(compact)
 
-    if (n == 10) {
-        # ISBN-10: must consist of 4 groups if separators are present
-        return(grepl("^[0-9]+([ -][0-9]+){2}[ -][0-9Xx]$", x))
-    }
-
-    if (n == 13) {
-        # ISBN-13: grouped form must start with 978 or 979
-        return(grepl("^97[89]([ -][0-9]+){4}$", x))
+#' Validate ISBN-10 checksums
+#'
+#' @param compact A character vector of compact uppercase ISBN strings.
+#'
+#' @return A logical vector the same length as `compact`.
+#'
+#' @noRd
+.isbn10_valid <- function(compact) {
+    res <- rep(FALSE, length(compact))
+    ok <- !is.na(compact) & grepl("^\\d{9}[0-9X]$", compact)
+    if (!any(ok)) {
+        return(res)
     }
 
-    FALSE
+    y <- compact[ok]
+    acc <- rep(0, length(y))
+    w <- 10:2
+    for (i in seq_len(9L)) {
+        acc <- acc + as.integer(substr(y, i, i)) * w[[i]]
+    }
+    cdn <- (11 - (acc %% 11)) %% 11
+    cd <- ifelse(cdn == 10, "X", as.character(cdn))
+    res[which(ok)] <- cd == substr(y, 10L, 10L)
+    res
+}
+
+
+#' Validate ISBN-13 checksums
+#'
+#' @param compact A character vector of compact ISBN-13 strings.
+#'
+#' @return A logical vector the same length as `compact`.
+#'
+#' @noRd
+.isbn13_valid <- function(compact) {
+    res <- rep(FALSE, length(compact))
+    ok <- !is.na(compact) & grepl("^\\d{13}$", compact)
+    if (!any(ok)) {
+        return(res)
+    }
+
+    y <- compact[ok]
+    acc <- rep(0, length(y))
+    w <- rep(c(1, 3), 6)
+    for (i in seq_len(12L)) {
+        acc <- acc + as.integer(substr(y, i, i)) * w[[i]]
+    }
+    cd <- (10 - (acc %% 10)) %% 10
+    res[which(ok)] <- cd == as.integer(substr(y, 13L, 13L))
+    res
 }

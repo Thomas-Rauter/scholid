@@ -511,8 +511,8 @@ extract_pmcid <- function(text) {
 #' Extract matches from text using a regular expression
 #'
 #' @description
-#' Internal helper that applies a single regular expression pattern to each
-#' element of a character vector and returns all matches.
+#' Internal helper that applies a single regular expression pattern to a
+#' character vector and returns all matches.
 #'
 #' The result is a list with one element per input element. Each element is a
 #' character vector of matches (possibly length 0). `NA` inputs yield an empty
@@ -530,31 +530,33 @@ extract_pmcid <- function(text) {
         pat
 ) {
     text <- as.character(text)
-    out <- vector("list", length(text))
-
-    for (i in seq_along(text)) {
-        if (is.na(text[i])) {
-            out[[i]] <- character(0)
-            next
-        }
-        m <- gregexpr(pat, text[i], perl = TRUE)
-        hits <- regmatches(text[i], m)[[1]]
-        out[[i]] <- if (length(hits)) hits else character(0)
+    n <- length(text)
+    if (!n) {
+        return(list())
     }
 
-    out
+    na <- is.na(text)
+    work <- text
+    work[na] <- ""
+    hits <- regmatches(work, gregexpr(pat, work, perl = TRUE))
+    if (any(na)) {
+        hits[na] <- rep(list(character(0)), sum(na))
+    }
+    hits
 }
 
 
 #' Clean, filter, and validate extracted identifier candidates
 #'
 #' @description
-#' Internal helper that post-processes regex extraction results. Each list
-#' element is cleaned with `clean_fn`, then filtered to non-empty values and
-#' validated with `validate_fn`.
+#' Internal helper that post-processes regex extraction results. All matches
+#' are cleaned with `clean_fn`, then filtered to non-empty values and
+#' validated with `validate_fn`, and split back into one vector per input
+#' element.
 #'
 #' @param out A list of character vectors of raw regex matches.
-#' @param clean_fn Function applied to each raw match.
+#' @param clean_fn Vectorized cleaner. Must return a character vector the
+#'   same length as its input. Missing or empty inputs become `""`.
 #' @param validate_fn Vectorized validator returning logical values.
 #'
 #' @return A list of character vectors of validated identifiers.
@@ -565,23 +567,46 @@ extract_pmcid <- function(text) {
         clean_fn,
         validate_fn
 ) {
-    lapply(out, function(hits) {
-        if (!length(hits)) {
-            return(character(0))
-        }
+    n <- length(out)
+    if (!n) {
+        return(list())
+    }
 
-        cleaned <- vapply(
-            hits,
-            clean_fn,
-            character(1),
-            USE.NAMES = FALSE
-        )
+    lens <- lengths(out)
+    if (!any(lens)) {
+        return(rep(list(character(0)), n))
+    }
 
-        cleaned <- cleaned[nzchar(cleaned)]
-        cleaned <- cleaned[!is.na(cleaned)]
-        cleaned <- cleaned[validate_fn(cleaned)]
-        cleaned
-    })
+    hits <- unlist(out, use.names = FALSE)
+    cleaned <- clean_fn(hits)
+    keep <- !is.na(cleaned) & nzchar(cleaned)
+    if (any(keep)) {
+        ok <- validate_fn(cleaned[keep])
+        ok[is.na(ok)] <- FALSE
+        keep[keep] <- ok
+    }
+
+    group <- rep.int(seq_len(n), lens)[keep]
+    res <- split(
+        cleaned[keep],
+        factor(group, levels = seq_len(n))
+    )
+    names(res) <- NULL
+    res
+}
+
+
+#' Replace missing or empty strings with an empty string
+#'
+#' @param x A character vector.
+#'
+#' @return A character vector the same length as `x`.
+#'
+#' @noRd
+.empty_if_blank <- function(x) {
+    x <- as.character(x)
+    x[is.na(x) | !nzchar(x)] <- ""
+    x
 }
 
 
@@ -618,22 +643,20 @@ extract_pmcid <- function(text) {
 }
 
 
-#' Clean an extracted ROR candidate
+#' Clean an extracted bibcode candidate
 #'
 #' @description
 #' Removes URL prefixes, trailing punctuation, and surrounding whitespace
-#' from an extracted ROR candidate.
+#' from an extracted bibcode candidate.
 #'
-#' @param x A single extracted ROR candidate.
+#' @param x A character vector of extracted bibcode candidates.
 #'
-#' @return A cleaned ROR candidate string, or `""` if empty.
+#' @return A character vector of cleaned candidates, with `""` for blank
+#'   inputs.
 #'
 #' @noRd
 .clean_extracted_bibcode <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -642,16 +665,12 @@ extract_pmcid <- function(text) {
         x,
         ignore.case = TRUE
     )
-    x <- sub("(?i)^bibcode\\s*:?\\s*", "", x, perl = TRUE)
-    x
+    sub("(?i)^bibcode\\s*:?\\s*", "", x, perl = TRUE)
 }
 
 
 .clean_extracted_openalex <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub("^https?://openalex\\.org/", "", x, ignore.case = TRUE)
@@ -671,10 +690,7 @@ extract_pmcid <- function(text) {
 
 
 .clean_extracted_uniprot <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -695,10 +711,7 @@ extract_pmcid <- function(text) {
 
 
 .clean_extracted_refseq <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -719,10 +732,7 @@ extract_pmcid <- function(text) {
 
 
 .clean_extracted_sra <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -743,10 +753,7 @@ extract_pmcid <- function(text) {
 
 
 .clean_extracted_geo <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -768,10 +775,7 @@ extract_pmcid <- function(text) {
 
 
 .clean_extracted_bioproject <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -794,10 +798,7 @@ extract_pmcid <- function(text) {
 
 
 .clean_extracted_assembly <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -819,25 +820,16 @@ extract_pmcid <- function(text) {
 
 
 .clean_extracted_ark <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     val <- .canonicalize_ark(trimws(x))
-    if (is.na(val)) {
-        ""
-    } else {
-        val
-    }
+    val[is.na(val)] <- ""
+    val
 }
 
 
 .clean_extracted_isni <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub("^https?://isni\\.org/isni/", "", x, ignore.case = TRUE)
@@ -854,10 +846,7 @@ extract_pmcid <- function(text) {
 
 
 .clean_extracted_ror <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub("^https?://ror\\.org/", "", x, ignore.case = TRUE)
@@ -874,16 +863,14 @@ extract_pmcid <- function(text) {
 #' whitespace from an extracted RRID candidate, and normalizes the `RRID:`
 #' label.
 #'
-#' @param x A single extracted RRID candidate.
+#' @param x A character vector of extracted RRID candidates.
 #'
-#' @return A cleaned RRID candidate string, or `""` if empty.
+#' @return A character vector of cleaned candidates, with `""` for blank
+#'   inputs.
 #'
 #' @noRd
 .clean_extracted_rrid <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -904,8 +891,7 @@ extract_pmcid <- function(text) {
         x,
         ignore.case = TRUE
     )
-    x <- sub("^RRID[[:space:]]*:[[:space:]]*", "RRID:", x, ignore.case = TRUE)
-    x
+    sub("^RRID[[:space:]]*:[[:space:]]*", "RRID:", x, ignore.case = TRUE)
 }
 
 
@@ -916,16 +902,14 @@ extract_pmcid <- function(text) {
 #' whitespace from an extracted SWHID candidate, and canonicalizes the core
 #' identifier.
 #'
-#' @param x A single extracted SWHID candidate.
+#' @param x A character vector of extracted SWHID candidates.
 #'
-#' @return A cleaned SWHID candidate string, or `""` if empty.
+#' @return A character vector of cleaned candidates, with `""` for blank
+#'   inputs.
 #'
 #' @noRd
 .clean_extracted_swhid <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[.,;:!?\"']+$", "", x, perl = TRUE)
     x <- trimws(x)
     x <- sub(
@@ -947,8 +931,7 @@ extract_pmcid <- function(text) {
         ignore.case = TRUE
     )
     x <- gsub("[[:space:]]+", "", x)
-    x <- .canonicalize_swhid(x)
-    x
+    .canonicalize_swhid(x)
 }
 
 
@@ -959,38 +942,42 @@ extract_pmcid <- function(text) {
 #' a DOI candidate extracted from free text, while preserving valid DOI-internal
 #' punctuation where possible.
 #'
-#' @param x A single extracted DOI candidate.
+#' @param x A character vector of extracted DOI candidates.
 #'
-#' @return A cleaned DOI candidate string, or "" if empty.
+#' @return A character vector of cleaned candidates, with `""` for blank
+#'   inputs.
 #'
 #' @noRd
 .clean_extracted_doi <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
+    x <- .empty_if_blank(x)
+    if (!length(x)) {
+        return(character())
     }
 
     x <- .strip_doi_markup_tail(x)
 
     repeat {
         old <- x
-
-        # Strip terminal prose punctuation and quotes
         x <- sub("[.,;:!?\"']+$", "", x, perl = TRUE)
-
-        # Strip unmatched closing delimiters at the end
         x <- .strip_unmatched_trailing_closer(x, "\\)", "\\(")
         x <- .strip_unmatched_trailing_closer(x, "\\]", "\\[")
         x <- .strip_unmatched_trailing_closer(x, "\\}", "\\{")
         x <- .strip_unmatched_trailing_closer(x, ">", "<")
-
         if (identical(x, old)) {
             break
         }
     }
 
-    # Final safeguard: trim back to the longest valid DOI prefix
-    x <- .truncate_to_valid_doi_prefix(x)
-
+    bad <- nzchar(x) & !is_doi(x)
+    bad[is.na(bad)] <- FALSE
+    if (any(bad)) {
+        x[bad] <- vapply(
+            x[bad],
+            .truncate_to_valid_doi_prefix,
+            character(1),
+            USE.NAMES = FALSE
+        )
+    }
     x
 }
 
@@ -1001,19 +988,16 @@ extract_pmcid <- function(text) {
 #' Removes trailing punctuation and surrounding whitespace from an extracted
 #' identifier candidate.
 #'
-#' @param x A single extracted identifier candidate.
+#' @param x A character vector of extracted identifier candidates.
 #'
-#' @return A cleaned candidate string, or `""` if empty.
+#' @return A character vector of cleaned candidates, with `""` for blank
+#'   inputs.
 #'
 #' @noRd
 .clean_extracted_trailing_punct <- function(x) {
-    if (is.na(x) || !nzchar(x)) {
-        return("")
-    }
-
+    x <- .empty_if_blank(x)
     x <- sub("[[:space:][:punct:]]+$", "", x, perl = TRUE)
-    x <- trimws(x)
-    x
+    trimws(x)
 }
 
 
@@ -1026,9 +1010,9 @@ extract_pmcid <- function(text) {
 #' Removes trailing HTML or attribute fragments that may be captured when a DOI
 #' appears inside markup such as an anchor tag or quoted URL attribute.
 #'
-#' @param x A single extracted DOI candidate.
+#' @param x A character vector of extracted DOI candidates.
 #'
-#' @return A character string.
+#' @return A character vector the same length as `x`.
 #'
 #' @noRd
 .strip_doi_markup_tail <- function(x) {
@@ -1047,31 +1031,36 @@ extract_pmcid <- function(text) {
     x
 }
 
-#' Count regex matches in a single string
+#' Count regex matches in each string
 #'
-#' @param x A single character string.
+#' @param x A character vector.
 #' @param pat A single regular expression.
 #'
-#' @return An integer count.
+#' @return An integer vector the same length as `x`.
 #'
 #' @noRd
 .count_matches <- function(x, pat) {
-    m <- gregexpr(pat, x, perl = TRUE)[[1]]
-    if (identical(m[1], -1L)) {
-        0L
-    } else {
-        length(m)
+    if (!length(x)) {
+        return(integer())
     }
+    m <- gregexpr(pat, x, perl = TRUE)
+    vapply(m, function(one) {
+        if (identical(one[1], -1L)) {
+            0L
+        } else {
+            length(one)
+        }
+    }, integer(1), USE.NAMES = FALSE)
 }
 
 
 #' Strip one unmatched trailing closer if present
 #'
-#' @param x A single character string.
+#' @param x A character vector.
 #' @param closer Closing delimiter regex, e.g. "\\)".
 #' @param opener Opening delimiter regex, e.g. "\\(".
 #'
-#' @return A character string.
+#' @return A character vector the same length as `x`.
 #'
 #' @noRd
 .strip_unmatched_trailing_closer <- function(
@@ -1079,10 +1068,20 @@ extract_pmcid <- function(text) {
         closer,
         opener
 ) {
-    if (grepl(paste0(closer, "$"), x, perl = TRUE) &&
-        .count_matches(x, closer) > .count_matches(x, opener)) {
-        x <- sub(paste0(closer, "$"), "", x, perl = TRUE)
+    ends <- grepl(paste0(closer, "$"), x, perl = TRUE)
+    if (!any(ends)) {
+        return(x)
     }
+
+    n_close <- .count_matches(x[ends], closer)
+    n_open <- .count_matches(x[ends], opener)
+    drop <- n_close > n_open
+    if (!any(drop)) {
+        return(x)
+    }
+
+    idx <- which(ends)[drop]
+    x[idx] <- sub(paste0(closer, "$"), "", x[idx], perl = TRUE)
     x
 }
 

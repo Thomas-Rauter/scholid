@@ -8,6 +8,12 @@
   (`2434-561X`) or an `ISSN` label, so a bare `2434561X` is no longer
   detected. `normalize_scholid(x, "issn")` is unchanged.
 
+## Internal improvements
+
+- Sped up `classify_scholid()`, `detect_scholid_type()`, and
+  `extract_scholid()` by checking whole vectors instead of one string
+  at a time.
+
 # scholid 0.2.0
 
 ## New identifier types

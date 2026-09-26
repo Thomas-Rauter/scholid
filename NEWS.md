@@ -1,3 +1,13 @@
+# scholid (development version)
+
+## Bug fixes
+
+- Fixed `detect_scholid_type()` reporting bare 8-digit PMIDs such as
+  `29456894` as `issn` when their digits happened to pass the ISSN checksum.
+  Bare compact strings are now detected as ISSN only with a hyphen
+  (`2434-561X`) or an `ISSN` label, so a bare `2434561X` is no longer
+  detected. `normalize_scholid(x, "issn")` is unchanged.
+
 # scholid 0.2.0
 
 ## New identifier types

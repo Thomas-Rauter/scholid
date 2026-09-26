@@ -106,7 +106,8 @@ shows the documentation pass (`git show --stat <sha>`). Touch, in order:
 3. Tests in the is, normalize, extract, classify and detect test files,
    including collision tests against every type with an overlapping grammar.
    Update the hard-coded type lists in `test-scholid_types.R` and
-   `test-scholid_registry.R`.
+   `test-scholid_registry.R`. Add entries for the new type in
+   `tests/testthat/helper-scholid_fixtures.R`.
 4. A section in `vignettes/scholid_definitions.Rmd`, following its stated
    layout, plus a row in its overview table.
 5. The other places that name types: the "including …" list in the

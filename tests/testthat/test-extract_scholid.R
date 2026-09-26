@@ -1889,3 +1889,42 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "cross-type: extract_scholid returns validated tokens",
+    {
+        text <- scholid_extract_texts
+        na_text <- is.na(text)
+        for (t in scholid_types()) {
+            got <- extract_scholid(
+                text,
+                t
+            )
+            na_ok <- all(vapply(
+                got[na_text],
+                function(tokens) {
+                    identical(tokens, character(0))
+                },
+                logical(1)
+            ))
+            token_ok <- all(vapply(
+                got,
+                function(tokens) {
+                    if (!length(tokens)) {
+                        return(TRUE)
+                    }
+                    isTRUE(all(is_scholid(tokens, t)))
+                },
+                logical(1)
+            ))
+            ok <- is.list(got) &&
+                length(got) == length(text) &&
+                na_ok &&
+                token_ok
+            testthat::expect_true(
+                ok,
+                info = t
+            )
+        }
+    }
+)

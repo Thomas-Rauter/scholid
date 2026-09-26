@@ -39,3 +39,13 @@ testthat::test_that(
         testthat::expect_true(all(c("doi", "orcid") %in% x))
     }
 )
+
+testthat::test_that(
+    "cross-type: fixtures name every scholid_types() value",
+    {
+        testthat::expect_setequal(
+            names(scholid_type_inputs),
+            scholid_types()
+        )
+    }
+)

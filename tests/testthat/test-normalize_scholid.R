@@ -1619,3 +1619,45 @@ testthat::test_that(
         testthat::expect_true(all(classify_scholid(x) == "pmcid"))
     }
 )
+
+testthat::test_that(
+    "cross-type: normalize_scholid keeps length, maps NA, and validates",
+    {
+        for (t in scholid_types()) {
+            x <- scholid_type_inputs[[t]]
+            got <- normalize_scholid(
+                x,
+                t
+            )
+            kept <- got[!is.na(got)]
+            ok <- length(got) == length(x) &&
+                all(is.na(got[is.na(x)])) &&
+                isTRUE(all(is_scholid(kept, t)))
+            testthat::expect_true(
+                ok,
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "cross-type: normalize_scholid is idempotent on non-NA results",
+    {
+        for (t in scholid_types()) {
+            got <- normalize_scholid(
+                scholid_type_inputs[[t]],
+                t
+            )
+            kept <- got[!is.na(got)]
+            again <- normalize_scholid(
+                kept,
+                t
+            )
+            testthat::expect_true(
+                identical(again, kept),
+                info = t
+            )
+        }
+    }
+)

@@ -1999,3 +1999,22 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "cross-type: is_scholid keeps length and is NA exactly on NA",
+    {
+        for (t in scholid_types()) {
+            x <- scholid_type_inputs[[t]]
+            got <- is_scholid(
+                x,
+                t
+            )
+            ok <- length(got) == length(x) &&
+                identical(is.na(got), is.na(x))
+            testthat::expect_true(
+                ok,
+                info = t
+            )
+        }
+    }
+)

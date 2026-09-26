@@ -583,3 +583,26 @@ testthat::test_that(
         testthat::expect_true(all(is.na(got)))
     }
 )
+
+testthat::test_that(
+    "cross-type: normalized values classify at or before their type",
+    {
+        types <- scholid_types()
+        for (t in types) {
+            got <- normalize_scholid(
+                scholid_type_inputs[[t]],
+                t
+            )
+            kept <- got[!is.na(got)]
+            cls <- classify_scholid(kept)
+            pos <- match(cls, types)
+            rank <- match(t, types)
+            ok <- isTRUE(all(!is.na(cls))) &&
+                isTRUE(all(pos <= rank))
+            testthat::expect_true(
+                ok,
+                info = t
+            )
+        }
+    }
+)

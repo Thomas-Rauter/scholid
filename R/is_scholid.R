@@ -11,7 +11,9 @@
 #' The main difference from normalization is input form: `is_scholid()`
 #' expects values in canonical (or near-canonical) form. Wrapped values
 #' such as URLs or prefixed labels should be normalized first with
-#' [normalize_scholid()].
+#' [normalize_scholid()]. Values that contain an invisible character, such
+#' as a soft hyphen or a byte order mark, are not canonical and return
+#' `FALSE`.
 #'
 #' Inputs that are `NA` yield `NA`. Non-matching values return `FALSE`.
 #'

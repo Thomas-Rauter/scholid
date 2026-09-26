@@ -919,3 +919,44 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "detect_scholid_type strips invisible characters",
+    {
+        testthat::expect_identical(
+            detect_scholid_type("\uFEFF10.1000/182"),
+            "doi"
+        )
+        testthat::expect_identical(
+            detect_scholid_type("10.1000/\u200B182"),
+            "doi"
+        )
+        testthat::expect_identical(
+            detect_scholid_type(
+                "\uFEFF0000-0002-1825-0097"
+            ),
+            "orcid"
+        )
+
+        ascii <- c(
+            "10.1000/182",
+            "0000-0002-1825-0097",
+            "PMC1234567",
+            "12345678"
+        )
+        testthat::expect_identical(
+            detect_scholid_type(ascii),
+            c("doi", "orcid", "pmcid", "pmid")
+        )
+
+        for (t in names(scholid_invisible_ids)) {
+            id <- scholid_invisible_ids[[t]]
+            dirty <- scholid_invisible_variants(id)
+            got <- detect_scholid_type(c(id, dirty))
+            testthat::expect_true(
+                identical(got, rep(t, length(got))),
+                info = t
+            )
+        }
+    }
+)

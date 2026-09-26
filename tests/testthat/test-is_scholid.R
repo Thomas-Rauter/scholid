@@ -2018,3 +2018,118 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "is_scholid rejects reported invisible-character inputs",
+    {
+        testthat::expect_identical(
+            .scholid_invisible_chars(),
+            scholid_invisible_chars
+        )
+        testthat::expect_false(
+            is_scholid(
+                "10.1000/\u200B182",
+                "doi"
+            )
+        )
+        testthat::expect_false(
+            is_scholid(
+                "10.1000/1\u00AD82",
+                "doi"
+            )
+        )
+        testthat::expect_false(
+            is_scholid(
+                "10.1000/1\u206082",
+                "doi"
+            )
+        )
+        testthat::expect_false(is_scholid("\u200B", "doi"))
+        testthat::expect_false(is_scholid("\uFEFF", "orcid"))
+
+        swh <- paste0(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            ";origin=https://ex\u200Bample.org"
+        )
+        testthat::expect_false(is_scholid(swh, "swhid"))
+    }
+)
+
+testthat::test_that(
+    "is_scholid rejects invisible characters at each position",
+    {
+        for (t in names(scholid_invisible_ids)) {
+            id <- scholid_invisible_ids[[t]]
+            dirty <- scholid_invisible_variants(id)
+            x <- c(
+                id,
+                dirty,
+                NA_character_
+            )
+            got <- is_scholid(
+                x,
+                t
+            )
+            exp <- c(
+                TRUE,
+                rep(FALSE, length(dirty)),
+                NA
+            )
+            testthat::expect_true(
+                identical(got, exp),
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "is_scholid rejects an invisible character in every type",
+    {
+        examples <- c(
+            doi        = "10.1000/182",
+            arxiv      = "2101.00001v2",
+            bibcode    = "1992ApJ...400L...1W",
+            openalex   = "W2741809807",
+            swhid      = paste0(
+                "swh:1:cnt:",
+                "94a9ed024d3859793618152ea559a168bbcbb5e2"
+            ),
+            ark        = "ark:/12148/btv1b8449691v",
+            isni       = "000000012146438X",
+            orcid      = "0000-0002-1825-0097",
+            ror        = "01an7q238",
+            rrid       = "RRID:AB_262044",
+            uniprot    = "P12345",
+            refseq     = "NM_001744.6",
+            sra        = "SRR1553610",
+            geo        = "GSE2553",
+            bioproject = "PRJNA257197",
+            assembly   = "GCF_000001405.40",
+            isbn       = "9780306406157",
+            issn       = "2434-561X",
+            pmcid      = "PMC1234567",
+            pmid       = "12345678"
+        )
+        testthat::expect_identical(
+            sort(names(examples)),
+            sort(scholid_types())
+        )
+
+        ch <- "\u200B"
+        for (t in scholid_types()) {
+            id <- examples[[t]]
+            dirty <- scholid_insert_invisible(
+                id,
+                ch,
+                "end"
+            )
+            ok <- isTRUE(is_scholid(id, t)) &&
+                identical(is_scholid(dirty, t), FALSE)
+            testthat::expect_true(
+                ok,
+                info = t
+            )
+        }
+    }
+)

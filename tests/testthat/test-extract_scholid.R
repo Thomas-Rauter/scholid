@@ -1928,3 +1928,77 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "extract_scholid strips invisible characters before matching",
+    {
+        got_pmc <- extract_scholid(
+            c(
+                "see PMC123\u200B4567 here",
+                "see 10.1000/182 here",
+                NA_character_
+            ),
+            "pmcid"
+        )
+        testthat::expect_identical(
+            got_pmc[[1]],
+            "PMC1234567"
+        )
+        testthat::expect_identical(
+            got_pmc[[2]],
+            character(0)
+        )
+        testthat::expect_identical(
+            got_pmc[[3]],
+            character(0)
+        )
+
+        got_pmid <- extract_scholid(
+            "see 1234\u200B5678 here",
+            "pmid"
+        )
+        testthat::expect_identical(
+            got_pmid[[1]],
+            "12345678"
+        )
+
+        got_shy <- extract_scholid(
+            "see 1234\u00AD5678 here",
+            "pmid"
+        )
+        testthat::expect_identical(
+            got_shy[[1]],
+            "12345678"
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_scholid joins tokens split by invisible characters",
+    {
+        for (t in names(scholid_invisible_ids)) {
+            id <- scholid_invisible_ids[[t]]
+            dirty <- scholid_invisible_variants(id)
+            text <- paste0(
+                "see ",
+                c(id, dirty),
+                " here"
+            )
+            got <- extract_scholid(
+                text,
+                t
+            )
+            ok <- all(vapply(
+                got,
+                function(tokens) {
+                    identical(tokens, id)
+                },
+                logical(1)
+            ))
+            testthat::expect_true(
+                ok,
+                info = t
+            )
+        }
+    }
+)

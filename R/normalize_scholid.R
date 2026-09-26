@@ -15,7 +15,8 @@
 #' Use [is_scholid()] to test whether already-canonical values are valid
 #' identifiers of a given type. Both functions apply checksum verification
 #' where applicable; normalization additionally accepts wrapped input forms
-#' and returns canonical strings.
+#' and returns canonical strings. Invisible characters, such as a soft
+#' hyphen or a byte order mark, are removed before normalization.
 #'
 #' @param x A vector of values to normalize.
 #' @param type A single string giving the identifier type. See

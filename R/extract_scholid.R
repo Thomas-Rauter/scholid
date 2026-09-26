@@ -9,8 +9,10 @@
 #'
 #' Matches are returned as extracted identifier tokens from the text.
 #' Surrounding prose punctuation or markup fragments may be removed where
-#' necessary to isolate the identifier. Use `normalize_scholid()` to convert
-#' identifiers to canonical form.
+#' necessary to isolate the identifier. Invisible characters, such as a
+#' soft hyphen or a byte order mark, are removed from the text before
+#' matching. Use `normalize_scholid()` to convert identifiers to canonical
+#' form.
 #'
 #' @param text A character vector of text.
 #' @param type A single string giving the identifier type. See
@@ -516,8 +518,8 @@ extract_pmcid <- function(text) {
 #'
 #' The result is a list with one element per input element. Each element is a
 #' character vector of matches (possibly length 0). `NA` inputs yield an empty
-#' character vector. Matching is performed using `gregexpr()` with
-#' `perl = TRUE`.
+#' character vector. Invisible characters are removed before matching.
+#' Matching is performed using `gregexpr()` with `perl = TRUE`.
 #'
 #' @param text A character vector of text.
 #' @param pat A single regular expression pattern.
@@ -529,7 +531,7 @@ extract_pmcid <- function(text) {
         text,
         pat
 ) {
-    text <- as.character(text)
+    text <- .scholid_strip_invisible(as.character(text))
     n <- length(text)
     if (!n) {
         return(list())

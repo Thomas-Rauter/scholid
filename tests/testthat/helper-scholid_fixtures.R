@@ -2,6 +2,7 @@
 # testthat sources helper-*.R before the test files. Names of
 # scholid_type_inputs must match scholid_types(). Examples are taken
 # from the existing tests and vignettes/scholid_definitions.Rmd.
+# A few inputs contain invisible characters; see scholid_invisible_chars.
 
 scholid_type_inputs <- list(
     doi = c(
@@ -28,6 +29,8 @@ scholid_type_inputs <- list(
         "(10.1000/182)",
         "[10.1000/182]",
         "not a doi",
+        "10.1000/\u200B182",
+        "\uFEFF10.1000/182",
         "",
         NA_character_
     ),
@@ -179,6 +182,8 @@ scholid_type_inputs <- list(
         "(0000-0002-1825-0097)",
         "0000-0002-1825-0097xyz",
         "bad",
+        "\uFEFF0000-0002-1825-0097",
+        "0000-0002-\u00AD1825-0097",
         "",
         NA_character_
     ),
@@ -386,6 +391,7 @@ scholid_type_inputs <- list(
         "PMC",
         "12345",
         "PMC 123456",
+        "PMC123\u200B4567",
         "",
         NA_character_
     ),
@@ -410,6 +416,8 @@ scholid_type_inputs <- list(
         "9780306406157",
         "0306406152",
         "not a pmid",
+        "1234\u200B5678",
+        "1234\u00AD5678",
         "",
         NA_character_
     )
@@ -458,5 +466,74 @@ scholid_extract_texts <- c(
     "Wrapped (7654321).",
     "PMCID: PMC1234567",
     "No identifier in this sentence.",
+    "see PMC123\u200B4567 here",
+    "see 1234\u200B5678 here",
+    "see 1234\u00AD5678 here",
     NA_character_
 )
+
+# Must match .scholid_invisible_chars() in R/input_validation.R.
+# Repeated here so a dropped character fails these tests.
+scholid_invisible_chars <- c(
+    "\u00AD",
+    "\u200B",
+    "\u200C",
+    "\u200D",
+    "\u200E",
+    "\u200F",
+    "\u202A",
+    "\u202B",
+    "\u202C",
+    "\u202D",
+    "\u202E",
+    "\u2060",
+    "\u2061",
+    "\u2062",
+    "\u2063",
+    "\u2064",
+    "\u2066",
+    "\u2067",
+    "\u2068",
+    "\u2069",
+    "\uFEFF"
+)
+
+scholid_invisible_ids <- c(
+    doi   = "10.1000/182",
+    orcid = "0000-0002-1825-0097",
+    pmid  = "12345678",
+    pmcid = "PMC1234567"
+)
+
+scholid_insert_invisible <- function(id, ch, where) {
+    if (identical(where, "start")) {
+        return(paste0(ch, id))
+    }
+    if (identical(where, "end")) {
+        return(paste0(id, ch))
+    }
+    mid <- nchar(id) %/% 2L
+    paste0(
+        substr(id, 1L, mid),
+        ch,
+        substr(id, mid + 1L, nchar(id))
+    )
+}
+
+scholid_invisible_variants <- function(id) {
+    places <- c("start", "middle", "end")
+    n <- length(scholid_invisible_chars) * length(places)
+    out <- character(n)
+    i <- 0L
+    for (ch in scholid_invisible_chars) {
+        for (where in places) {
+            i <- i + 1L
+            out[[i]] <- scholid_insert_invisible(
+                id,
+                ch,
+                where
+            )
+        }
+    }
+    out
+}

@@ -1661,3 +1661,87 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "normalize_scholid strips reported invisible characters",
+    {
+        testthat::expect_identical(
+            normalize_scholid(
+                "10.1000/\u200B182",
+                "doi"
+            ),
+            "10.1000/182"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "\uFEFF10.1000/182",
+                "doi"
+            ),
+            "10.1000/182"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "\uFEFF0000-0002-1825-0097",
+                "orcid"
+            ),
+            "0000-0002-1825-0097"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "\u200B\u200B10.1000/\u200B182\uFEFF",
+                "doi"
+            ),
+            "10.1000/182"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "\u200B",
+                "doi"
+            ),
+            NA_character_
+        )
+
+        swh <- paste0(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            ";origin=https://ex\u200Bample.org"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                swh,
+                "swhid"
+            ),
+            paste0(
+                "swh:1:cnt:",
+                "94a9ed024d3859793618152ea559a168bbcbb5e2",
+                ";origin=https://example.org"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid strips invisible characters at each position",
+    {
+        for (t in names(scholid_invisible_ids)) {
+            id <- scholid_invisible_ids[[t]]
+            dirty <- scholid_invisible_variants(id)
+            x <- c(
+                id,
+                dirty,
+                NA_character_
+            )
+            got <- normalize_scholid(
+                x,
+                t
+            )
+            exp <- c(
+                rep(id, length(dirty) + 1L),
+                NA_character_
+            )
+            testthat::expect_true(
+                identical(got, exp),
+                info = t
+            )
+        }
+    }
+)

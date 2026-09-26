@@ -2,6 +2,12 @@
 
 ## Bug fixes
 
+- Rejected identifiers containing invisible characters, such as soft
+  hyphens and byte order marks, in `is_scholid()` and
+  `classify_scholid()`. `normalize_scholid()`, `detect_scholid_type()`,
+  and `extract_scholid()` now remove those characters before
+  normalizing or matching.
+
 - Fixed `detect_scholid_type()` reporting bare 8-digit PMIDs such as
   `29456894` as `issn` when their digits happened to pass the ISSN checksum.
   Bare compact strings are now detected as ISSN only with a hyphen

@@ -606,3 +606,40 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "classify_scholid rejects invisible characters",
+    {
+        testthat::expect_identical(
+            classify_scholid("10.1000/\u200B182"),
+            NA_character_
+        )
+        testthat::expect_identical(
+            classify_scholid("\uFEFF"),
+            NA_character_
+        )
+
+        swh <- paste0(
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            ";origin=https://ex\u200Bample.org"
+        )
+        testthat::expect_identical(
+            classify_scholid(swh),
+            NA_character_
+        )
+
+        for (t in names(scholid_invisible_ids)) {
+            id <- scholid_invisible_ids[[t]]
+            dirty <- scholid_invisible_variants(id)
+            got <- classify_scholid(c(id, dirty))
+            exp <- c(
+                t,
+                rep(NA_character_, length(dirty))
+            )
+            testthat::expect_true(
+                identical(got, exp),
+                info = t
+            )
+        }
+    }
+)

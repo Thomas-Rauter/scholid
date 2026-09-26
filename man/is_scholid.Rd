@@ -27,7 +27,9 @@ ISSN), checksum correctness is verified. The same checksum rules apply to
 The main difference from normalization is input form: \code{is_scholid()}
 expects values in canonical (or near-canonical) form. Wrapped values
 such as URLs or prefixed labels should be normalized first with
-\code{\link[=normalize_scholid]{normalize_scholid()}}.
+\code{\link[=normalize_scholid]{normalize_scholid()}}. Values that contain an invisible character, such
+as a soft hyphen or a byte order mark, are not canonical and return
+\code{FALSE}.
 
 Inputs that are \code{NA} yield \code{NA}. Non-matching values return \code{FALSE}.
 }

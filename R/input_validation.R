@@ -237,25 +237,39 @@
 }
 
 
-#' Whether any value contains a non-ASCII character
+#' Values that can hold an invisible character
 #'
 #' @description
-#' Skips invisible-character scans when every value is ASCII. The pattern
-#' itself is ASCII, so PCRE does not enter UTF-8 mode.
+#' Selects non-missing values that contain a non-ASCII byte and are valid
+#' UTF-8 after `enc2utf8()`. The byte scan uses `useBytes = TRUE`, so
+#' ASCII-only input is handled with one pass. Values that are not valid
+#' UTF-8 are skipped, because `gsub()` fails on them when other values are
+#' UTF-8, and `grepl()` warns once per call.
 #'
 #' @param x A character vector.
 #'
-#' @return A single logical value.
+#' @return A list with `idx`, the selected positions in `x`, and `y`, the
+#'   UTF-8 values at those positions.
 #'
 #' @noRd
-.scholid_any_non_ascii <- function(x) {
-    any(
-        grepl(
+.scholid_invisible_candidates <- function(x) {
+    idx <- which(!is.na(x))
+    if (length(idx)) {
+        non_ascii <- grepl(
             "[^\\x01-\\x7F]",
-            x,
-            perl = TRUE
-        ),
-        na.rm = TRUE
+            x[idx],
+            perl     = TRUE,
+            useBytes = TRUE
+        )
+        idx <- idx[non_ascii]
+    }
+
+    y <- enc2utf8(x[idx])
+    valid <- validUTF8(y)
+
+    list(
+        idx = idx[valid],
+        y   = y[valid]
     )
 }
 
@@ -263,8 +277,8 @@
 #' Whether values contain an invisible character
 #'
 #' @description
-#' Missing values are reported as not containing one. ASCII-only values
-#' cannot contain these characters and are handled with one scan.
+#' Missing values, and values that are not valid UTF-8, are reported as not
+#' containing one.
 #'
 #' @param x A character vector.
 #'
@@ -273,26 +287,20 @@
 #' @noRd
 .scholid_has_invisible <- function(x) {
     hit <- rep(FALSE, length(x))
-    if (!length(x)) {
+    cand <- .scholid_invisible_candidates(x)
+    if (!length(cand$idx)) {
         return(hit)
     }
 
-    known <- !is.na(x)
-    if (!any(known) || !.scholid_any_non_ascii(x[known])) {
-        return(hit)
-    }
-
-    y <- x[known]
-    found <- rep(FALSE, length(y))
+    found <- rep(FALSE, length(cand$y))
     for (ch in .scholid_invisible_chars()) {
         found <- found | grepl(
             ch,
-            y,
+            cand$y,
             fixed = TRUE
         )
     }
-    found[is.na(found)] <- FALSE
-    hit[known] <- found
+    hit[cand$idx] <- found
     hit
 }
 
@@ -300,8 +308,9 @@
 #' Remove invisible characters
 #'
 #' @description
-#' Drops the characters from `.scholid_invisible_chars()` and leaves
-#' missing values unchanged. ASCII-only input is returned unchanged.
+#' Drops the characters from `.scholid_invisible_chars()`. Missing values,
+#' ASCII-only values, and values that are not valid UTF-8 are returned
+#' unchanged.
 #'
 #' @param x A character vector.
 #'
@@ -309,16 +318,12 @@
 #'
 #' @noRd
 .scholid_strip_invisible <- function(x) {
-    if (!length(x)) {
+    cand <- .scholid_invisible_candidates(x)
+    if (!length(cand$idx)) {
         return(x)
     }
 
-    known <- !is.na(x)
-    if (!any(known) || !.scholid_any_non_ascii(x[known])) {
-        return(x)
-    }
-
-    y <- x[known]
+    y <- cand$y
     for (ch in .scholid_invisible_chars()) {
         y <- gsub(
             ch,
@@ -327,7 +332,7 @@
             fixed = TRUE
         )
     }
-    x[known] <- y
+    x[cand$idx] <- y
     x
 }
 

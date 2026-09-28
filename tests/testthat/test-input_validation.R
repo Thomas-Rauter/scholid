@@ -236,3 +236,37 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "invisible-character helpers skip values that are not valid UTF-8",
+    {
+        bad <- "\xff PMC123​4567"
+        Encoding(bad) <- "UTF-8"
+        x <- c(
+            "PMC123​4567",
+            bad,
+            "café",
+            NA_character_
+        )
+
+        testthat::expect_silent(
+            got_has <- .scholid_has_invisible(x)
+        )
+        testthat::expect_identical(
+            got_has,
+            c(TRUE, FALSE, FALSE, FALSE)
+        )
+
+        testthat::expect_silent(
+            got_strip <- .scholid_strip_invisible(x)
+        )
+        testthat::expect_identical(
+            got_strip[c(1L, 3L, 4L)],
+            c("PMC1234567", "café", NA_character_)
+        )
+        testthat::expect_identical(
+            got_strip[[2]],
+            bad
+        )
+    }
+)

@@ -2002,3 +2002,59 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "extract_scholid keeps working when one text is not valid UTF-8",
+    {
+        bad <- "\xff see 10.1000/181"
+        Encoding(bad) <- "UTF-8"
+        text <- c(
+            "see 10.1000/182 here",
+            bad,
+            "café see 10.1000/183 here",
+            "see 10.1000/​184 here"
+        )
+
+        # The invalid element itself may warn in the regex engine; only the
+        # valid elements are pinned here.
+        got <- suppressWarnings(extract_scholid(
+            text,
+            "doi"
+        ))
+
+        testthat::expect_length(
+            got,
+            4L
+        )
+        testthat::expect_identical(
+            got[[1]],
+            "10.1000/182"
+        )
+        testthat::expect_identical(
+            got[[3]],
+            "10.1000/183"
+        )
+        testthat::expect_identical(
+            got[[4]],
+            "10.1000/184"
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_scholid strips a soft hyphen from latin1 text",
+    {
+        text <- "see PMC123\xad4567 here"
+        Encoding(text) <- "latin1"
+
+        got <- extract_scholid(
+            text,
+            "pmcid"
+        )
+
+        testthat::expect_identical(
+            got[[1]],
+            "PMC1234567"
+        )
+    }
+)

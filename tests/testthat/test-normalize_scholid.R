@@ -1772,3 +1772,237 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "normalize_scholid treats Unicode spaces as whitespace",
+    {
+        for (s in scholid_lookalike_chars$space) {
+            got <- normalize_scholid(
+                c(
+                    paste0(s, "10.1000/182", s),
+                    paste0("10.1000/1", s, "82")
+                ),
+                "doi"
+            )
+            testthat::expect_identical(
+                got,
+                c("10.1000/182", NA_character_),
+                info = sprintf("U+%04X", utf8ToInt(s))
+            )
+            testthat::expect_identical(
+                normalize_scholid(
+                    paste0("PMID:", s, "12345678"),
+                    "pmid"
+                ),
+                "12345678",
+                info = sprintf("U+%04X", utf8ToInt(s))
+            )
+        }
+
+        testthat::expect_identical(
+            normalize_scholid(
+                "978\u00A00\u00A0306\u00A040615\u00A07",
+                "isbn"
+            ),
+            "9780306406157"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "0000\u00A00001\u00A02146\u00A0438X",
+                "isni"
+            ),
+            "000000012146438X"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "0000\u30000002\u30001825\u30000097",
+                "orcid"
+            ),
+            "0000-0002-1825-0097"
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid folds Unicode dashes for dash-separated types",
+    {
+        dashes <- scholid_lookalike_chars$dash
+        orcid <- vapply(
+            dashes,
+            function(d) paste("0000", "0002", "1825", "0097", sep = d),
+            character(1),
+            USE.NAMES = FALSE
+        )
+        testthat::expect_identical(
+            normalize_scholid(orcid, "orcid"),
+            rep("0000-0002-1825-0097", length(dashes))
+        )
+
+        testthat::expect_identical(
+            normalize_scholid("0317\u20108471", "issn"),
+            "0317-8471"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "978\u20130\u2013306\u201340615\u20137",
+                "isbn"
+            ),
+            "9780306406157"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "ISNI 0000\u20130001\u20132146\u2013438X",
+                "isni"
+            ),
+            "000000012146438X"
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid does not fold the em dash",
+    {
+        testthat::expect_identical(
+            normalize_scholid(
+                "0000\u20140002\u20141825\u20140097",
+                "orcid"
+            ),
+            NA_character_
+        )
+        testthat::expect_identical(
+            normalize_scholid("0317\u20148471", "issn"),
+            NA_character_
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "978\u20140\u2014306\u201440615\u20147",
+                "isbn"
+            ),
+            NA_character_
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid folds full-width digits",
+    {
+        fw <- scholid_fullwidth
+
+        testthat::expect_identical(
+            normalize_scholid(
+                c(
+                    paste0("PMID: ", fw("12345")),
+                    fw("12345678")
+                ),
+                "pmid"
+            ),
+            c("12345", "12345678")
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                paste0("PMC", fw("1234567")),
+                "pmcid"
+            ),
+            "PMC1234567"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                fw("0000-0002-1825-0097"),
+                "orcid"
+            ),
+            "0000-0002-1825-0097"
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                paste0("GSE", fw("2553")),
+                "geo"
+            ),
+            "GSE2553"
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid keeps look-alikes in DOI, ARK, SWHID and RRID",
+    {
+        doi <- c(
+            "10.1000/a\u2013b",
+            "10.1000/a\u2010b",
+            paste0("10.1000/", scholid_fullwidth("182"))
+        )
+        testthat::expect_identical(
+            normalize_scholid(doi, "doi"),
+            doi
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                paste0("doi:", doi[[1]]),
+                "doi"
+            ),
+            doi[[1]]
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(
+                "ark:/12148/btv1b\u20138449691v",
+                "ark"
+            ),
+            NA_character_
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                paste0(
+                    "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+                    ";lines=1\u20139"
+                ),
+                "swhid"
+            ),
+            NA_character_
+        )
+        testthat::expect_identical(
+            normalize_scholid(
+                "RRID:ZFIN:ZDB\u2010ALT\u2010980203\u2010444",
+                "rrid"
+            ),
+            NA_character_
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid percent-decodes DOI resolver URLs",
+    {
+        x <- c(
+            "https://doi.org/10.1000%2F182",
+            "http://dx.doi.org/10.1000%2f182",
+            "https://doi.org/10.1000/a%E2%80%93b",
+            "https://doi.org/10.1000/182%E2%80%8B",
+            "https://doi.org/10.1000/a%20b",
+            "https://doi.org/10.1000/a%C2%A0b",
+            "https://doi.org/10.1000/abc%zz",
+            "https://doi.org/10.1000/abc%2",
+            "https://doi.org/10.1000/abc%FF",
+            "https://doi.org/10.1000/abc%00",
+            "10.1000/a%2Fb",
+            "doi:10.1000/a%2Fb"
+        )
+        exp <- c(
+            "10.1000/182",
+            "10.1000/182",
+            "10.1000/a\u2013b",
+            "10.1000/182",
+            NA_character_,
+            NA_character_,
+            "10.1000/abc%zz",
+            "10.1000/abc%2",
+            "10.1000/abc%FF",
+            "10.1000/abc%00",
+            "10.1000/a%2Fb",
+            "10.1000/a%2Fb"
+        )
+        testthat::expect_identical(
+            normalize_scholid(x, "doi"),
+            exp
+        )
+    }
+)

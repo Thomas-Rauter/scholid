@@ -2,7 +2,8 @@
 # testthat sources helper-*.R before the test files. Names of
 # scholid_type_inputs must match scholid_types(). Examples are taken
 # from the existing tests and vignettes/scholid_definitions.Rmd.
-# A few inputs contain invisible characters; see scholid_invisible_chars.
+# Some inputs contain invisible characters or Unicode look-alikes; see
+# scholid_invisible_chars and scholid_lookalike_chars.
 
 scholid_type_inputs <- list(
     doi = c(
@@ -31,6 +32,10 @@ scholid_type_inputs <- list(
         "not a doi",
         "10.1000/\u200B182",
         "\uFEFF10.1000/182",
+        "\u00A010.1000/182\u00A0",
+        "10.1000/1\u00A082",
+        "10.1000/a\u2013b",
+        "https://doi.org/10.1000%2F182",
         "",
         NA_character_
     ),
@@ -160,6 +165,8 @@ scholid_type_inputs <- list(
         "catalog 000000012146438X",
         "(000000012146438X)",
         "not-an-isni",
+        "0000\u00A00001\u00A02146\u00A0438X",
+        "ISNI 0000\u20130001\u20132146\u2013438X",
         "",
         NA_character_
     ),
@@ -184,6 +191,10 @@ scholid_type_inputs <- list(
         "bad",
         "\uFEFF0000-0002-1825-0097",
         "0000-0002-\u00AD1825-0097",
+        "0000\u20100002\u20101825\u20100097",
+        "0000\u20130002\u20131825\u20130097",
+        "0000\u20140002\u20141825\u20140097",
+        "\uFF10\uFF10\uFF10\uFF10-0002-1825-0097",
         "",
         NA_character_
     ),
@@ -350,6 +361,8 @@ scholid_type_inputs <- list(
         "1234567890123",
         "030640615",
         "not an isbn",
+        "978\u20130\u2013306\u201340615\u20137",
+        "978\u00A00\u00A0306\u00A040615\u00A07",
         "",
         NA_character_
     ),
@@ -370,6 +383,8 @@ scholid_type_inputs <- list(
         "2434-561X-90",
         "0317-847",
         "0317-84A1",
+        "0317\u20108471",
+        "0317\u20148471",
         "bad",
         "",
         NA_character_
@@ -392,6 +407,7 @@ scholid_type_inputs <- list(
         "12345",
         "PMC 123456",
         "PMC123\u200B4567",
+        "PMC\uFF11\uFF12\uFF13\uFF14\uFF15\uFF16\uFF17",
         "",
         NA_character_
     ),
@@ -418,6 +434,9 @@ scholid_type_inputs <- list(
         "not a pmid",
         "1234\u200B5678",
         "1234\u00AD5678",
+        "PMID:\u00A012345678",
+        "PMID: \uFF11\uFF12\uFF13\uFF14\uFF15",
+        "\uFF12\uFF19\uFF14\uFF15\uFF16\uFF18\uFF19\uFF14",
         "",
         NA_character_
     )
@@ -469,6 +488,12 @@ scholid_extract_texts <- c(
     "see PMC123\u200B4567 here",
     "see 1234\u200B5678 here",
     "see 1234\u00AD5678 here",
+    "ORCID 0000\u20130002\u20131825\u20130097.",
+    "doi:10.1000/182\u00A0and more",
+    "see 10.1000/a\u2013b here",
+    "ISBN 978\u20130\u2013306\u201340615\u20137.",
+    "PMID: \uFF11\uFF12\uFF13\uFF14\uFF15\uFF16\uFF17\uFF18.",
+    "pp. 1998\u20132003",
     NA_character_
 )
 
@@ -497,6 +522,62 @@ scholid_invisible_chars <- c(
     "\u2069",
     "\uFEFF"
 )
+
+# Must match .scholid_lookalike_chars() in R/input_validation.R.
+# Repeated here so a dropped character fails these tests.
+scholid_lookalike_chars <- list(
+    space = c(
+        "\u00A0",
+        "\u1680",
+        "\u2000",
+        "\u2001",
+        "\u2002",
+        "\u2003",
+        "\u2004",
+        "\u2005",
+        "\u2006",
+        "\u2007",
+        "\u2008",
+        "\u2009",
+        "\u200A",
+        "\u202F",
+        "\u205F",
+        "\u3000"
+    ),
+    dash = c(
+        "\u2010",
+        "\u2011",
+        "\u2012",
+        "\u2013",
+        "\u2212",
+        "\uFE63",
+        "\uFF0D"
+    ),
+    digit = c(
+        "\uFF10",
+        "\uFF11",
+        "\uFF12",
+        "\uFF13",
+        "\uFF14",
+        "\uFF15",
+        "\uFF16",
+        "\uFF17",
+        "\uFF18",
+        "\uFF19"
+    )
+)
+
+scholid_fullwidth <- function(x) {
+    for (i in 0:9) {
+        x <- gsub(
+            as.character(i),
+            scholid_lookalike_chars$digit[[i + 1L]],
+            x,
+            fixed = TRUE
+        )
+    }
+    x
+}
 
 scholid_invisible_ids <- c(
     doi   = "10.1000/182",

@@ -237,7 +237,64 @@
 }
 
 
-#' Values that can hold an invisible character
+#' Unicode look-alikes of ASCII spaces, hyphens and digits
+#'
+#' @description
+#' `space`: U+00A0, U+1680, U+2000-U+200A, U+202F, U+205F, and U+3000.
+#' They count as whitespace everywhere. `dash`: U+2010-U+2013, U+2212,
+#' U+FE63, and U+FF0D, but not the em dash U+2014. `digit`: the full-width
+#' digits U+FF10-U+FF19, in the order 0 to 9. Dashes and digits are folded
+#' to ASCII only for the types that ask for it.
+#'
+#' @return A list of character vectors `space`, `dash`, and `digit`.
+#'
+#' @noRd
+.scholid_lookalike_chars <- function() {
+    list(
+        space = c(
+            "\u00A0",
+            "\u1680",
+            "\u2000",
+            "\u2001",
+            "\u2002",
+            "\u2003",
+            "\u2004",
+            "\u2005",
+            "\u2006",
+            "\u2007",
+            "\u2008",
+            "\u2009",
+            "\u200A",
+            "\u202F",
+            "\u205F",
+            "\u3000"
+        ),
+        dash = c(
+            "\u2010",
+            "\u2011",
+            "\u2012",
+            "\u2013",
+            "\u2212",
+            "\uFE63",
+            "\uFF0D"
+        ),
+        digit = c(
+            "\uFF10",
+            "\uFF11",
+            "\uFF12",
+            "\uFF13",
+            "\uFF14",
+            "\uFF15",
+            "\uFF16",
+            "\uFF17",
+            "\uFF18",
+            "\uFF19"
+        )
+    )
+}
+
+
+#' Values that can hold a non-ASCII character
 #'
 #' @description
 #' Selects non-missing values that contain a non-ASCII byte and are valid
@@ -252,7 +309,7 @@
 #'   UTF-8 values at those positions.
 #'
 #' @noRd
-.scholid_invisible_candidates <- function(x) {
+.scholid_unicode_candidates <- function(x) {
     idx <- which(!is.na(x))
     if (length(idx)) {
         non_ascii <- grepl(
@@ -274,26 +331,30 @@
 }
 
 
-#' Whether values contain an invisible character
+#' Whether values contain one of the given characters
 #'
 #' @description
 #' Missing values, and values that are not valid UTF-8, are reported as not
 #' containing one.
 #'
 #' @param x A character vector.
+#' @param chars A character vector of single non-ASCII characters.
 #'
 #' @return A logical vector the same length as `x`.
 #'
 #' @noRd
-.scholid_has_invisible <- function(x) {
+.scholid_has_chars <- function(
+        x,
+        chars
+) {
     hit <- rep(FALSE, length(x))
-    cand <- .scholid_invisible_candidates(x)
+    cand <- .scholid_unicode_candidates(x)
     if (!length(cand$idx)) {
         return(hit)
     }
 
     found <- rep(FALSE, length(cand$y))
-    for (ch in .scholid_invisible_chars()) {
+    for (ch in chars) {
         found <- found | grepl(
             ch,
             cand$y,
@@ -305,20 +366,28 @@
 }
 
 
-#' Remove invisible characters
+#' Remove invisible characters and fold look-alikes to ASCII
 #'
 #' @description
-#' Drops the characters from `.scholid_invisible_chars()`. Missing values,
-#' ASCII-only values, and values that are not valid UTF-8 are returned
-#' unchanged.
+#' Drops the characters from `.scholid_invisible_chars()` and replaces the
+#' Unicode spaces from `.scholid_lookalike_chars()` with an ASCII space.
+#' With `dashes = TRUE`, Unicode dashes become `-`. With `digits = TRUE`,
+#' full-width digits become `0`-`9`. Missing values, ASCII-only values, and
+#' values that are not valid UTF-8 are returned unchanged.
 #'
 #' @param x A character vector.
+#' @param dashes Whether to fold Unicode dashes.
+#' @param digits Whether to fold full-width digits.
 #'
 #' @return A character vector the same length as `x`.
 #'
 #' @noRd
-.scholid_strip_invisible <- function(x) {
-    cand <- .scholid_invisible_candidates(x)
+.scholid_clean_chars <- function(
+        x,
+        dashes = FALSE,
+        digits = FALSE
+) {
+    cand <- .scholid_unicode_candidates(x)
     if (!length(cand$idx)) {
         return(x)
     }
@@ -328,6 +397,28 @@
         y <- gsub(
             ch,
             "",
+            y,
+            fixed = TRUE
+        )
+    }
+
+    # gsub(fixed = TRUE) rather than chartr(), which fails on UTF-8 text
+    # in a non-UTF-8 locale.
+    lookalike <- .scholid_lookalike_chars()
+    old <- lookalike$space
+    new <- rep(" ", length(old))
+    if (dashes) {
+        old <- c(old, lookalike$dash)
+        new <- c(new, rep("-", length(lookalike$dash)))
+    }
+    if (digits) {
+        old <- c(old, lookalike$digit)
+        new <- c(new, as.character(0:9))
+    }
+    for (i in seq_along(old)) {
+        y <- gsub(
+            old[[i]],
+            new[[i]],
             y,
             fixed = TRUE
         )
@@ -342,7 +433,8 @@
 #' @description
 #' Internal helper for vectorized validators. Coerces input to character and
 #' prepares a logical output vector with `NA` for missing values. Values that
-#' contain an invisible character are not ok, and their output is `FALSE`.
+#' contain an invisible character or a Unicode space are not ok, and their
+#' output is `FALSE`.
 #'
 #' @param x A vector of values to validate.
 #'
@@ -354,7 +446,13 @@
     ok <- !is.na(x)
     out <- rep(NA, length(x))
     if (any(ok)) {
-        bad <- .scholid_has_invisible(x[ok])
+        bad <- .scholid_has_chars(
+            x[ok],
+            c(
+                .scholid_invisible_chars(),
+                .scholid_lookalike_chars()$space
+            )
+        )
         if (any(bad)) {
             bad_idx <- which(ok)[bad]
             out[bad_idx] <- FALSE
@@ -374,18 +472,29 @@
 #' @description
 #' Internal helper for vectorized normalizers. Coerces input to character and
 #' prepares a character output vector with `NA_character_` for missing
-#' values. Invisible characters are removed from non-missing values first.
+#' values. Non-missing values are cleaned with `.scholid_clean_chars()`
+#' first.
 #'
 #' @param x A vector of values to normalize.
+#' @param dashes Whether to fold Unicode dashes.
+#' @param digits Whether to fold full-width digits.
 #'
 #' @return A list with elements `x`, `out`, and `ok`.
 #'
 #' @noRd
-.scholid_init_na_character <- function(x) {
+.scholid_init_na_character <- function(
+        x,
+        dashes = FALSE,
+        digits = FALSE
+) {
     x <- as.character(x)
     ok <- !is.na(x)
     if (any(ok)) {
-        x[ok] <- .scholid_strip_invisible(x[ok])
+        x[ok] <- .scholid_clean_chars(
+            x[ok],
+            dashes = dashes,
+            digits = digits
+        )
     }
     list(
         x   = x,

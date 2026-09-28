@@ -1,3 +1,30 @@
+# scholid (development version)
+
+## Bug fixes
+
+- Treated Unicode spaces, such as the no-break space and the ideographic
+  space, as whitespace. `is_scholid()` and `classify_scholid()` no longer
+  accept a DOI or SWHID with such a space inside, and `extract_scholid()`
+  no longer runs a DOI into the next word. `normalize_scholid()`,
+  `detect_scholid_type()`, and `extract_scholid()` now trim these spaces
+  and accept them after labels and between digit groups.
+
+- Fixed `detect_scholid_type()` reporting a bare 8-digit PMID as `issn`
+  when an invisible character was inside it.
+
+## New features
+
+- Accepted Unicode dashes, such as U+2010 and the en dash, in ORCID, ISBN,
+  ISNI, and ISSN values, and full-width digits in every type except DOI,
+  ARK, SWHID, and RRID, in `normalize_scholid()`, `extract_scholid()`, and
+  `detect_scholid_type()`. They are read as their ASCII forms.
+  `is_scholid()` still accepts only ASCII. The per-type rules are under
+  "Input characters" in the definitions vignette.
+
+- Percent-decoded `doi.org` and `dx.doi.org` URLs in
+  `normalize_scholid(x, "doi")`, so `https://doi.org/10.1000%2F182` gives
+  `10.1000/182`.
+
 # scholid 0.2.1
 
 ## Bug fixes

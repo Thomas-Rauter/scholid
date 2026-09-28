@@ -240,17 +240,20 @@ testthat::test_that(
 testthat::test_that(
     "invisible-character helpers skip values that are not valid UTF-8",
     {
-        bad <- "\xff PMC123​4567"
+        bad <- "\xff PMC123\xe2\x80\x8b4567"
         Encoding(bad) <- "UTF-8"
         x <- c(
-            "PMC123​4567",
+            "PMC123\u200B4567",
             bad,
-            "café",
+            "caf\u00E9",
             NA_character_
         )
 
         testthat::expect_silent(
-            got_has <- .scholid_has_invisible(x)
+            got_has <- .scholid_has_chars(
+                x,
+                .scholid_invisible_chars()
+            )
         )
         testthat::expect_identical(
             got_has,
@@ -258,15 +261,101 @@ testthat::test_that(
         )
 
         testthat::expect_silent(
-            got_strip <- .scholid_strip_invisible(x)
+            got_strip <- .scholid_clean_chars(x)
         )
         testthat::expect_identical(
             got_strip[c(1L, 3L, 4L)],
-            c("PMC1234567", "café", NA_character_)
+            c("PMC1234567", "caf\u00E9", NA_character_)
         )
         testthat::expect_identical(
             got_strip[[2]],
             bad
+        )
+    }
+)
+
+testthat::test_that(
+    "look-alike character sets are complete",
+    {
+        testthat::expect_identical(
+            .scholid_lookalike_chars(),
+            scholid_lookalike_chars
+        )
+        testthat::expect_false(
+            "\u2014" %in% .scholid_lookalike_chars()$dash
+        )
+    }
+)
+
+testthat::test_that(
+    ".scholid_clean_chars folds only what it is asked to",
+    {
+        bad <- "\xff 1234\xc2\xa05678"
+        Encoding(bad) <- "UTF-8"
+        x <- c(
+            "a\u00A0b\u200Bc",
+            "1\u20132\uFF13",
+            "plain ascii",
+            bad,
+            NA_character_
+        )
+
+        testthat::expect_silent(
+            got <- .scholid_clean_chars(x)
+        )
+        testthat::expect_identical(
+            got[-4L],
+            c("a bc", "1\u20132\uFF13", "plain ascii", NA_character_)
+        )
+        testthat::expect_identical(
+            got[[4]],
+            bad
+        )
+
+        testthat::expect_identical(
+            .scholid_clean_chars(x[1:2], dashes = TRUE),
+            c("a bc", "1-2\uFF13")
+        )
+        testthat::expect_identical(
+            .scholid_clean_chars(x[1:2], digits = TRUE),
+            c("a bc", "1\u201323")
+        )
+        testthat::expect_identical(
+            .scholid_clean_chars(
+                x[1:2],
+                dashes = TRUE,
+                digits = TRUE
+            ),
+            c("a bc", "1-23")
+        )
+    }
+)
+
+testthat::test_that(
+    ".scholid_percent_decode leaves malformed escapes alone",
+    {
+        x <- c(
+            "10.1000%2F182",
+            "a%E2%80%93b",
+            "a%zz",
+            "a%2",
+            "a%FF",
+            "a%00",
+            "no escape",
+            NA_character_
+        )
+        testthat::expect_identical(
+            .scholid_percent_decode(x),
+            c(
+                "10.1000/182",
+                "a\u2013b",
+                "a%zz",
+                "a%2",
+                "a%FF",
+                "a%00",
+                "no escape",
+                NA_character_
+            )
         )
     }
 )

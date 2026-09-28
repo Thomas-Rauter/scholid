@@ -82,10 +82,14 @@ detect_scholid_type <- function(x) {
 
         # Bare compact ISSN (no hyphen / ISSN label) collides with
         # PMID; keep those as provisional PMID and require context.
+        # Check the value after the same cleanup normalize_issn() does.
         if (identical(type, "issn")) {
             bare_compact <- grepl(
                 "^\\d{7}[0-9Xx]$",
-                vals
+                trimws(.scholid_clean_chars(
+                    vals,
+                    digits = TRUE
+                ))
             )
             vals[bare_compact] <- NA_character_
         }

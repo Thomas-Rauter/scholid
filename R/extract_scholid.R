@@ -9,10 +9,14 @@
 #'
 #' Matches are returned as extracted identifier tokens from the text.
 #' Surrounding prose punctuation or markup fragments may be removed where
-#' necessary to isolate the identifier. Invisible characters, such as a
-#' soft hyphen or a byte order mark, are removed from the text before
-#' matching. Use `normalize_scholid()` to convert identifiers to canonical
-#' form.
+#' necessary to isolate the identifier. Use `normalize_scholid()` to
+#' convert identifiers to canonical form.
+#'
+#' Before matching, invisible characters are removed from the text and
+#' Unicode spaces count as whitespace. For some types, Unicode dashes and
+#' full-width digits are read as their ASCII forms, and the returned tokens
+#' use the ASCII forms. See "Input characters" in
+#' `vignette("scholid_definitions", package = "scholid")`.
 #'
 #' @param text A character vector of text.
 #' @param type A single string giving the identifier type. See
@@ -115,7 +119,9 @@ extract_isni <- function(text) {
         text        = text,
         type        = "isni",
         clean_fn    = .clean_extracted_isni,
-        validate_fn = is_isni
+        validate_fn = is_isni,
+        dashes      = TRUE,
+        digits      = TRUE
     )
 }
 
@@ -138,7 +144,9 @@ extract_orcid <- function(text) {
         text        = text,
         type        = "orcid",
         clean_fn    = .clean_extracted_trailing_punct,
-        validate_fn = is_orcid
+        validate_fn = is_orcid,
+        dashes      = TRUE,
+        digits      = TRUE
     )
 }
 
@@ -162,7 +170,8 @@ extract_uniprot <- function(text) {
         text        = text,
         type        = "uniprot",
         clean_fn    = .clean_extracted_uniprot,
-        validate_fn = is_uniprot
+        validate_fn = is_uniprot,
+        digits      = TRUE
     )
 }
 
@@ -186,7 +195,8 @@ extract_refseq <- function(text) {
         text        = text,
         type        = "refseq",
         clean_fn    = .clean_extracted_refseq,
-        validate_fn = is_refseq
+        validate_fn = is_refseq,
+        digits      = TRUE
     )
 }
 
@@ -210,7 +220,8 @@ extract_sra <- function(text) {
         text        = text,
         type        = "sra",
         clean_fn    = .clean_extracted_sra,
-        validate_fn = is_sra
+        validate_fn = is_sra,
+        digits      = TRUE
     )
 }
 
@@ -234,7 +245,8 @@ extract_geo <- function(text) {
         text        = text,
         type        = "geo",
         clean_fn    = .clean_extracted_geo,
-        validate_fn = is_geo
+        validate_fn = is_geo,
+        digits      = TRUE
     )
 }
 
@@ -258,7 +270,8 @@ extract_bioproject <- function(text) {
         text        = text,
         type        = "bioproject",
         clean_fn    = .clean_extracted_bioproject,
-        validate_fn = is_bioproject
+        validate_fn = is_bioproject,
+        digits      = TRUE
     )
 }
 
@@ -282,7 +295,8 @@ extract_assembly <- function(text) {
         text        = text,
         type        = "assembly",
         clean_fn    = .clean_extracted_assembly,
-        validate_fn = is_assembly
+        validate_fn = is_assembly,
+        digits      = TRUE
     )
 }
 
@@ -306,7 +320,8 @@ extract_ror <- function(text) {
         text        = text,
         type        = "ror",
         clean_fn    = .clean_extracted_ror,
-        validate_fn = is_ror
+        validate_fn = is_ror,
+        digits      = TRUE
     )
 }
 
@@ -350,7 +365,9 @@ extract_isbn <- function(text) {
         text        = text,
         type        = "isbn",
         clean_fn    = .clean_extracted_trailing_punct,
-        validate_fn = is_isbn
+        validate_fn = is_isbn,
+        dashes      = TRUE,
+        digits      = TRUE
     )
 }
 
@@ -370,7 +387,8 @@ extract_issn <- function(text) {
         text        = text,
         type        = "issn",
         clean_fn    = .clean_extracted_trailing_punct,
-        validate_fn = is_issn
+        validate_fn = is_issn,
+        digits      = TRUE
     )
 }
 
@@ -390,7 +408,8 @@ extract_arxiv <- function(text) {
         text        = text,
         type        = "arxiv",
         clean_fn    = .clean_extracted_trailing_punct,
-        validate_fn = is_arxiv
+        validate_fn = is_arxiv,
+        digits      = TRUE
     )
 }
 
@@ -414,7 +433,8 @@ extract_bibcode <- function(text) {
         text        = text,
         type        = "bibcode",
         clean_fn    = .clean_extracted_bibcode,
-        validate_fn = is_bibcode
+        validate_fn = is_bibcode,
+        digits      = TRUE
     )
 }
 
@@ -438,7 +458,8 @@ extract_openalex <- function(text) {
         text        = text,
         type        = "openalex",
         clean_fn    = .clean_extracted_openalex,
-        validate_fn = is_openalex
+        validate_fn = is_openalex,
+        digits      = TRUE
     )
 }
 
@@ -482,7 +503,8 @@ extract_pmid <- function(text) {
         text        = text,
         type        = "pmid",
         clean_fn    = .clean_extracted_trailing_punct,
-        validate_fn = is_pmid
+        validate_fn = is_pmid,
+        digits      = TRUE
     )
 }
 
@@ -502,7 +524,8 @@ extract_pmcid <- function(text) {
         text        = text,
         type        = "pmcid",
         clean_fn    = .clean_extracted_trailing_punct,
-        validate_fn = is_pmcid
+        validate_fn = is_pmcid,
+        digits      = TRUE
     )
 }
 
@@ -518,20 +541,29 @@ extract_pmcid <- function(text) {
 #'
 #' The result is a list with one element per input element. Each element is a
 #' character vector of matches (possibly length 0). `NA` inputs yield an empty
-#' character vector. Invisible characters are removed before matching.
-#' Matching is performed using `gregexpr()` with `perl = TRUE`.
+#' character vector. The text is cleaned with `.scholid_clean_chars()`
+#' before matching. Matching is performed using `gregexpr()` with
+#' `perl = TRUE`.
 #'
 #' @param text A character vector of text.
 #' @param pat A single regular expression pattern.
+#' @param dashes Whether to fold Unicode dashes.
+#' @param digits Whether to fold full-width digits.
 #'
 #' @return A list of character vectors of extracted matches.
 #'
 #' @noRd
 .extract_with_pattern <- function(
         text,
-        pat
+        pat,
+        dashes = FALSE,
+        digits = FALSE
 ) {
-    text <- .scholid_strip_invisible(as.character(text))
+    text <- .scholid_clean_chars(
+        as.character(text),
+        dashes = dashes,
+        digits = digits
+    )
     n <- length(text)
     if (!n) {
         return(list())
@@ -622,6 +654,8 @@ extract_pmcid <- function(text) {
 #' @param type A validated identifier type string.
 #' @param clean_fn Function applied to each raw match.
 #' @param validate_fn Vectorized validator returning logical values.
+#' @param dashes Whether to fold Unicode dashes in `text`.
+#' @param digits Whether to fold full-width digits in `text`.
 #'
 #' @return A list of character vectors of validated identifiers.
 #'
@@ -630,11 +664,15 @@ extract_pmcid <- function(text) {
         text,
         type,
         clean_fn,
-        validate_fn
+        validate_fn,
+        dashes = FALSE,
+        digits = FALSE
 ) {
     out <- .extract_with_pattern(
-        text = text,
-        pat  = .scholid_registry_extract_pat(type)
+        text   = text,
+        pat    = .scholid_registry_extract_pat(type),
+        dashes = dashes,
+        digits = digits
     )
 
     .extract_filter_validate(

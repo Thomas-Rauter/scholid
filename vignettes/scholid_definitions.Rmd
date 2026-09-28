@@ -41,6 +41,43 @@ immediately following `PMC`.
 
 For the authoritative type list and order, call `scholid_types()` in R.
 
+## Input characters
+
+Text copied from PDFs, word processors, and web pages often contains
+characters that look like ASCII but are not. scholid handles them as follows.
+
+- **Invisible characters**: the soft hyphen (U+00AD), zero-width and
+  directional marks (U+200B–U+200F, U+202A–U+202E, U+2060–U+2064,
+  U+2066–U+2069), and the byte order mark (U+FEFF). They are never part of
+  an identifier. `is_scholid()` returns `FALSE` for values that contain one;
+  `normalize_scholid()`, `extract_scholid()`, and `detect_scholid_type()`
+  remove them first.
+- **Unicode spaces**: the no-break space (U+00A0), U+1680, U+2000–U+200A,
+  U+202F, U+205F, and the ideographic space (U+3000). They count as
+  whitespace wherever an ASCII space does: they are trimmed, they may follow
+  a label or separate digit groups, and they end a match in extraction. No
+  identifier contains one, so `is_scholid()` returns `FALSE`.
+- **Unicode dashes** (U+2010–U+2013, U+2212, U+FE63, U+FF0D) and
+  **full-width digits** (U+FF10–U+FF19): `normalize_scholid()`,
+  `extract_scholid()`, and `detect_scholid_type()` read them as `-` and
+  `0`–`9` for the types in the table below. `is_scholid()` and
+  `classify_scholid()` accept only the ASCII characters. The em dash
+  (U+2014) is never read as a hyphen.
+
+| Types | Dashes | Full-width digits |
+|-------|--------|-------------------|
+| `orcid`, `isbn`, `isni` | Yes | Yes |
+| `issn` | `normalize_scholid()` only | Yes |
+| `arxiv`, `bibcode`, `openalex`, `ror`, `uniprot`, `refseq`, `sra`, `geo`, `bioproject`, `assembly`, `pmcid`, `pmid` | No | Yes |
+| `doi`, `ark`, `swhid`, `rrid` | No | No |
+
+Dashes are read as hyphens only for types that separate digit groups with
+hyphens. In free text, an en dash usually marks a page or year range, and
+`1998–2003` passes the ISSN checksum, so `extract_scholid()` doesn't read
+dashes for ISSN. A DOI suffix may contain any Unicode character, and ARK
+names, SWHID qualifiers, and some RRID bodies are free-form, so those types
+keep dashes and digits as written.
+
 ## Supported types (overview)
 
 | Type | Example | Checksum | Notes |
@@ -114,6 +151,13 @@ Example:
 DOI validation is **structural only**. There is no checksum. Registry
 existence is not checked. Wrapped forms (`https://doi.org/…`, `doi:` labels)
 should be normalized before classification.
+
+`normalize_scholid()` percent-decodes the part of a `doi.org` or
+`dx.doi.org` URL after the host, so `https://doi.org/10.1000%2F182` gives
+`10.1000/182`. Bare DOIs and `doi:` labels are not decoded, because `%` can
+be part of a DOI name. A URL with a malformed escape, or with escapes that
+don't decode to valid text, is kept as written. `extract_scholid()` does
+not decode URLs in free text.
 
 `is_scholid()` and `normalize_scholid()` preserve case. DOIs should be
 compared case-insensitively, for example by applying `tolower()` to both

@@ -15,11 +15,14 @@
 #' Use [is_scholid()] to test whether already-canonical values are valid
 #' identifiers of a given type. Both functions apply checksum verification
 #' where applicable; normalization additionally accepts wrapped input forms
-#' and returns canonical strings. Invisible characters, such as a soft
-#' hyphen or a byte order mark, are removed before normalization. For DOI
-#' case, see "Validation in scholid" in the DOI section of the *How
+#' and returns canonical strings.
+#'
+#' Before normalizing, invisible characters are removed and Unicode spaces
+#' count as whitespace. For some types, Unicode dashes and full-width digits
+#' are read as their ASCII forms. See "Input characters" in the *How
 #' Scholarly Identifiers Are Defined* vignette
-#' (`vignette("scholid_definitions", package = "scholid")`).
+#' (`vignette("scholid_definitions", package = "scholid")`). Its DOI
+#' section covers DOI case and the percent-decoding of `doi.org` URLs.
 #'
 #' @param x A vector of values to normalize.
 #' @param type A single string giving the identifier type. See
@@ -60,7 +63,9 @@ normalize_scholid <- function(
 #'
 #' @description
 #' Normalizes DOI strings by removing URL prefixes, `doi:` labels, and
-#' trailing punctuation.
+#' trailing punctuation. The part after a `doi.org` or `dx.doi.org` host is
+#' percent-decoded. Bare DOIs and `doi:` labels are not, because `%` can be
+#' part of a DOI name.
 #'
 #' @param x A vector of DOI values.
 #'
@@ -72,7 +77,14 @@ normalize_doi <- function(x) {
     y <- trimws(init$x[init$ok])
 
     y <- sub("^doi:\\s*", "", y, ignore.case = TRUE)
-    y <- sub("^https?://(dx\\.)?doi\\.org/", "", y, ignore.case = TRUE)
+    url_pat <- "^https?://(dx\\.)?doi\\.org/"
+    is_url <- grepl(url_pat, y, ignore.case = TRUE)
+    y <- sub(url_pat, "", y, ignore.case = TRUE)
+    if (any(is_url)) {
+        y[is_url] <- .scholid_clean_chars(
+            .scholid_percent_decode(y[is_url])
+        )
+    }
     y <- sub("[[:punct:]]+$", "", y)
 
     keep <- .is_doi_strict(y)
@@ -201,7 +213,11 @@ normalize_ark <- function(x) {
 #'
 #' @noRd
 normalize_isni <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        dashes = TRUE,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
 
@@ -255,7 +271,11 @@ normalize_isni <- function(x) {
 #'
 #' @noRd
 normalize_orcid <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        dashes = TRUE,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
 
     y <- sub("^https?://orcid\\.org/", "", y, ignore.case = TRUE)
@@ -309,7 +329,10 @@ normalize_orcid <- function(x) {
 #'
 #' @noRd
 normalize_uniprot <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
 
@@ -360,7 +383,10 @@ normalize_uniprot <- function(x) {
 #'
 #' @noRd
 normalize_refseq <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
 
@@ -414,7 +440,10 @@ normalize_refseq <- function(x) {
 #'
 #' @noRd
 normalize_sra <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
 
@@ -464,7 +493,10 @@ normalize_sra <- function(x) {
 #'
 #' @noRd
 normalize_geo <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
 
@@ -520,7 +552,10 @@ normalize_geo <- function(x) {
 #'
 #' @noRd
 normalize_bioproject <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
 
@@ -573,7 +608,10 @@ normalize_bioproject <- function(x) {
 #'
 #' @noRd
 normalize_assembly <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
 
@@ -627,7 +665,10 @@ normalize_assembly <- function(x) {
 #'
 #' @noRd
 normalize_ror <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
 
     y <- sub("^https?://ror\\.org/", "", y, ignore.case = TRUE)
@@ -719,7 +760,11 @@ normalize_rrid <- function(x) {
 #'
 #' @noRd
 normalize_isbn <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        dashes = TRUE,
+        digits = TRUE
+    )
 
     s <- trimws(init$x[init$ok])
     s <- .strip_isbn_label(s)
@@ -754,7 +799,11 @@ normalize_isbn <- function(x) {
 #'
 #' @noRd
 normalize_issn <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        dashes = TRUE,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
 
     # Remove only an optional ISSN label at the beginning
@@ -801,7 +850,10 @@ normalize_issn <- function(x) {
 #'
 #' @noRd
 normalize_arxiv <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
 
     y <- sub("^arXiv:\\s*", "", y, ignore.case = TRUE)
@@ -831,7 +883,10 @@ normalize_arxiv <- function(x) {
 #'
 #' @noRd
 normalize_bibcode <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
 
@@ -874,7 +929,10 @@ normalize_bibcode <- function(x) {
 #'
 #' @noRd
 normalize_openalex <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
 
     bare_pat <- .openalex_key_pat()
@@ -915,7 +973,10 @@ normalize_openalex <- function(x) {
 #'
 #' @noRd
 normalize_pmid <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
 
     y <- sub(
@@ -949,7 +1010,10 @@ normalize_pmid <- function(x) {
 #'
 #' @noRd
 normalize_pmcid <- function(x) {
-    init <- .scholid_init_na_character(x)
+    init <- .scholid_init_na_character(
+        x,
+        digits = TRUE
+    )
     y <- trimws(init$x[init$ok])
 
     had_label <- grepl(
@@ -974,4 +1038,87 @@ normalize_pmcid <- function(x) {
 
     init$out[init$ok] <- y
     init$out
+}
+
+
+# Level 2 functions (functions called by level 1 functions) definitions --------
+
+
+#' Decode percent-escapes
+#'
+#' @description
+#' Decodes runs of `%XX` escapes as UTF-8. A value is returned unchanged
+#' when it contains a `%` that does not start a two-digit hex escape, or when
+#' an escape run decodes to a NUL byte or to invalid UTF-8.
+#'
+#' @param x A character vector.
+#'
+#' @return A character vector the same length as `x`.
+#'
+#' @noRd
+.scholid_percent_decode <- function(x) {
+    idx <- which(!is.na(x) & grepl("%", x, fixed = TRUE))
+    if (length(idx)) {
+        malformed <- grepl("%(?![0-9A-Fa-f]{2})", x[idx], perl = TRUE)
+        idx <- idx[!malformed]
+    }
+    if (!length(idx)) {
+        return(x)
+    }
+
+    y <- x[idx]
+    m <- gregexpr("(?:%[0-9A-Fa-f]{2})+", y, perl = TRUE)
+    runs <- regmatches(y, m)
+    decoded <- vapply(
+        unlist(runs, use.names = FALSE),
+        .scholid_decode_escape_run,
+        character(1),
+        USE.NAMES = FALSE
+    )
+    group <- rep.int(seq_along(y), lengths(runs))
+    good <- !(seq_along(y) %in% group[is.na(decoded)])
+    if (!any(good)) {
+        return(x)
+    }
+
+    keep <- group %in% which(good)
+    y_good <- y[good]
+    regmatches(y_good, m[good]) <- split(
+        decoded[keep],
+        factor(group[keep], levels = which(good))
+    )
+    x[idx[good]] <- y_good
+    x
+}
+
+
+# Level 3 functions (functions called by level 2 functions) definitions --------
+
+
+#' Decode one run of percent-escapes
+#'
+#' @param run A single string of consecutive `%XX` escapes.
+#'
+#' @return The decoded UTF-8 string, or `NA_character_` if the bytes contain
+#'   a NUL or are not valid UTF-8.
+#'
+#' @noRd
+.scholid_decode_escape_run <- function(run) {
+    n <- nchar(run)
+    hex <- substring(
+        run,
+        seq.int(2L, n, 3L),
+        seq.int(3L, n, 3L)
+    )
+    bytes <- as.raw(strtoi(hex, 16L))
+    if (any(bytes == as.raw(0L))) {
+        return(NA_character_)
+    }
+
+    out <- rawToChar(bytes)
+    if (!validUTF8(out)) {
+        return(NA_character_)
+    }
+    Encoding(out) <- "UTF-8"
+    out
 }

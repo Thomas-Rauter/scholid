@@ -960,3 +960,50 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "detect_scholid_type accepts Unicode spaces, dashes and digits",
+    {
+        x <- c(
+            "\u00A010.1000/182",
+            "10.1000/182\u3000",
+            "0000\u20130002\u20131825\u20130097",
+            "0317\u20108471",
+            "https://doi.org/10.1000%2F182",
+            paste0("PMID: ", scholid_fullwidth("12345"))
+        )
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            c("doi", "doi", "orcid", "issn", "doi", "pmid")
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type keeps a disguised bare 8-digit PMID as PMID",
+    {
+        # 29456894 passes the ISSN checksum. Only a hyphen or an ISSN
+        # label makes it an ISSN, also after invisible characters,
+        # Unicode spaces and full-width digits are cleaned up.
+        x <- c(
+            "29456894",
+            "2945\u200B6894",
+            "\u00A029456894",
+            "29456894\u3000",
+            scholid_fullwidth("29456894")
+        )
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            rep("pmid", length(x))
+        )
+        testthat::expect_identical(
+            detect_scholid_type(
+                c(
+                    "2945\u20106894",
+                    "ISSN\u00A029456894"
+                )
+            ),
+            c("issn", "issn")
+        )
+    }
+)

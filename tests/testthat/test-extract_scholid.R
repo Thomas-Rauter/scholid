@@ -2011,8 +2011,8 @@ testthat::test_that(
         text <- c(
             "see 10.1000/182 here",
             bad,
-            "café see 10.1000/183 here",
-            "see 10.1000/​184 here"
+            "caf\u00E9 see 10.1000/183 here",
+            "see 10.1000/\u200B184 here"
         )
 
         # The invalid element itself may warn in the regex engine; only the
@@ -2055,6 +2055,110 @@ testthat::test_that(
         testthat::expect_identical(
             got[[1]],
             "PMC1234567"
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_scholid treats Unicode spaces as boundaries",
+    {
+        for (s in scholid_lookalike_chars$space) {
+            got <- extract_scholid(
+                paste0("doi:10.1000/182", s, "and more"),
+                "doi"
+            )
+            testthat::expect_identical(
+                got,
+                list("10.1000/182"),
+                info = sprintf("U+%04X", utf8ToInt(s))
+            )
+        }
+
+        testthat::expect_identical(
+            extract_scholid(
+                "ISNI 0000\u00A00001\u00A02146\u00A0438X here",
+                "isni"
+            ),
+            list("000000012146438X")
+        )
+        testthat::expect_identical(
+            extract_scholid(
+                "see PMID:\u00A012345678\u3000now",
+                "pmid"
+            ),
+            list("12345678")
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_scholid folds Unicode dashes and full-width digits",
+    {
+        testthat::expect_identical(
+            extract_scholid(
+                "ORCID 0000\u20130002\u20131825\u20130097.",
+                "orcid"
+            ),
+            list("0000-0002-1825-0097")
+        )
+        testthat::expect_identical(
+            extract_scholid(
+                "ORCID 0000\u20100002\u20101825\u20100097.",
+                "orcid"
+            ),
+            list("0000-0002-1825-0097")
+        )
+        testthat::expect_identical(
+            extract_scholid(
+                "ISBN 978\u20130\u2013306\u201340615\u20137.",
+                "isbn"
+            ),
+            list("978-0-306-40615-7")
+        )
+        testthat::expect_identical(
+            extract_scholid(
+                paste0("PMID: ", scholid_fullwidth("12345678"), "."),
+                "pmid"
+            ),
+            list("12345678")
+        )
+        testthat::expect_identical(
+            extract_scholid(
+                paste0("see PMC", scholid_fullwidth("1234567")),
+                "pmcid"
+            ),
+            list("PMC1234567")
+        )
+    }
+)
+
+testthat::test_that(
+    "extract_scholid keeps look-alikes where folding is unsafe",
+    {
+        testthat::expect_identical(
+            extract_scholid(
+                "ORCID 0000\u20140002\u20141825\u20140097.",
+                "orcid"
+            ),
+            list(character(0))
+        )
+
+        # En dashes mark page and year ranges; 1998-2003 would pass the
+        # ISSN checksum.
+        testthat::expect_identical(
+            extract_scholid(
+                "Vol. 5, pp. 1998\u20132003",
+                "issn"
+            ),
+            list(character(0))
+        )
+
+        testthat::expect_identical(
+            extract_scholid(
+                "see 10.1000/a\u2013b and 10.1000/c\u2010d",
+                "doi"
+            ),
+            list(c("10.1000/a\u2013b", "10.1000/c\u2010d"))
         )
     }
 )

@@ -11,9 +11,10 @@
 #' The main difference from normalization is input form: `is_scholid()`
 #' expects values in canonical (or near-canonical) form. Wrapped values
 #' such as URLs or prefixed labels should be normalized first with
-#' [normalize_scholid()]. Values that contain an invisible character, such
-#' as a soft hyphen or a byte order mark, are not canonical and return
-#' `FALSE`.
+#' [normalize_scholid()]. Values that contain an invisible character or a
+#' Unicode space are not canonical and return `FALSE`. Unicode dashes and
+#' full-width digits are not read as their ASCII forms. See "Input
+#' characters" in `vignette("scholid_definitions", package = "scholid")`.
 #'
 #' Inputs that are `NA` yield `NA`. Non-matching values return `FALSE`.
 #'

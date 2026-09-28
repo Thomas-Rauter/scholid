@@ -659,3 +659,28 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "classify_scholid does not fold look-alike characters",
+    {
+        x <- c(
+            "0000\u20100002\u20101825\u20100097",
+            "0000\u20130002\u20131825\u20130097",
+            "0317\u20108471",
+            "978\u20130\u2013306\u201340615\u20137",
+            scholid_fullwidth("12345678"),
+            paste0("PMC", scholid_fullwidth("1234567")),
+            "\u00A010.1000/182",
+            "10.1000/1\u00A082"
+        )
+        testthat::expect_identical(
+            classify_scholid(x),
+            rep(NA_character_, length(x))
+        )
+
+        testthat::expect_identical(
+            classify_scholid("10.1000/a\u2013b"),
+            "doi"
+        )
+    }
+)

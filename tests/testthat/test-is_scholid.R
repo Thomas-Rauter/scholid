@@ -2152,3 +2152,58 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "is_scholid rejects Unicode spaces",
+    {
+        for (s in scholid_lookalike_chars$space) {
+            got <- is_scholid(
+                c(
+                    paste0("10.1000/1", s, "82"),
+                    paste0(s, "10.1000/182"),
+                    paste0("10.1000/182", s)
+                ),
+                "doi"
+            )
+            testthat::expect_identical(
+                got,
+                c(FALSE, FALSE, FALSE),
+                info = sprintf("U+%04X", utf8ToInt(s))
+            )
+        }
+
+        swh <- paste0(
+            "swh:1:cnt:\u2003",
+            "94a9ed024d3859793618152ea559a168bbcbb5e2"
+        )
+        testthat::expect_false(is_scholid(swh, "swhid"))
+    }
+)
+
+testthat::test_that(
+    "is_scholid rejects Unicode dashes and full-width digits",
+    {
+        testthat::expect_false(
+            is_scholid("0000\u20100002\u20101825\u20100097", "orcid")
+        )
+        testthat::expect_false(
+            is_scholid("0000\u20130002\u20131825\u20130097", "orcid")
+        )
+        testthat::expect_false(
+            is_scholid("0317\u20108471", "issn")
+        )
+        testthat::expect_false(
+            is_scholid("978\u20130\u2013306\u201340615\u20137", "isbn")
+        )
+        testthat::expect_false(
+            is_scholid(scholid_fullwidth("12345678"), "pmid")
+        )
+        testthat::expect_false(
+            is_scholid(paste0("PMC", scholid_fullwidth("1234567")), "pmcid")
+        )
+
+        testthat::expect_true(
+            is_scholid("10.1000/a\u2013b", "doi")
+        )
+    }
+)

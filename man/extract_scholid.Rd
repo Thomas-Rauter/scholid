@@ -24,10 +24,14 @@ character vector.
 
 Matches are returned as extracted identifier tokens from the text.
 Surrounding prose punctuation or markup fragments may be removed where
-necessary to isolate the identifier. Invisible characters, such as a
-soft hyphen or a byte order mark, are removed from the text before
-matching. Use \code{normalize_scholid()} to convert identifiers to canonical
-form.
+necessary to isolate the identifier. Use \code{normalize_scholid()} to
+convert identifiers to canonical form.
+
+Before matching, invisible characters are removed from the text and
+Unicode spaces count as whitespace. For some types, Unicode dashes and
+full-width digits are read as their ASCII forms, and the returned tokens
+use the ASCII forms. See "Input characters" in
+\code{vignette("scholid_definitions", package = "scholid")}.
 }
 \examples{
 extract_scholid("See https://doi.org/10.1000/182.", "doi")

@@ -63,8 +63,8 @@
     
 <p><code>scholid</code> is a lightweight, dependency-free (base R only)
 toolkit for working with scholarly and academic identifiers. It provides
-small, well-tested helpers to detect, normalize, classify, and extract
-common identifier strings.</p>
+small, well-tested helpers to detect, normalize, classify, extract, and
+locate common identifier strings.</p>
 <p>This vignette introduces the interface and typical workflows for
 mixed, messy identifier data.</p>
 <div class="section level2">
@@ -90,6 +90,9 @@ strings.</li>
 <li>
 <code>extract_scholid(text, type)</code> extracts identifiers from
 free text.</li>
+<li>
+<code>locate_scholid(text, types)</code> finds identifiers of
+several types in free text, with their positions.</li>
 <li>
 <code>classify_scholid(x)</code> guesses the identifier type per
 element.</li>
@@ -197,13 +200,52 @@ character vector of matches (possibly empty).</p>
 multiple identifiers.</p>
 </div>
 <div class="section level2">
+<h2 id="locate-locate_scholid">Locate: <code>locate_scholid()</code><a class="anchor" aria-label="anchor" href="#locate-locate_scholid"></a>
+</h2>
+<p><code><a href="../reference/locate_scholid.html">locate_scholid()</a></code> looks for identifiers of all supported
+types at once, or of the types given in <code>types</code>, and reports
+where each one is. The result is a data frame with one row per
+identifier: the element of <code>text</code> it was found in, its type,
+the token <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> returns for it, the identifier
+as written, and its start and end positions.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">txt</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>  <span class="st">"See doi:10.1000/182 and ORCID 0000-0002-1825-0097."</span>,</span>
+<span>  <span class="cn">NA</span>,</span>
+<span>  <span class="st">"ISBN 978 0 306 40615 7 (PMID 12345678)"</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">hits</span> <span class="op">&lt;-</span> <span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/locate_scholid.html">locate_scholid</a></span><span class="op">(</span>text <span class="op">=</span> <span class="va">txt</span><span class="op">)</span></span>
+<span><span class="va">hits</span></span></code></pre></div>
+<pre><code><span><span class="co">##   element  type                  id               match start end</span></span>
+<span><span class="co">## 1       1   doi         10.1000/182         10.1000/182     9  19</span></span>
+<span><span class="co">## 2       1 orcid 0000-0002-1825-0097 0000-0002-1825-0097    31  49</span></span>
+<span><span class="co">## 3       3  isbn   978 0 306 40615 7   978 0 306 40615 7     6  22</span></span>
+<span><span class="co">## 4       3  pmid            12345678            12345678    30  37</span></span></code></pre>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">txt</span><span class="op">[</span><span class="va">hits</span><span class="op">$</span><span class="va">element</span><span class="op">]</span>, <span class="va">hits</span><span class="op">$</span><span class="va">start</span>, <span class="va">hits</span><span class="op">$</span><span class="va">end</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] "10.1000/182"         "0000-0002-1825-0097" "978 0 306 40615 7"  </span></span>
+<span><span class="co">## [4] "12345678"</span></span></code></pre>
+<p>The digits <code>40615</code> inside the ISBN also look like a PMID.
+Where the spans of two hits overlap, <code><a href="../reference/locate_scholid.html">locate_scholid()</a></code> keeps
+the longer one, and for equal lengths the type that comes first in
+<code><a href="../reference/scholid_types.html">scholid_types()</a></code>. Only the types asked for take part:</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/locate_scholid.html">locate_scholid</a></span><span class="op">(</span></span>
+<span>    text  <span class="op">=</span> <span class="va">txt</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span>,</span>
+<span>    types <span class="op">=</span> <span class="st">"pmid"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   element type       id    match start end</span></span>
+<span><span class="co">## 1       1 pmid    40615    40615    16  20</span></span>
+<span><span class="co">## 2       1 pmid 12345678 12345678    30  37</span></span></code></pre>
+</div>
+<div class="section level2">
 <h2 id="classify-classify_scholid">Classify: <code>classify_scholid()</code><a class="anchor" aria-label="anchor" href="#classify-classify_scholid"></a>
 </h2>
 <p><code><a href="../reference/classify_scholid.html">classify_scholid()</a></code> returns the best-guess identifier
 type per element for mixed identifier columns. Classification is based
 on the set of available <code>is_&lt;type&gt;()</code> checks and the
 precedence order defined by <code><a href="../reference/scholid_types.html">scholid_types()</a></code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"10.1000/182"</span>,</span>
 <span>  <span class="st">"0000-0002-1825-0097"</span>,</span>
@@ -225,7 +267,7 @@ common pattern is:</p>
 <li>Normalize extracted values.</li>
 <li>Classify and/or validate.</li>
 </ol>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">txt</span> <span class="op">&lt;-</span> <span class="st">"Read https://doi.org/10.1000/182 (and ORCID 0000-0002-1825-0097)."</span></span>
 <span><span class="va">dois</span> <span class="op">&lt;-</span> <span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/extract_scholid.html">extract_scholid</a></span><span class="op">(</span><span class="va">txt</span>, <span class="st">"doi"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">orcids</span> <span class="op">&lt;-</span> <span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/extract_scholid.html">extract_scholid</a></span><span class="op">(</span><span class="va">txt</span>, <span class="st">"orcid"</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
@@ -235,10 +277,10 @@ common pattern is:</p>
 <span></span>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/classify_scholid.html">classify_scholid</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">dois_n</span>, <span class="va">orcids_n</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "doi"   "orcid"</span></span></code></pre>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/is_scholid.html">is_scholid</a></span><span class="op">(</span><span class="va">dois_n</span>, <span class="st">"doi"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/is_scholid.html">is_scholid</a></span><span class="op">(</span><span class="va">orcids_n</span>, <span class="st">"orcid"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] TRUE</span></span></code></pre>
 </div>
@@ -255,7 +297,7 @@ wrapped forms such as URLs and prefixed labels (e.g., <code>doi:</code>,
 <p>Detection is useful when working with raw data where identifiers may
 not yet be normalized.</p>
 <p>For example, wrapped identifiers are not classified strictly:</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>  <span class="st">"https://doi.org/10.1000/182"</span>,</span>
 <span>  <span class="st">"ORCID: 0000-0002-1825-0097"</span>,</span>
@@ -266,12 +308,12 @@ not yet be normalized.</p>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/classify_scholid.html">classify_scholid</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] NA NA NA NA NA</span></span></code></pre>
 <p>However, they can be detected directly:</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/detect_scholid_type.html">detect_scholid_type</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "doi"   "orcid" "arxiv" "pmid"  NA</span></span></code></pre>
 <p>Whitespace and minor formatting irregularities are handled
 conservatively:</p>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="../reference/detect_scholid_type.html">detect_scholid_type</a></span><span class="op">(</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
 <span>    <span class="st">" 0000-0002-1825-0097 "</span>,</span>

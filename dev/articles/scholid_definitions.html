@@ -106,6 +106,91 @@ candidates use 4–9 digits and do not match digits immediately following
 <code><a href="../reference/scholid_types.html">scholid_types()</a></code> in R.</p>
 </div>
 <div class="section level3">
+<h3 id="input-characters">Input characters<a class="anchor" aria-label="anchor" href="#input-characters"></a>
+</h3>
+<p>Text copied from PDFs, word processors, and web pages often contains
+characters that look like ASCII but are not. scholid handles them as
+follows.</p>
+<ul>
+<li>
+<strong>Invisible characters</strong>: the soft hyphen (U+00AD),
+zero-width and directional marks (U+200B–U+200F, U+202A–U+202E,
+U+2060–U+2064, U+2066–U+2069), and the byte order mark (U+FEFF). They
+are never part of an identifier. <code><a href="../reference/is_scholid.html">is_scholid()</a></code> returns
+<code>FALSE</code> for values that contain one;
+<code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>, <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code>, and
+<code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> remove them first.</li>
+<li>
+<strong>Unicode spaces</strong>: the no-break space (U+00A0),
+U+1680, U+2000–U+200A, U+202F, U+205F, and the ideographic space
+(U+3000). They count as whitespace wherever an ASCII space does: they
+are trimmed, they may follow a label or separate digit groups, and they
+end a match in extraction. No identifier contains one, so
+<code><a href="../reference/is_scholid.html">is_scholid()</a></code> returns <code>FALSE</code>.</li>
+<li>
+<strong>Unicode dashes</strong> (U+2010–U+2013, U+2212, U+FE63,
+U+FF0D) and <strong>full-width digits</strong> (U+FF10–U+FF19):
+<code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>, <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code>, and
+<code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> read them as <code>-</code> and
+<code>0</code>–<code>9</code> for the types in the table below.
+<code><a href="../reference/is_scholid.html">is_scholid()</a></code> and <code><a href="../reference/classify_scholid.html">classify_scholid()</a></code> accept
+only the ASCII characters. The em dash (U+2014) is never read as a
+hyphen.</li>
+</ul>
+<table class="table">
+<colgroup>
+<col width="20%">
+<col width="23%">
+<col width="55%">
+</colgroup>
+<thead><tr class="header">
+<th>Types</th>
+<th>Dashes</th>
+<th>Full-width digits</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>
+<code>orcid</code>, <code>isbn</code>, <code>isni</code>
+</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td><code>issn</code></td>
+<td>
+<code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> only</td>
+<td>Yes</td>
+</tr>
+<tr class="odd">
+<td>
+<code>arxiv</code>, <code>bibcode</code>, <code>openalex</code>,
+<code>ror</code>, <code>uniprot</code>, <code>refseq</code>,
+<code>sra</code>, <code>geo</code>, <code>bioproject</code>,
+<code>assembly</code>, <code>pmcid</code>, <code>pmid</code>
+</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr class="even">
+<td>
+<code>doi</code>, <code>ark</code>, <code>swhid</code>,
+<code>rrid</code>
+</td>
+<td>No</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>Dashes are read as hyphens only for types that separate digit groups
+with hyphens. In free text, an en dash usually marks a page or year
+range, and <code>1998–2003</code> passes the ISSN checksum, so
+<code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> doesn’t read dashes for ISSN. A DOI
+suffix may contain any Unicode character, and ARK names, SWHID
+qualifiers, and some RRID bodies are free-form, so those types keep
+dashes and digits as written.</p>
+</div>
+<div class="section level3">
 <h3 id="supported-types-overview">Supported types (overview)<a class="anchor" aria-label="anchor" href="#supported-types-overview"></a>
 </h3>
 <table class="table">
@@ -301,6 +386,14 @@ Handbook</a>, “Case Insensitivity of the DOI Name”)</li>
 checksum. Registry existence is not checked. Wrapped forms
 (<code>https://doi.org/…</code>, <code>doi:</code> labels) should be
 normalized before classification.</p>
+<p><code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> percent-decodes the part of a
+<code>doi.org</code> or <code>dx.doi.org</code> URL after the host, so
+<code>https://doi.org/10.1000%2F182</code> gives
+<code>10.1000/182</code>. Bare DOIs and <code>doi:</code> labels are not
+decoded, because <code>%</code> can be part of a DOI name. A URL with a
+malformed escape, or with escapes that don’t decode to valid text, is
+kept as written. <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> does not decode URLs in
+free text.</p>
 <p><code><a href="../reference/is_scholid.html">is_scholid()</a></code> and <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>
 preserve case. DOIs should be compared case-insensitively, for example
 by applying <code><a href="https://rdrr.io/r/base/chartr.html" class="external-link">tolower()</a></code> to both sides before comparing or

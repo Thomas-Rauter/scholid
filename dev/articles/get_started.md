@@ -2,8 +2,8 @@
 
 `scholid` is a lightweight, dependency-free (base R only) toolkit for
 working with scholarly and academic identifiers. It provides small,
-well-tested helpers to detect, normalize, classify, and extract common
-identifier strings.
+well-tested helpers to detect, normalize, classify, extract, and locate
+common identifier strings.
 
 This vignette introduces the interface and typical workflows for mixed,
 messy identifier data.
@@ -25,6 +25,8 @@ consistently across identifier types:
 - `is_scholid(x, type)` checks whether values match the identifier type.
 - `normalize_scholid(x, type)` returns canonical identifier strings.
 - `extract_scholid(text, type)` extracts identifiers from free text.
+- `locate_scholid(text, types)` finds identifiers of several types in
+  free text, with their positions.
 - `classify_scholid(x)` guesses the identifier type per element.
 - `detect_scholid_type(x)` detects identifier types from canonical or
   wrapped input values (e.g., URLs or labels).
@@ -148,6 +150,61 @@ scholid::extract_scholid(
 
 The list return type is intentional: a single text string can contain
 multiple identifiers.
+
+## Locate: `locate_scholid()`
+
+[`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md)
+looks for identifiers of all supported types at once, or of the types
+given in `types`, and reports where each one is. The result is a data
+frame with one row per identifier: the element of `text` it was found
+in, its type, the token
+[`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
+returns for it, the identifier as written, and its start and end
+positions.
+
+``` r
+
+txt <- c(
+  "See doi:10.1000/182 and ORCID 0000-0002-1825-0097.",
+  NA,
+  "ISBN 978 0 306 40615 7 (PMID 12345678)"
+)
+hits <- scholid::locate_scholid(text = txt)
+hits
+```
+
+    ##   element  type                  id               match start end
+    ## 1       1   doi         10.1000/182         10.1000/182     9  19
+    ## 2       1 orcid 0000-0002-1825-0097 0000-0002-1825-0097    31  49
+    ## 3       3  isbn   978 0 306 40615 7   978 0 306 40615 7     6  22
+    ## 4       3  pmid            12345678            12345678    30  37
+
+``` r
+
+substr(txt[hits$element], hits$start, hits$end)
+```
+
+    ## [1] "10.1000/182"         "0000-0002-1825-0097" "978 0 306 40615 7"  
+    ## [4] "12345678"
+
+The digits `40615` inside the ISBN also look like a PMID. Where the
+spans of two hits overlap,
+[`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md)
+keeps the longer one, and for equal lengths the type that comes first in
+[`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md).
+Only the types asked for take part:
+
+``` r
+
+scholid::locate_scholid(
+    text  = txt[3],
+    types = "pmid"
+)
+```
+
+    ##   element type       id    match start end
+    ## 1       1 pmid    40615    40615    16  20
+    ## 2       1 pmid 12345678 12345678    30  37
 
 ## Classify: `classify_scholid()`
 

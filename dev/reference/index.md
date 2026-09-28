@@ -17,6 +17,8 @@ GitHub).
   : Classify scholarly identifiers
 - [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
   : Extract scholarly identifiers from text
+- [`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md)
+  : Locate scholarly identifiers in text
 - [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
   : Test scholarly identifier validity
 - [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)

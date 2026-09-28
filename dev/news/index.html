@@ -35,6 +35,20 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="scholid-development-version">scholid (development version)<a class="anchor" aria-label="anchor" href="#scholid-development-version"></a></h2>
+<div class="section level3">
+<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<ul><li><p>Treated Unicode spaces, such as the no-break space and the ideographic space, as whitespace. <code><a href="../reference/is_scholid.html">is_scholid()</a></code> and <code><a href="../reference/classify_scholid.html">classify_scholid()</a></code> no longer accept a DOI or SWHID with such a space inside, and <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> no longer runs a DOI into the next word. <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>, <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code>, and <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> now trim these spaces and accept them after labels and between digit groups.</p></li>
+<li><p>Fixed <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> reporting a bare 8-digit PMID as <code>issn</code> when an invisible character was inside it.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="new-features-development-version">New features<a class="anchor" aria-label="anchor" href="#new-features-development-version"></a></h3>
+<ul><li><p>Added <code><a href="../reference/locate_scholid.html">locate_scholid()</a></code>, which finds identifiers of all types, or of the types given, in free text. It returns a data frame with one row per identifier: the text element, the type, the token <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> returns, the identifier as written, and its start and end positions. Where the spans of hits of different types overlap, such as an ISBN and the PMID-like digits inside it, it keeps the longer one.</p></li>
+<li><p>Accepted Unicode dashes, such as U+2010 and the en dash, in ORCID, ISBN, ISNI, and ISSN values, and full-width digits in every type except DOI, ARK, SWHID, and RRID, in <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>, <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code>, and <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code>. They are read as their ASCII forms. <code><a href="../reference/is_scholid.html">is_scholid()</a></code> still accepts only ASCII. The per-type rules are under “Input characters” in the definitions vignette.</p></li>
+<li><p>Percent-decoded <code>doi.org</code> and <code>dx.doi.org</code> URLs in <code>normalize_scholid(x, "doi")</code>, so <code>https://doi.org/10.1000%2F182</code> gives <code>10.1000/182</code>.</p></li>
+</ul></div>
+</div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.1" id="scholid-021">scholid 0.2.1<a class="anchor" aria-label="anchor" href="#scholid-021"></a></h2>
 <div class="section level3">
 <h3 id="bug-fixes-0-2-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-2-1"></a></h3>

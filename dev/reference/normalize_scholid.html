@@ -10,11 +10,13 @@ identifiers.
 Use is_scholid() to test whether already-canonical values are valid
 identifiers of a given type. Both functions apply checksum verification
 where applicable; normalization additionally accepts wrapped input forms
-and returns canonical strings. Invisible characters, such as a soft
-hyphen or a byte order mark, are removed before normalization. For DOI
-case, see "Validation in scholid" in the DOI section of the How
+and returns canonical strings.
+Before normalizing, invisible characters are removed and Unicode spaces
+count as whitespace. For some types, Unicode dashes and full-width digits
+are read as their ASCII forms. See "Input characters" in the How
 Scholarly Identifiers Are Defined vignette
-(vignette("scholid_definitions", package = "scholid")).'><meta property="og:description" content='Vectorized normalizer that converts supported scholarly identifier values
+(vignette("scholid_definitions", package = "scholid")). Its DOI
+section covers DOI case and the percent-decoding of doi.org URLs.'><meta property="og:description" content='Vectorized normalizer that converts supported scholarly identifier values
 to a canonical form (e.g., removing URL prefixes, labels, or separators).
 Normalization requires that inputs match the expected identifier structure.
 For identifier types with checksum algorithms (ORCID, ROR, ISNI, ISBN, ISSN),
@@ -25,11 +27,13 @@ identifiers.
 Use is_scholid() to test whether already-canonical values are valid
 identifiers of a given type. Both functions apply checksum verification
 where applicable; normalization additionally accepts wrapped input forms
-and returns canonical strings. Invisible characters, such as a soft
-hyphen or a byte order mark, are removed before normalization. For DOI
-case, see "Validation in scholid" in the DOI section of the How
+and returns canonical strings.
+Before normalizing, invisible characters are removed and Unicode spaces
+count as whitespace. For some types, Unicode dashes and full-width digits
+are read as their ASCII forms. See "Input characters" in the How
 Scholarly Identifiers Are Defined vignette
-(vignette("scholid_definitions", package = "scholid")).'></head><body>
+(vignette("scholid_definitions", package = "scholid")). Its DOI
+section covers DOI case and the percent-decoding of doi.org URLs.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -77,11 +81,13 @@ identifiers.</p>
 <p>Use <code><a href="is_scholid.html">is_scholid()</a></code> to test whether already-canonical values are valid
 identifiers of a given type. Both functions apply checksum verification
 where applicable; normalization additionally accepts wrapped input forms
-and returns canonical strings. Invisible characters, such as a soft
-hyphen or a byte order mark, are removed before normalization. For DOI
-case, see "Validation in scholid" in the DOI section of the <em>How
+and returns canonical strings.</p>
+<p>Before normalizing, invisible characters are removed and Unicode spaces
+count as whitespace. For some types, Unicode dashes and full-width digits
+are read as their ASCII forms. See "Input characters" in the <em>How
 Scholarly Identifiers Are Defined</em> vignette
-(<code><a href="../articles/scholid_definitions.html">vignette("scholid_definitions", package = "scholid")</a></code>).</p>
+(<code><a href="../articles/scholid_definitions.html">vignette("scholid_definitions", package = "scholid")</a></code>). Its DOI
+section covers DOI case and the percent-decoding of <code>doi.org</code> URLs.</p>
     </div>
 
     <div class="section level2">

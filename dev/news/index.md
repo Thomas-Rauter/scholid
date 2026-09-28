@@ -1,5 +1,57 @@
 # Changelog
 
+## scholid (development version)
+
+### Bug fixes
+
+- Treated Unicode spaces, such as the no-break space and the ideographic
+  space, as whitespace.
+  [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+  and
+  [`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md)
+  no longer accept a DOI or SWHID with such a space inside, and
+  [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
+  no longer runs a DOI into the next word.
+  [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md),
+  [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md),
+  and
+  [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
+  now trim these spaces and accept them after labels and between digit
+  groups.
+
+- Fixed
+  [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+  reporting a bare 8-digit PMID as `issn` when an invisible character
+  was inside it.
+
+### New features
+
+- Added
+  [`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md),
+  which finds identifiers of all types, or of the types given, in free
+  text. It returns a data frame with one row per identifier: the text
+  element, the type, the token
+  [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
+  returns, the identifier as written, and its start and end positions.
+  Where the spans of hits of different types overlap, such as an ISBN
+  and the PMID-like digits inside it, it keeps the longer one.
+
+- Accepted Unicode dashes, such as U+2010 and the en dash, in ORCID,
+  ISBN, ISNI, and ISSN values, and full-width digits in every type
+  except DOI, ARK, SWHID, and RRID, in
+  [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md),
+  [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md),
+  and
+  [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md).
+  They are read as their ASCII forms.
+  [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+  still accepts only ASCII. The per-type rules are under “Input
+  characters” in the definitions vignette.
+
+- Percent-decoded `doi.org` and `dx.doi.org` URLs in
+  `normalize_scholid(x, "doi")`, so `https://doi.org/10.1000%2F182`
+  gives `10.1000/182`.
+
 ## scholid 0.2.1
 
 ### Bug fixes

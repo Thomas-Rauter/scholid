@@ -1,8 +1,8 @@
 # Scholarly and Academic Identifier Utilities
 
 `scholid` provides lightweight, dependency-free utilities for detecting,
-normalizing, classifying, and extracting scholarly identifier strings.
-See
+normalizing, classifying, extracting, and locating scholarly identifier
+strings. See
 [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
 for the supported identifier types and their classification order.
 
@@ -22,6 +22,7 @@ for the supported identifier types and their classification order.
 [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md),
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md),
 [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md),
+[`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md),
 [`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md),
 [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md),
 [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)

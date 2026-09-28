@@ -7,7 +7,9 @@ normalize_scholid().
 The main difference from normalization is input form: is_scholid()
 expects values in canonical (or near-canonical) form. Wrapped values
 such as URLs or prefixed labels should be normalized first with
-normalize_scholid().
+normalize_scholid(). Values that contain an invisible character, such
+as a soft hyphen or a byte order mark, are not canonical and return
+FALSE.
 Inputs that are NA yield NA. Non-matching values return FALSE."><meta property="og:description" content="Vectorized predicate that tests whether values are valid scholarly
 identifiers of a given supported type.
 For identifier types with checksum algorithms (e.g., ORCID, ROR, ISNI, ISBN,
@@ -16,7 +18,9 @@ normalize_scholid().
 The main difference from normalization is input form: is_scholid()
 expects values in canonical (or near-canonical) form. Wrapped values
 such as URLs or prefixed labels should be normalized first with
-normalize_scholid().
+normalize_scholid(). Values that contain an invisible character, such
+as a soft hyphen or a byte order mark, are not canonical and return
+FALSE.
 Inputs that are NA yield NA. Non-matching values return FALSE."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
@@ -25,7 +29,7 @@ Inputs that are NA yield NA. Non-matching values return FALSE."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">scholid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +53,7 @@ Inputs that are NA yield NA. Non-matching values return FALSE."></head><body>
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Test scholarly identifier validity</h1>
-      <small class="dont-index">Source: <a href="https://github.com/Thomas-Rauter/scholid/blob/v0.2.0/R/is_scholid.R" class="external-link"><code>R/is_scholid.R</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Thomas-Rauter/scholid/blob/v0.2.1/R/is_scholid.R" class="external-link"><code>R/is_scholid.R</code></a></small>
       <div class="d-none name"><code>is_scholid.Rd</code></div>
     </div>
 
@@ -62,7 +66,9 @@ ISSN), checksum correctness is verified. The same checksum rules apply to
 <p>The main difference from normalization is input form: <code>is_scholid()</code>
 expects values in canonical (or near-canonical) form. Wrapped values
 such as URLs or prefixed labels should be normalized first with
-<code><a href="normalize_scholid.html">normalize_scholid()</a></code>.</p>
+<code><a href="normalize_scholid.html">normalize_scholid()</a></code>. Values that contain an invisible character, such
+as a soft hyphen or a byte order mark, are not canonical and return
+<code>FALSE</code>.</p>
 <p>Inputs that are <code>NA</code> yield <code>NA</code>. Non-matching values return <code>FALSE</code>.</p>
     </div>
 
@@ -112,7 +118,7 @@ each element is a valid identifier of the specified type.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer></div>

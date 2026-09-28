@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">scholid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,7 +55,7 @@
       <h1>How Scholarly Identifiers Are Defined</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/Thomas-Rauter/scholid/blob/v0.2.0/vignettes/scholid_definitions.Rmd" class="external-link"><code>vignettes/scholid_definitions.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/Thomas-Rauter/scholid/blob/v0.2.1/vignettes/scholid_definitions.Rmd" class="external-link"><code>vignettes/scholid_definitions.Rmd</code></a></small>
       <div class="d-none name"><code>scholid_definitions.Rmd</code></div>
     </div>
 
@@ -285,7 +285,9 @@ regex</strong>.</p>
 <li>Assigned by the registrant</li>
 <li>May contain almost any printable character</li>
 <li>Has no globally fixed grammar</li>
-<li>Case-sensitive in theory</li>
+<li>Case-insensitive for ASCII letters. Names that differ only in
+non-ASCII case may be different identifiers (<a href="https://www.doi.org/the-identifier/resources/handbook" class="external-link">DOI
+Handbook</a>, “Case Insensitivity of the DOI Name”)</li>
 </ul>
 <p>Example:</p>
 <pre><code><span><span class="fl">10.1000</span><span class="op">/</span><span class="fl">182</span></span>
@@ -299,6 +301,10 @@ regex</strong>.</p>
 checksum. Registry existence is not checked. Wrapped forms
 (<code>https://doi.org/…</code>, <code>doi:</code> labels) should be
 normalized before classification.</p>
+<p><code><a href="../reference/is_scholid.html">is_scholid()</a></code> and <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>
+preserve case. DOIs should be compared case-insensitively, for example
+by applying <code><a href="https://rdrr.io/r/base/chartr.html" class="external-link">tolower()</a></code> to both sides before comparing or
+deduplicating.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex"></a>
@@ -313,7 +319,8 @@ slash - Non-whitespace suffix</p>
 <div class="section level2">
 <h2 id="isni-international-standard-name-identifier">ISNI (International Standard Name Identifier)<a class="anchor" aria-label="anchor" href="#isni-international-standard-name-identifier"></a>
 </h2>
-<p><strong>Governing body:</strong> ISNI International Agency<br><strong>Standard:</strong> ISO 27729<br><strong>Documentation:</strong> <a href="https://isni.org/" class="external-link">ISNI</a></p>
+<p><strong>Governing body:</strong> ISNI International Agency<br><strong>Standard:</strong> ISO 27729<br><strong>Documentation:</strong> <a href="https://en.wikipedia.org/wiki/International_Standard_Name_Identifier" class="external-link">ISNI
+overview</a>; official site <code>isni.org</code></p>
 <div class="section level3">
 <h3 id="structure-1">Structure<a class="anchor" aria-label="anchor" href="#structure-1"></a>
 </h3>
@@ -805,6 +812,14 @@ is not checked.</p>
 Canonical form uses a hyphen after the fourth digit
 (<code>1234-567X</code>). Extraction targets hyphenated tokens;
 normalize for compact checks. Registry existence is not checked.</p>
+<p><code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> only reports <code>issn</code>
+when the input carries ISSN context: the hyphen (<code>2434-561X</code>)
+or an <code>ISSN</code> label (<code>ISSN 2434561X</code>). Bare compact
+forms are not detected as ISSN, because checksum-valid 8-digit strings
+collide with PMIDs: <code>29456894</code> is detected as
+<code>pmid</code>, and <code>2434561X</code> is not detected at all.
+When the type is known, <code>normalize_scholid(x, "issn")</code> still
+accepts the compact form.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-12">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-12"></a>
@@ -1147,7 +1162,7 @@ Extraction uses a dedicated <code>PMC</code> prefix pattern.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

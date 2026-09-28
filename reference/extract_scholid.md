@@ -8,7 +8,9 @@ empty character vector.
 
 Matches are returned as extracted identifier tokens from the text.
 Surrounding prose punctuation or markup fragments may be removed where
-necessary to isolate the identifier. Use
+necessary to isolate the identifier. Invisible characters, such as a
+soft hyphen or a byte order mark, are removed from the text before
+matching. Use
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
 to convert identifiers to canonical form.
 

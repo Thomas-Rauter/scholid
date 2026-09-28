@@ -13,7 +13,7 @@ downloads](https://cranlogs.r-pkg.org/badges/last-month/scholid)](https://CRAN.R
 `scholid` provides lightweight, dependency-free utilities for working
 with scholarly identifiers in R. The package is designed as a small,
 well-tested foundation that can be safely reused by other packages and
-data workflows. It supports twenty identifier types — see Scope and
+data workflows. For the supported identifier types, see Scope and
 [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md).
 
 See the full documentation at the [scholid

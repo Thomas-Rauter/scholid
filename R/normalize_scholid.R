@@ -16,7 +16,10 @@
 #' identifiers of a given type. Both functions apply checksum verification
 #' where applicable; normalization additionally accepts wrapped input forms
 #' and returns canonical strings. Invisible characters, such as a soft
-#' hyphen or a byte order mark, are removed before normalization.
+#' hyphen or a byte order mark, are removed before normalization. For DOI
+#' case, see "Validation in scholid" in the DOI section of the *How
+#' Scholarly Identifiers Are Defined* vignette
+#' (`vignette("scholid_definitions", package = "scholid")`).
 #'
 #' @param x A vector of values to normalize.
 #' @param type A single string giving the identifier type. See

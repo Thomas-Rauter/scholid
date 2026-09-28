@@ -40,6 +40,22 @@ testthat::test_that("classify_scholid classifies canonical identifiers", {
 })
 
 testthat::test_that(
+    "classify_scholid classifies upper, lower, and mixed-case DOIs",
+    {
+        x <- c(
+            "10.1000/ABC",
+            "10.1000/abc",
+            "10.1000/AbC"
+        )
+
+        testthat::expect_identical(
+            classify_scholid(x),
+            c("doi", "doi", "doi")
+        )
+    }
+)
+
+testthat::test_that(
     "classify_scholid classifies canonical ROR iDs",
     {
         x <- c(

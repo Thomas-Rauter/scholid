@@ -132,6 +132,25 @@ testthat::test_that(
 )
 
 testthat::test_that(
+    "is_scholid accepts upper, lower, and mixed-case DOIs",
+    {
+        x <- c(
+            "10.1000/ABC",
+            "10.1000/abc",
+            "10.1000/AbC"
+        )
+
+        testthat::expect_identical(
+            is_scholid(
+                x,
+                "doi"
+            ),
+            c(TRUE, TRUE, TRUE)
+        )
+    }
+)
+
+testthat::test_that(
     "is_orcid accepts canonical valid ORCIDs including lowercase x",
     {
         x <- c(

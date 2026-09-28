@@ -32,7 +32,10 @@ Use \code{\link[=is_scholid]{is_scholid()}} to test whether already-canonical va
 identifiers of a given type. Both functions apply checksum verification
 where applicable; normalization additionally accepts wrapped input forms
 and returns canonical strings. Invisible characters, such as a soft
-hyphen or a byte order mark, are removed before normalization.
+hyphen or a byte order mark, are removed before normalization. For DOI
+case, see "Validation in scholid" in the DOI section of the \emph{How
+Scholarly Identifiers Are Defined} vignette
+(\code{vignette("scholid_definitions", package = "scholid")}).
 }
 \examples{
 normalize_scholid("https://doi.org/10.1000/182", "doi")

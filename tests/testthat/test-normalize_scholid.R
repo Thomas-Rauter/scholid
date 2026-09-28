@@ -22,6 +22,33 @@ testthat::test_that("normalize_doi strips wrappers and trailing punctuation", {
 })
 
 testthat::test_that(
+    "normalize_scholid preserves DOI case",
+    {
+        x <- c(
+            "10.1000/ABC",
+            "10.1000/abc",
+            "10.1000/AbC",
+            "https://doi.org/10.1000/ABC",
+            "doi:10.1000/abc"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(
+                x,
+                "doi"
+            ),
+            c(
+                "10.1000/ABC",
+                "10.1000/abc",
+                "10.1000/AbC",
+                "10.1000/ABC",
+                "10.1000/abc"
+            )
+        )
+    }
+)
+
+testthat::test_that(
     "DOI normalization keeps valid inputs canonical",
     {
         testthat::expect_equal(

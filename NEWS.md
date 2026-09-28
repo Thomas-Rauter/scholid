@@ -20,6 +20,12 @@
   `extract_scholid()` by checking whole vectors instead of one string
   at a time.
 
+## Documentation
+
+- Corrected the DOI case guidance in the definitions vignette: DOI
+  names are case-insensitive for ASCII letters, and scholid preserves
+  case when validating and normalizing them.
+
 # scholid 0.2.0
 
 ## New identifier types

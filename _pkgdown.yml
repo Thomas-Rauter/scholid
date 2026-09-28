@@ -41,6 +41,7 @@ reference:
     contents:
       - classify_scholid
       - extract_scholid
+      - locate_scholid
       - is_scholid
       - normalize_scholid
       - scholid_types

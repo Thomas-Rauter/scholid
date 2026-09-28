@@ -14,6 +14,13 @@
 
 ## New features
 
+- Added `locate_scholid()`, which finds identifiers of all types, or of
+  the types given, in free text. It returns a data frame with one row per
+  identifier: the text element, the type, the token `extract_scholid()`
+  returns, the identifier as written, and its start and end positions.
+  Where the spans of hits of different types overlap, such as an ISBN and
+  the PMID-like digits inside it, it keeps the longer one.
+
 - Accepted Unicode dashes, such as U+2010 and the en dash, in ORCID, ISBN,
   ISNI, and ISSN values, and full-width digits in every type except DOI,
   ARK, SWHID, and RRID, in `normalize_scholid()`, `extract_scholid()`, and

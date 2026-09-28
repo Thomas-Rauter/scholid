@@ -2543,3 +2543,28 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "positions path counts in one unit when text marked as bytes has no hit",
+    {
+        raw_text <- "\xc3\xa9 no identifier"
+        Encoding(raw_text) <- "bytes"
+        text <- c(
+            "café see 10.1000/182",
+            raw_text
+        )
+
+        hits <- .scholid_locate_type(
+            text,
+            "doi"
+        )
+
+        testthat::expect_identical(hits$element, 1L)
+        testthat::expect_identical(hits$start, 10L)
+        testthat::expect_identical(hits$end, 20L)
+        testthat::expect_identical(
+            substr(text[hits$element], hits$start, hits$end),
+            hits$match
+        )
+    }
+)

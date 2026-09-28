@@ -81,6 +81,59 @@
 }
 
 
+#' Match and validate a vector of scholarly identifier types
+#'
+#' @description
+#' Internal helper for validating `types` arguments. As for a single
+#' `type`, factors are converted to character, whitespace is trimmed, and
+#' each value must match a supported type exactly. Duplicates are dropped.
+#'
+#' @param types A character vector of identifier types.
+#'
+#' @return A character vector of distinct validated types, in the order of
+#'   `scholid_types()`.
+#'
+#' @noRd
+.scholid_match_types <- function(types) {
+    if (is.null(types)) {
+        stop("`types` must not be NULL.", call. = FALSE)
+    }
+
+    if (is.factor(types)) {
+        types <- as.character(types)
+    }
+
+    if (!is.character(types)) {
+        stop("`types` must be a character vector.", call. = FALSE)
+    }
+
+    if (!length(types)) {
+        stop("`types` must contain at least one type.", call. = FALSE)
+    }
+
+    types <- trimws(types)
+    if (anyNA(types) || !all(nzchar(types))) {
+        stop(
+            "`types` must not contain NA or empty strings.",
+            call. = FALSE
+        )
+    }
+
+    choices <- scholid_types()
+    unknown <- unique(types[!types %in% choices])
+    if (length(unknown)) {
+        stop(
+            "`types` contains unsupported types: ",
+            paste0("\"", unknown, "\"", collapse = ", "),
+            ". See `scholid_types()`.",
+            call. = FALSE
+        )
+    }
+
+    choices[choices %in% types]
+}
+
+
 #' Resolve a per-type scholid implementation function
 #'
 #' @description

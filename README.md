@@ -62,14 +62,15 @@ communication:
 
 User-available functions:
 
-| Function | Purpose |
-|----|----|
-| `scholid_types()` | List supported scholarly identifier types |
-| `is_scholid(x, type)` | Test whether values conform to a given identifier type |
-| `normalize_scholid(x, type)` | Normalize identifiers to canonical form |
-| `extract_scholid(text, type)` | Extract identifiers of a given type from free text |
-| `classify_scholid(x)` | Guess the identifier type of each input value |
-| `detect_scholid_type(x)` | Detect identifier types from canonical or wrapped input values |
+| Function                      | Purpose                                                              |
+|-------------------------------|----------------------------------------------------------------------|
+| `scholid_types()`             | List supported scholarly identifier types                            |
+| `is_scholid(x, type)`         | Test whether values conform to a given identifier type               |
+| `normalize_scholid(x, type)`  | Normalize identifiers to canonical form                              |
+| `extract_scholid(text, type)` | Extract identifiers of a given type from free text                   |
+| `locate_scholid(text, types)` | Find identifiers of several types in free text, with their positions |
+| `classify_scholid(x)`         | Guess the identifier type of each input value                        |
+| `detect_scholid_type(x)`      | Detect identifier types from canonical or wrapped input values       |
 
 ## Examples
 
@@ -113,6 +114,17 @@ scholid::extract_scholid(
 
     ## [[1]]
     ## [1] "10.1000/182"
+
+``` r
+# locate identifiers of all types in free text, with their positions
+scholid::locate_scholid(
+  text = "See doi:10.1000/182 and ISBN 978-0-306-40615-7."
+)
+```
+
+    ##   element type                id             match start end
+    ## 1       1  doi       10.1000/182       10.1000/182     9  19
+    ## 2       1 isbn 978-0-306-40615-7 978-0-306-40615-7    30  46
 
 ``` r
 # classify the identifier type of each input value

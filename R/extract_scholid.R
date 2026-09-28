@@ -28,6 +28,8 @@
 #' extract_scholid("See https://doi.org/10.1000/182.", "doi")
 #' extract_scholid("ORCID 0000-0002-1825-0097", "orcid")
 #'
+#' @seealso [locate_scholid()] to find identifiers of several types at once,
+#'   with their positions in the text.
 #' @export
 extract_scholid <- function(
         text,
@@ -74,7 +76,7 @@ extract_scholid <- function(
 #' `"bytes"`, so such text usually gives no rows, as it gives no tokens in
 #' `extract_scholid()`. Where it gives rows, `match` is marked `"bytes"`.
 #'
-#' @param text A vector of text.
+#' @param text A vector of text, or a cache from `.scholid_text_cache()`.
 #' @param type A validated identifier type string.
 #'
 #' @return A data frame with one row per hit, in the order
@@ -98,6 +100,28 @@ extract_scholid <- function(
         text,
         positions = TRUE
     )
+}
+
+
+#' Cache the cleaned forms of a text vector
+#'
+#' @description
+#' Internal helper that lets several extraction calls on the same text
+#' share the work of `.scholid_clean_chars()`. `.scholid_extract_validated()`
+#' accepts the cache in place of `text` and cleans the text once per
+#' combination of `dashes` and `digits`, not once per type.
+#'
+#' @param text A vector of text.
+#'
+#' @return An environment with `text`, the text as a character vector, and
+#'   `work`, a list of cleaned text by folding flags, filled on first use.
+#'
+#' @noRd
+.scholid_text_cache <- function(text) {
+    cache <- new.env(parent = emptyenv())
+    cache$text <- as.character(text)
+    cache$work <- list()
+    cache
 }
 
 
@@ -709,11 +733,13 @@ extract_pmcid <- function(
 #' Match a regular expression in text
 #'
 #' @description
-#' Internal helper that cleans the text with `.scholid_clean_chars()` and
-#' applies a single regular expression pattern with `gregexpr()` and
-#' `perl = TRUE`. `NA` inputs are matched as `""`, so they have no matches.
+#' Internal helper that cleans the text with `.scholid_clean_chars()`, or
+#' takes the cleaned text from `cache` if an earlier call cleaned it with
+#' the same flags, and applies a single regular expression pattern with
+#' `gregexpr()` and `perl = TRUE`. `NA` inputs are matched as `""`, so they
+#' have no matches.
 #'
-#' @param text A character vector of text.
+#' @param cache A cache from `.scholid_text_cache()`.
 #' @param pat A single regular expression pattern.
 #' @param dashes Whether to fold Unicode dashes.
 #' @param digits Whether to fold full-width digits.
@@ -724,17 +750,22 @@ extract_pmcid <- function(
 #'
 #' @noRd
 .extract_with_pattern <- function(
-        text,
+        cache,
         pat,
         dashes = FALSE,
         digits = FALSE
 ) {
-    work <- .scholid_clean_chars(
-        text,
-        dashes = dashes,
-        digits = digits
-    )
-    work[is.na(work)] <- ""
+    key <- paste0("dashes_", dashes, "_digits_", digits)
+    work <- cache$work[[key]]
+    if (is.null(work)) {
+        work <- .scholid_clean_chars(
+            cache$text,
+            dashes = dashes,
+            digits = digits
+        )
+        work[is.na(work)] <- ""
+        cache$work[[key]] <- work
+    }
     m <- gregexpr(pat, work, perl = TRUE)
     list(
         work = work,
@@ -838,7 +869,9 @@ extract_pmcid <- function(
 #' the registry `extract_pat` for a type, then cleans and validates matches.
 #' With `positions = TRUE`, it also locates each identifier in `text`.
 #'
-#' @param text A character vector of text.
+#' @param text A character vector of text, or a cache from
+#'   `.scholid_text_cache()`, which the `extract_<type>()` functions pass
+#'   on unchanged.
 #' @param type A validated identifier type string.
 #' @param clean_fn Function applied to each raw match.
 #' @param validate_fn Vectorized validator returning logical values.
@@ -860,15 +893,15 @@ extract_pmcid <- function(
         digits    = FALSE,
         positions = FALSE
 ) {
-    text <- as.character(text)
-    pat <- .scholid_registry_extract_pat(type)
-    if (!positions) {
-        # Same matches; gregexpr() is faster without the capture group.
-        pat <- sub("(?<id>", "(?:", pat, fixed = TRUE)
+    cache <- text
+    if (!is.environment(cache)) {
+        cache <- .scholid_text_cache(text)
     }
+    pat <- .scholid_registry_extract_pat(type)
+    # Same matches; gregexpr() is faster without the capture group.
     matched <- .extract_with_pattern(
-        text   = text,
-        pat    = pat,
+        cache  = cache,
+        pat    = sub("(?<id>", "(?:", pat, fixed = TRUE),
         dashes = dashes,
         digits = digits
     )
@@ -881,14 +914,15 @@ extract_pmcid <- function(
     if (!positions) {
         return(.extract_split_hits(
             hits = hits,
-            n    = length(text)
+            n    = length(cache$text)
         ))
     }
 
     .extract_located(
-        text     = text,
+        text     = cache$text,
         matched  = matched,
         hits     = hits,
+        pat      = pat,
         clean_fn = clean_fn
     )
 }
@@ -1265,6 +1299,7 @@ extract_pmcid <- function(
 #' @param text A character vector of original text.
 #' @param matched A list as returned by `.extract_with_pattern()`.
 #' @param hits A list as returned by `.extract_filter_validate()`.
+#' @param pat The registry `extract_pat`, with its `id` group.
 #' @param clean_fn The cleaner that produced `hits`.
 #'
 #' @return A data frame as described in `.scholid_locate_type()`.
@@ -1274,11 +1309,13 @@ extract_pmcid <- function(
         text,
         matched,
         hits,
+        pat,
         clean_fn
 ) {
     span <- .extract_spans(
         matched  = matched,
         hits     = hits,
+        pat      = pat,
         clean_fn = clean_fn
     )
     src <- text[hits$element]
@@ -1312,8 +1349,13 @@ extract_pmcid <- function(
 #' `10.1000/182.</a>` and `10.1000/182.</a` into `10.1000/182`, but
 #' `10.1000/182.</` into `10.1000/182.`.
 #'
+#' `matched` comes from `pat` with the `id` group made non-capturing.
+#' `pat` itself is matched again only on the elements that have a match,
+#' in the same unit, so it finds the same matches.
+#'
 #' @param matched A list as returned by `.extract_with_pattern()`.
 #' @param hits A list as returned by `.extract_filter_validate()`.
+#' @param pat The registry `extract_pat`, with its `id` group.
 #' @param clean_fn The cleaner that produced `hits`.
 #'
 #' @return A list with integer vectors `start` and `end`, one value per
@@ -1323,6 +1365,7 @@ extract_pmcid <- function(
 .extract_spans <- function(
         matched,
         hits,
+        pat,
         clean_fn
 ) {
     idx <- hits$index
@@ -1334,8 +1377,18 @@ extract_pmcid <- function(
         ))
     }
 
-    m <- matched$m[lengths(matched$hits) > 0L]
-    use_bytes <- any(unlist(lapply(m, attr, which = "useBytes")))
+    has <- lengths(matched$hits) > 0L
+    use_bytes <- any(unlist(lapply(
+        matched$m[has],
+        attr,
+        which = "useBytes"
+    )))
+    m <- gregexpr(
+        pat,
+        matched$work[has],
+        perl     = TRUE,
+        useBytes = use_bytes
+    )
     raw <- unlist(matched$hits, use.names = FALSE)[idx]
     match_start <- unlist(m, use.names = FALSE)[idx]
     cap_start <- do.call(rbind, lapply(m, attr, which = "capture.start"))

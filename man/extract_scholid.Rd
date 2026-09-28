@@ -38,3 +38,7 @@ extract_scholid("See https://doi.org/10.1000/182.", "doi")
 extract_scholid("ORCID 0000-0002-1825-0097", "orcid")
 
 }
+\seealso{
+\code{\link[=locate_scholid]{locate_scholid()}} to find identifiers of several types at once,
+with their positions in the text.
+}

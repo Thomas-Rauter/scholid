@@ -8,5 +8,6 @@ scholid.Rcheck/
 renv/
 dev/
 docs/
+releases/
 scholid.Rproj
 .scholid.code-workspace

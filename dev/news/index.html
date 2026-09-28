@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">scholid</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Released version">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,15 +35,19 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="development version" id="scholid-development-version">scholid (development version)<a class="anchor" aria-label="anchor" href="#scholid-development-version"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.2.1" id="scholid-021">scholid 0.2.1<a class="anchor" aria-label="anchor" href="#scholid-021"></a></h2>
 <div class="section level3">
-<h3 id="bug-fixes-development-version">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-development-version"></a></h3>
+<h3 id="bug-fixes-0-2-1">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-2-1"></a></h3>
 <ul><li><p>Rejected identifiers containing invisible characters, such as soft hyphens and byte order marks, in <code><a href="../reference/is_scholid.html">is_scholid()</a></code> and <code><a href="../reference/classify_scholid.html">classify_scholid()</a></code>. <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>, <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code>, and <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> now remove those characters before normalizing or matching.</p></li>
 <li><p>Fixed <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> reporting bare 8-digit PMIDs such as <code>29456894</code> as <code>issn</code> when their digits happened to pass the ISSN checksum. Bare compact strings are now detected as ISSN only with a hyphen (<code>2434-561X</code>) or an <code>ISSN</code> label, so a bare <code>2434561X</code> is no longer detected. <code>normalize_scholid(x, "issn")</code> is unchanged.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="internal-improvements-development-version">Internal improvements<a class="anchor" aria-label="anchor" href="#internal-improvements-development-version"></a></h3>
+<h3 id="internal-improvements-0-2-1">Internal improvements<a class="anchor" aria-label="anchor" href="#internal-improvements-0-2-1"></a></h3>
 <ul><li>Sped up <code><a href="../reference/classify_scholid.html">classify_scholid()</a></code>, <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code>, and <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> by checking whole vectors instead of one string at a time.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-2-1">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-2-1"></a></h3>
+<ul><li>Corrected the DOI case guidance in the definitions vignette: DOI names are case-insensitive for ASCII letters, and scholid preserves case when validating and normalizing them.</li>
 </ul></div>
 </div>
     <div class="section level2">

@@ -18,7 +18,10 @@ to test whether already-canonical values are valid identifiers of a
 given type. Both functions apply checksum verification where applicable;
 normalization additionally accepts wrapped input forms and returns
 canonical strings. Invisible characters, such as a soft hyphen or a byte
-order mark, are removed before normalization.
+order mark, are removed before normalization. For DOI case, see
+"Validation in scholid" in the DOI section of the *How Scholarly
+Identifiers Are Defined* vignette
+([`vignette("scholid_definitions", package = "scholid")`](https://thomas-rauter.github.io/scholid/articles/scholid_definitions.md)).
 
 ## Usage
 

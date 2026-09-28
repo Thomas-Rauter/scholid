@@ -1,6 +1,6 @@
 # Changelog
 
-## scholid (development version)
+## scholid 0.2.1
 
 ### Bug fixes
 
@@ -31,6 +31,12 @@
   and
   [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
   by checking whole vectors instead of one string at a time.
+
+### Documentation
+
+- Corrected the DOI case guidance in the definitions vignette: DOI names
+  are case-insensitive for ASCII letters, and scholid preserves case
+  when validating and normalizing them.
 
 ## scholid 0.2.0
 

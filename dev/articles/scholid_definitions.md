@@ -100,7 +100,10 @@ Example:
 - Assigned by the registrant
 - May contain almost any printable character
 - Has no globally fixed grammar
-- Case-sensitive in theory
+- Case-insensitive for ASCII letters. Names that differ only in
+  non-ASCII case may be different identifiers ([DOI
+  Handbook](https://www.doi.org/the-identifier/resources/handbook),
+  “Case Insensitivity of the DOI Name”)
 
 Example:
 
@@ -112,6 +115,13 @@ Example:
 DOI validation is **structural only**. There is no checksum. Registry
 existence is not checked. Wrapped forms (`https://doi.org/…`, `doi:`
 labels) should be normalized before classification.
+
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+and
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+preserve case. DOIs should be compared case-insensitively, for example
+by applying [`tolower()`](https://rdrr.io/r/base/chartr.html) to both
+sides before comparing or deduplicating.
 
 ### Structural Regex
 
@@ -129,7 +139,9 @@ Non-whitespace suffix
 
 **Governing body:** ISNI International Agency  
 **Standard:** ISO 27729  
-**Documentation:** [ISNI](https://isni.org/)
+**Documentation:** [ISNI
+overview](https://en.wikipedia.org/wiki/International_Standard_Name_Identifier);
+official site `isni.org`
 
 ### Structure
 

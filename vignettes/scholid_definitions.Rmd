@@ -139,7 +139,8 @@ This checks:
 
 **Governing body:** ISNI International Agency  
 **Standard:** ISO 27729  
-**Documentation:** [ISNI](https://isni.org/)
+**Documentation:** [ISNI overview](https://en.wikipedia.org/wiki/International_Standard_Name_Identifier);
+official site `isni.org`
 
 ## Structure
 

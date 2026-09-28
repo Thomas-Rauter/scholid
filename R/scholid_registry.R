@@ -12,6 +12,11 @@
 #' during classification and detection. Optional `detect_last = TRUE` marks
 #' fallback types that are deferred during best-effort detection.
 #'
+#' Each `extract_pat` marks the identifier with a named group `(?<id>...)`.
+#' The group leaves out a URL, host, or label in front of the identifier and
+#' keeps a prefix that the canonical form starts with, such as `RRID:`.
+#' `.scholid_locate_type()` reports its position.
+#'
 #' @return A named list. Names are identifier types; values are per-type
 #'   metadata lists.
 #' @noRd
@@ -61,7 +66,7 @@
         doi = list(
             order       = 10L,
             pat         = "^10\\.[0-9]{4,9}/\\S+$",
-            extract_pat = "(?<![[:alnum:]_])(10\\.[0-9]{4,9}/\\S+)"
+            extract_pat = "(?<![[:alnum:]_])(?<id>10\\.[0-9]{4,9}/\\S+)"
         ),
         arxiv = list(
             order = 20L,
@@ -70,7 +75,7 @@
             pat2  = "^[a-z]+(?:-[a-z]+)*(?:\\.[A-Z]{2})?/\\d{7}(v\\d+)?$",
             extract_pat = paste0(
                 "(?<![[:alnum:]_\\./-])",
-                "(",
+                "(?<id>",
                 "\\d{4}\\.\\d{4,5}(v\\d+)?",
                 "|",
                 "[a-z\\-]+/\\d{7}(v\\d+)?",
@@ -84,7 +89,7 @@
             extract_pat = paste0(
                 "(?<![[:alnum:]_/])",
                 "(?:https?://(?:ui\\.)?adsabs\\.harvard\\.edu/abs/)?",
-                "\\d{4}[A-Za-z0-9.]{14}[A-Za-z]",
+                "(?<id>\\d{4}[A-Za-z0-9.]{14}[A-Za-z])",
                 "(?![[:alnum:].])"
             )
         ),
@@ -97,7 +102,7 @@
                 "https?://api\\.openalex\\.org/",
                 "(?:works|authors|sources|institutions|topics|keywords|",
                 "publishers|funders|grants|concepts)/)?",
-                "[WASTIKPFG][0-9]{5,}",
+                "(?<id>[WASTIKPFG][0-9]{5,})",
                 "(?![[:alnum:]_])"
             )
         ),
@@ -115,8 +120,8 @@
                 "(?<![[:alnum:]_])",
                 "(?:https?://(?:archive|browse)\\.softwareheritage\\.org/|",
                 "https?://identifiers\\.org/swh/)?",
-                "swh:1:(?:cnt|dir|rev|rel|snp):[0-9a-fA-F]{40}",
-                "(?:;(?:origin|visit|anchor|path|lines)=[^[:space:]<>\")']+)*",
+                "(?<id>swh:1:(?:cnt|dir|rev|rel|snp):[0-9a-fA-F]{40}",
+                "(?:;(?:origin|visit|anchor|path|lines)=[^[:space:]<>\")']+)*)",
                 "(?![[:alnum:]_:])"
             )
         ),
@@ -126,9 +131,9 @@
             extract_pat = paste0(
                 "(?i)(?<![[:alnum:]_])",
                 "(?:https?://[^[:space:]<>\")']+/)?",
-                "ark:/*",
+                "(?<id>ark:/*",
                 "[0-9]{5}/",
-                "[0-9A-Za-z][0-9A-Za-z._/=-]*",
+                "[0-9A-Za-z][0-9A-Za-z._/=-]*)",
                 "(?![[:alnum:]_:=/])"
             )
         ),
@@ -141,7 +146,7 @@
                 "https?://isni\\.org/isni/|",
                 "urn:isni:|",
                 "https?://viaf\\.org/viaf/sourceID/ISNI%7C)?",
-                "(?:",
+                "(?<id>",
                 "(?:\\d{4}[[:space:]]?){3}\\d{3}[0-9X]",
                 "|",
                 "\\d{15}[0-9X]",
@@ -151,7 +156,7 @@
         ),
         orcid = list(
             order       = 30L,
-            extract_pat = "(\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"
+            extract_pat = "(?<id>\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"
         ),
         ror = list(
             order       = 35L,
@@ -159,7 +164,7 @@
             extract_pat = paste0(
                 "(?<![[:alnum:]_./-])",
                 "(?:https?://ror\\.org/)?",
-                "0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}",
+                "(?<id>0[a-hjkmnp-tv-z0-9]{6}[0-9]{2})",
                 "(?![[:alnum:]_])"
             )
         ),
@@ -170,10 +175,10 @@
             extract_pat = paste0(
                 "(?<![[:alnum:]_./-])",
                 "(?:https?://(?:scicrunch\\.org/resolver/|identifiers\\.org/|n2t\\.net/)?)?",
-                "RRID:[[:space:]]*",
+                "(?<id>RRID:[[:space:]]*",
                 "(?:",
                 paste(rrid_body_patterns, collapse = "|"),
-                ")",
+                "))",
                 "(?![[:alnum:]_])"
             )
         ),
@@ -188,7 +193,7 @@
                 "(?:https?://(?:www\\.)?uniprot\\.org/(?:uniprot|uniprotkb)/|",
                 "https?://identifiers\\.org/uniprot/|",
                 "uniprot:)?",
-                "(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|",
+                "(?<id>[OPQ][0-9][A-Z0-9]{3}[0-9]|",
                 "[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})",
                 "(?![[:alnum:]_\\-])"
             )
@@ -201,7 +206,9 @@
                 "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:nuccore|protein)/|",
                 "https?://identifiers\\.org/refseq/|",
                 "refseq:)?",
+                "(?<id>",
                 refseq_core_pat,
+                ")",
                 "(?![[:alnum:]_\\-])"
             )
         ),
@@ -213,7 +220,9 @@
                 "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/sra/|",
                 "https?://identifiers\\.org/sra/|",
                 "sra:)?",
+                "(?<id>",
                 sra_core_pat,
+                ")",
                 "(?![[:alnum:]_\\-])"
             )
         ),
@@ -225,7 +234,9 @@
                 "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/geo/query/acc\\.cgi\\?acc=|",
                 "https?://identifiers\\.org/geo/|",
                 "geo:)?",
+                "(?<id>",
                 geo_core_pat,
+                ")",
                 "(?![[:alnum:]_\\-])"
             )
         ),
@@ -237,7 +248,9 @@
                 "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/bioproject/(?:\\?term=)?|",
                 "https?://identifiers\\.org/bioproject[:/]|",
                 "bioproject:)?",
+                "(?<id>",
                 bioproject_core_pat,
+                ")",
                 "(?![[:alnum:]_\\-])"
             )
         ),
@@ -249,22 +262,24 @@
                 "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:assembly|datasets/genome)/|",
                 "https?://identifiers\\.org/insdc\\.(?:gca|gcf):|",
                 "assembly:)?",
+                "(?<id>",
                 assembly_core_pat,
+                ")",
                 "(?![[:alnum:]_\\-])"
             )
         ),
         isbn = list(
             order       = 44L,
-            extract_pat = "(?<![[:alnum:]_])([0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
+            extract_pat = "(?<![[:alnum:]_])(?<id>[0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
         ),
         issn = list(
             order       = 50L,
-            extract_pat = "(?<![[:alnum:]_\\-])(\\d{4}-\\d{3}[0-9Xx])(?![[:alnum:]_\\-])"
+            extract_pat = "(?<![[:alnum:]_\\-])(?<id>\\d{4}-\\d{3}[0-9Xx])(?![[:alnum:]_\\-])"
         ),
         pmcid = list(
             order       = 60L,
             pat         = "^PMC\\d+$",
-            extract_pat = "(?<![[:alnum:]_./-])PMC\\d+(?![[:alnum:]_]|[-/.][[:alnum:]_])"
+            extract_pat = "(?<![[:alnum:]_./-])(?<id>PMC\\d+)(?![[:alnum:]_]|[-/.][[:alnum:]_])"
         ),
         pmid = list(
             order       = 90L,
@@ -272,7 +287,7 @@
             pat         = "^\\d+$",
             extract_pat = paste0(
                 "(?<![[:alnum:]_./-]|PMC)",
-                "\\d{4,9}",
+                "(?<id>\\d{4,9})",
                 "(?![[:alnum:]_]|[-/.][[:alnum:]_])"
             )
         )

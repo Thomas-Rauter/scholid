@@ -2162,3 +2162,384 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "positions path returns the tokens extract_scholid returns",
+    {
+        text <- c(
+            scholid_extract_texts,
+            unlist(scholid_type_inputs, use.names = FALSE)
+        )
+        for (t in scholid_types()) {
+            hits <- .scholid_locate_type(
+                text,
+                t
+            )
+            got <- split(
+                hits$id,
+                factor(hits$element, levels = seq_along(text))
+            )
+            names(got) <- NULL
+            testthat::expect_identical(
+                got,
+                extract_scholid(text, t),
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "positions path spans recover the match from the text",
+    {
+        text <- c(
+            scholid_extract_texts,
+            unlist(scholid_type_inputs, use.names = FALSE)
+        )
+        for (t in scholid_types()) {
+            hits <- .scholid_locate_type(
+                text,
+                t
+            )
+            testthat::expect_identical(
+                substr(text[hits$element], hits$start, hits$end),
+                hits$match,
+                info = t
+            )
+            testthat::expect_true(
+                all(hits$start >= 1L & hits$start <= hits$end),
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "positions path returns the documented columns",
+    {
+        cols <- c("element", "id", "match", "start", "end")
+        types <- c("integer", "character", "character", "integer", "integer")
+
+        one <- .scholid_locate_type(
+            c(NA_character_, "", "see 10.1000/182 here"),
+            "doi"
+        )
+        testthat::expect_identical(names(one), cols)
+        testthat::expect_identical(
+            unname(vapply(one, typeof, character(1))),
+            types
+        )
+        testthat::expect_identical(one$element, 3L)
+        testthat::expect_identical(rownames(one), "1")
+
+        for (text in list(
+            character(0),
+            NA_character_,
+            c("", "no identifier here")
+        )) {
+            none <- .scholid_locate_type(
+                text,
+                "doi"
+            )
+            testthat::expect_identical(names(none), cols)
+            testthat::expect_identical(nrow(none), 0L)
+            testthat::expect_identical(
+                unname(vapply(none, typeof, character(1))),
+                types
+            )
+        }
+    }
+)
+
+# Checks the rows .scholid_locate_type() returns for one text element.
+expect_located <- function(
+        text,
+        type,
+        match,
+        start,
+        end,
+        id = match
+) {
+    got <- .scholid_locate_type(
+        text,
+        type
+    )
+    info <- paste(type, encodeString(text))
+    testthat::expect_identical(got$id, id, info = info)
+    testthat::expect_true(all(got$match == match), info = info)
+    testthat::expect_identical(got$start, as.integer(start), info = info)
+    testthat::expect_identical(got$end, as.integer(end), info = info)
+}
+
+testthat::test_that(
+    "positions path leaves out what the cleaner trims",
+    {
+        expect_located("See 10.1000/182.", "doi", "10.1000/182", 5, 15)
+        expect_located("cf. (10.1000/182).", "doi", "10.1000/182", 6, 16)
+        expect_located(
+            "<a href=\"https://doi.org/10.1000/182\">paper</a>",
+            "doi",
+            "10.1000/182",
+            26,
+            36
+        )
+        expect_located(
+            "see 10.1002/(SICI)1097-4571(199205)43:4<284::AID-ASI5>3.0.CO;2-0.",
+            "doi",
+            "10.1002/(SICI)1097-4571(199205)43:4<284::AID-ASI5>3.0.CO;2-0",
+            5,
+            64
+        )
+        expect_located(
+            "see 10.1000/182.</a> now",
+            "doi",
+            "10.1000/182",
+            5,
+            15
+        )
+        expect_located(
+            "ARK (ark:/12148/btv1b8449691v/f29).",
+            "ark",
+            "ark:/12148/btv1b8449691v/f29",
+            6,
+            33
+        )
+        expect_located("PMID: 12345678.", "pmid", "12345678", 7, 14)
+    }
+)
+
+testthat::test_that(
+    "positions path leaves out URLs and labels but keeps canonical prefixes",
+    {
+        expect_located(
+            "ROR https://ror.org/01an7q238.",
+            "ror",
+            "01an7q238",
+            21,
+            29
+        )
+        expect_located(
+            "see https://www.uniprot.org/uniprot/p04637 now",
+            "uniprot",
+            "p04637",
+            37,
+            42,
+            id = "P04637"
+        )
+        expect_located(
+            "ARK ark:13030/654xz321 here",
+            "ark",
+            "ark:13030/654xz321",
+            5,
+            22,
+            id = "ark:/13030/654xz321"
+        )
+        expect_located(
+            "Link https://n2t.net/ark:/13030/654xz321",
+            "ark",
+            "ark:/13030/654xz321",
+            22,
+            40
+        )
+        expect_located(
+            paste0(
+                "Archived at https://archive.softwareheritage.org/",
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2."
+            ),
+            "swhid",
+            "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            50,
+            99
+        )
+        expect_located(
+            "Antibody RRID: AB_262044.",
+            "rrid",
+            "RRID: AB_262044",
+            10,
+            24,
+            id = "RRID:AB_262044"
+        )
+        expect_located(
+            "Tool https://scicrunch.org/resolver/RRID:SCR_007358",
+            "rrid",
+            "RRID:SCR_007358",
+            37,
+            51
+        )
+        expect_located(
+            "ISNI 0000 0001 2146 438X next",
+            "isni",
+            "0000 0001 2146 438X",
+            6,
+            24,
+            id = "000000012146438X"
+        )
+        expect_located(
+            "Code 978 0 306 40615 7.",
+            "isbn",
+            "978 0 306 40615 7",
+            6,
+            22
+        )
+    }
+)
+
+testthat::test_that(
+    "positions path counts invisible and look-alike characters",
+    {
+        expect_located(
+            "\u200Bsee \u200BPMC123\u200B4567 here",
+            "pmcid",
+            "PMC123\u200B4567",
+            7,
+            17,
+            id = "PMC1234567"
+        )
+        expect_located(
+            "PMC1234567\u00AD.",
+            "pmcid",
+            "PMC1234567",
+            1,
+            10
+        )
+        expect_located(
+            "see 10.1000/\u200B182).",
+            "doi",
+            "10.1000/\u200B182",
+            5,
+            16,
+            id = "10.1000/182"
+        )
+        expect_located(
+            "ORCID 0000\u20130002\u20131825\u20130097.",
+            "orcid",
+            "0000\u20130002\u20131825\u20130097",
+            7,
+            25,
+            id = "0000-0002-1825-0097"
+        )
+        expect_located(
+            paste0("PMID: ", scholid_fullwidth("12345678"), "."),
+            "pmid",
+            scholid_fullwidth("12345678"),
+            7,
+            14,
+            id = "12345678"
+        )
+        expect_located(
+            "ISNI 0000\u00A00001\u00A02146\u00A0438X here",
+            "isni",
+            "0000\u00A00001\u00A02146\u00A0438X",
+            6,
+            24,
+            id = "000000012146438X"
+        )
+    }
+)
+
+testthat::test_that(
+    "positions path counts characters, not bytes",
+    {
+        expect_located(
+            "caf\u00E9 \u4E2D\u6587 10.1000/182.",
+            "doi",
+            "10.1000/182",
+            9,
+            19
+        )
+
+        text <- "caf\xe9 PMC123\xad4567 here"
+        Encoding(text) <- "latin1"
+        expect_located(
+            text,
+            "pmcid",
+            "PMC123\u00AD4567",
+            6,
+            16,
+            id = "PMC1234567"
+        )
+    }
+)
+
+testthat::test_that(
+    "positions path returns every hit in an element",
+    {
+        expect_located(
+            "Two IDs: 2101.12345 and hep-th/9901001v2.",
+            "arxiv",
+            c("2101.12345", "hep-th/9901001v2"),
+            c(10, 25),
+            c(19, 40)
+        )
+        expect_located(
+            "10.1000/182 and 10.1000/182.",
+            "doi",
+            c("10.1000/182", "10.1000/182"),
+            c(1, 17),
+            c(11, 27)
+        )
+    }
+)
+
+testthat::test_that(
+    "positions path keeps working when one text is not valid UTF-8",
+    {
+        bad <- "\xff see 10.1000/181"
+        Encoding(bad) <- "UTF-8"
+        text <- c(
+            "caf\u00E9 see 10.1000/182",
+            bad,
+            "see 10.1000/\u200B184 here"
+        )
+
+        # As in extract_scholid(), the regex engine may warn about the
+        # invalid element; its rows must still agree with extraction.
+        hits <- suppressWarnings(.scholid_locate_type(
+            text,
+            "doi"
+        ))
+        got <- split(
+            hits$id,
+            factor(hits$element, levels = seq_along(text))
+        )
+        names(got) <- NULL
+        testthat::expect_identical(
+            got,
+            suppressWarnings(extract_scholid(text, "doi"))
+        )
+
+        valid <- hits[hits$element != 2L, ]
+        testthat::expect_identical(valid$element, c(1L, 3L))
+        testthat::expect_identical(valid$start, c(10L, 5L))
+        testthat::expect_identical(valid$end, c(20L, 16L))
+        testthat::expect_identical(
+            substr(text[valid$element], valid$start, valid$end),
+            valid$match
+        )
+    }
+)
+
+testthat::test_that(
+    "positions path counts bytes only in text marked as bytes",
+    {
+        raw_text <- "\xc3\xa9 see 10.1000/186"
+        Encoding(raw_text) <- "bytes"
+        text <- c(
+            "caf\u00E9 see 10.1000/182",
+            raw_text
+        )
+
+        hits <- .scholid_locate_type(
+            text,
+            "doi"
+        )
+
+        testthat::expect_identical(hits$id, c("10.1000/182", "10.1000/186"))
+        testthat::expect_identical(hits$start, c(10L, 8L))
+        testthat::expect_identical(hits$end, c(20L, 18L))
+        testthat::expect_identical(
+            substr(text[hits$element], hits$start, hits$end),
+            hits$match
+        )
+    }
+)

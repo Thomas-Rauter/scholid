@@ -113,3 +113,20 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "registry extract patterns mark the identifier with an id group",
+    {
+        for (type in scholid_types()) {
+            m <- regexpr(
+                .scholid_registry_extract_pat(type),
+                "",
+                perl = TRUE
+            )
+            testthat::expect_true(
+                "id" %in% attr(m, "capture.names"),
+                info = type
+            )
+        }
+    }
+)

@@ -48,6 +48,59 @@ extract_scholid <- function(
 
 
 # Level 1 functions (functions called by exported functions) definitions -------
+
+
+#' Locate identifiers of one type in text
+#'
+#' @description
+#' Internal helper that returns every identifier `extract_scholid()` finds
+#' for `type`, one row per hit, with its position in `text`. It calls
+#' `extract_<type>(text, positions = TRUE)`, the code path of
+#' `extract_scholid()`, so `id` split by `element` gives the same tokens.
+#'
+#' The span is the identifier as written. It starts at the `id` group of
+#' the registry `extract_pat`, so it leaves out a URL, host, or label in
+#' front of the identifier but keeps a prefix of the canonical form, such
+#' as `RRID:`, `ark:`, or `swh:1:`. It leaves out the trailing characters
+#' that the type's cleaner trims. It can contain characters that `id` does
+#' not: spaces between digit groups, look-alike dashes and digits,
+#' invisible characters, and letters in another case.
+#'
+#' Positions refer to `as.character(text)`, including the invisible
+#' characters that extraction removes, and count characters, as `substr()`
+#' does. In text marked `"bytes"`, and in text that is not valid in its
+#' encoding, they count bytes. R's regular expression engine skips text
+#' that is not valid UTF-8 with a warning unless another element is marked
+#' `"bytes"`, so such text usually gives no rows, as it gives no tokens in
+#' `extract_scholid()`. Where it gives rows, `match` is marked `"bytes"`.
+#'
+#' @param text A vector of text.
+#' @param type A validated identifier type string.
+#'
+#' @return A data frame with one row per hit, in the order
+#'   `extract_scholid()` returns the tokens, and the columns `element`
+#'   (integer index into `text`), `id` (the extracted token), `match` (the
+#'   identifier as written), and `start` and `end` (integer positions of
+#'   `match` in `text[element]`, 1-based, `end` inclusive), so that
+#'   `substr(text[element], start, end) == match`. `NA` and empty elements
+#'   give no rows.
+#'
+#' @noRd
+.scholid_locate_type <- function(
+        text,
+        type
+) {
+    fun <- .scholid_resolve_impl(
+        type   = type,
+        prefix = "extract_"
+    )
+    fun(
+        text,
+        positions = TRUE
+    )
+}
+
+
 ## extract_<id>() function definitions -----------------------------------------
 
 
@@ -61,16 +114,22 @@ extract_scholid <- function(
 #' candidates that satisfy DOI structure rules are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted DOIs.
 #'
 #' @noRd
-extract_doi <- function(text) {
+extract_doi <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "doi",
         clean_fn    = .clean_extracted_doi,
-        validate_fn = is_doi
+        validate_fn = is_doi,
+        positions   = positions
     )
 }
 
@@ -85,16 +144,22 @@ extract_doi <- function(text) {
 #' returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted ARKs.
 #'
 #' @noRd
-extract_ark <- function(text) {
+extract_ark <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "ark",
         clean_fn    = .clean_extracted_ark,
-        validate_fn = is_ark
+        validate_fn = is_ark,
+        positions   = positions
     )
 }
 
@@ -110,18 +175,24 @@ extract_ark <- function(text) {
 #' are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted ISNIs.
 #'
 #' @noRd
-extract_isni <- function(text) {
+extract_isni <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "isni",
         clean_fn    = .clean_extracted_isni,
         validate_fn = is_isni,
         dashes      = TRUE,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -135,18 +206,24 @@ extract_isni <- function(text) {
 #' where necessary, and only checksum-valid ORCID iDs are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted ORCID iDs.
 #'
 #' @noRd
-extract_orcid <- function(text) {
+extract_orcid <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "orcid",
         clean_fn    = .clean_extracted_trailing_punct,
         validate_fn = is_orcid,
         dashes      = TRUE,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -161,17 +238,23 @@ extract_orcid <- function(text) {
 #' accessions are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted UniProt accessions.
 #'
 #' @noRd
-extract_uniprot <- function(text) {
+extract_uniprot <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "uniprot",
         clean_fn    = .clean_extracted_uniprot,
         validate_fn = is_uniprot,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -186,17 +269,23 @@ extract_uniprot <- function(text) {
 #' accessions are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted RefSeq accessions.
 #'
 #' @noRd
-extract_refseq <- function(text) {
+extract_refseq <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "refseq",
         clean_fn    = .clean_extracted_refseq,
         validate_fn = is_refseq,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -211,17 +300,23 @@ extract_refseq <- function(text) {
 #' are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted SRA accessions.
 #'
 #' @noRd
-extract_sra <- function(text) {
+extract_sra <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "sra",
         clean_fn    = .clean_extracted_sra,
         validate_fn = is_sra,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -236,17 +331,23 @@ extract_sra <- function(text) {
 #' are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted GEO accessions.
 #'
 #' @noRd
-extract_geo <- function(text) {
+extract_geo <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "geo",
         clean_fn    = .clean_extracted_geo,
         validate_fn = is_geo,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -261,17 +362,23 @@ extract_geo <- function(text) {
 #' accessions are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted BioProject accessions.
 #'
 #' @noRd
-extract_bioproject <- function(text) {
+extract_bioproject <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "bioproject",
         clean_fn    = .clean_extracted_bioproject,
         validate_fn = is_bioproject,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -286,17 +393,23 @@ extract_bioproject <- function(text) {
 #' accessions are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted assembly accessions.
 #'
 #' @noRd
-extract_assembly <- function(text) {
+extract_assembly <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "assembly",
         clean_fn    = .clean_extracted_assembly,
         validate_fn = is_assembly,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -311,17 +424,23 @@ extract_assembly <- function(text) {
 #' returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted ROR iDs.
 #'
 #' @noRd
-extract_ror <- function(text) {
+extract_ror <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "ror",
         clean_fn    = .clean_extracted_ror,
         validate_fn = is_ror,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -336,16 +455,22 @@ extract_ror <- function(text) {
 #' known authorities are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted RRIDs.
 #'
 #' @noRd
-extract_rrid <- function(text) {
+extract_rrid <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "rrid",
         clean_fn    = .clean_extracted_rrid,
-        validate_fn = is_rrid
+        validate_fn = is_rrid,
+        positions   = positions
     )
 }
 
@@ -356,18 +481,24 @@ extract_rrid <- function(text) {
 #' Extracts ISBN-10 and ISBN-13 identifiers from free text.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted ISBNs.
 #'
 #' @noRd
-extract_isbn <- function(text) {
+extract_isbn <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "isbn",
         clean_fn    = .clean_extracted_trailing_punct,
         validate_fn = is_isbn,
         dashes      = TRUE,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -378,17 +509,23 @@ extract_isbn <- function(text) {
 #' Extracts ISSN identifiers from free text.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted ISSNs.
 #'
 #' @noRd
-extract_issn <- function(text) {
+extract_issn <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "issn",
         clean_fn    = .clean_extracted_trailing_punct,
         validate_fn = is_issn,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -399,17 +536,23 @@ extract_issn <- function(text) {
 #' Extracts arXiv identifiers in both modern and legacy formats.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted arXiv identifiers.
 #'
 #' @noRd
-extract_arxiv <- function(text) {
+extract_arxiv <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "arxiv",
         clean_fn    = .clean_extracted_trailing_punct,
         validate_fn = is_arxiv,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -424,17 +567,23 @@ extract_arxiv <- function(text) {
 #' bibcodes are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted bibcodes.
 #'
 #' @noRd
-extract_bibcode <- function(text) {
+extract_bibcode <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "bibcode",
         clean_fn    = .clean_extracted_bibcode,
         validate_fn = is_bibcode,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -449,17 +598,23 @@ extract_bibcode <- function(text) {
 #' identifiers are returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted OpenAlex IDs.
 #'
 #' @noRd
-extract_openalex <- function(text) {
+extract_openalex <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "openalex",
         clean_fn    = .clean_extracted_openalex,
         validate_fn = is_openalex,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -474,16 +629,22 @@ extract_openalex <- function(text) {
 #' returned.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted SWHIDs.
 #'
 #' @noRd
-extract_swhid <- function(text) {
+extract_swhid <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "swhid",
         clean_fn    = .clean_extracted_swhid,
-        validate_fn = is_swhid
+        validate_fn = is_swhid,
+        positions   = positions
     )
 }
 
@@ -494,17 +655,23 @@ extract_swhid <- function(text) {
 #' Extracts PubMed identifiers (PMIDs) from free text.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted PMIDs.
 #'
 #' @noRd
-extract_pmid <- function(text) {
+extract_pmid <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "pmid",
         clean_fn    = .clean_extracted_trailing_punct,
         validate_fn = is_pmid,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -515,17 +682,23 @@ extract_pmid <- function(text) {
 #' Extracts PubMed Central identifiers (PMCIDs) from free text.
 #'
 #' @param text A character vector of text.
+#' @param positions If `TRUE`, return a data frame of hits with their
+#'   positions instead; see `.scholid_locate_type()`.
 #'
 #' @return A list of character vectors of extracted PMCIDs.
 #'
 #' @noRd
-extract_pmcid <- function(text) {
+extract_pmcid <- function(
+        text,
+        positions = FALSE
+) {
     .scholid_extract_validated(
         text        = text,
         type        = "pmcid",
         clean_fn    = .clean_extracted_trailing_punct,
         validate_fn = is_pmcid,
-        digits      = TRUE
+        digits      = TRUE,
+        positions   = positions
     )
 }
 
@@ -533,24 +706,21 @@ extract_pmcid <- function(text) {
 # Level 2 functions (functions called by level 1 functions) definitions --------
 
 
-#' Extract matches from text using a regular expression
+#' Match a regular expression in text
 #'
 #' @description
-#' Internal helper that applies a single regular expression pattern to a
-#' character vector and returns all matches.
-#'
-#' The result is a list with one element per input element. Each element is a
-#' character vector of matches (possibly length 0). `NA` inputs yield an empty
-#' character vector. The text is cleaned with `.scholid_clean_chars()`
-#' before matching. Matching is performed using `gregexpr()` with
-#' `perl = TRUE`.
+#' Internal helper that cleans the text with `.scholid_clean_chars()` and
+#' applies a single regular expression pattern with `gregexpr()` and
+#' `perl = TRUE`. `NA` inputs are matched as `""`, so they have no matches.
 #'
 #' @param text A character vector of text.
 #' @param pat A single regular expression pattern.
 #' @param dashes Whether to fold Unicode dashes.
 #' @param digits Whether to fold full-width digits.
 #'
-#' @return A list of character vectors of extracted matches.
+#' @return A list with `work`, the cleaned text; `m`, the `gregexpr()`
+#'   result on it; and `hits`, a list with one character vector of matches
+#'   per input element.
 #'
 #' @noRd
 .extract_with_pattern <- function(
@@ -559,24 +729,18 @@ extract_pmcid <- function(text) {
         dashes = FALSE,
         digits = FALSE
 ) {
-    text <- .scholid_clean_chars(
-        as.character(text),
+    work <- .scholid_clean_chars(
+        text,
         dashes = dashes,
         digits = digits
     )
-    n <- length(text)
-    if (!n) {
-        return(list())
-    }
-
-    na <- is.na(text)
-    work <- text
-    work[na] <- ""
-    hits <- regmatches(work, gregexpr(pat, work, perl = TRUE))
-    if (any(na)) {
-        hits[na] <- rep(list(character(0)), sum(na))
-    }
-    hits
+    work[is.na(work)] <- ""
+    m <- gregexpr(pat, work, perl = TRUE)
+    list(
+        work = work,
+        m    = m,
+        hits = regmatches(work, m)
+    )
 }
 
 
@@ -585,15 +749,16 @@ extract_pmcid <- function(text) {
 #' @description
 #' Internal helper that post-processes regex extraction results. All matches
 #' are cleaned with `clean_fn`, then filtered to non-empty values and
-#' validated with `validate_fn`, and split back into one vector per input
-#' element.
+#' validated with `validate_fn`.
 #'
 #' @param out A list of character vectors of raw regex matches.
 #' @param clean_fn Vectorized cleaner. Must return a character vector the
 #'   same length as its input. Missing or empty inputs become `""`.
 #' @param validate_fn Vectorized validator returning logical values.
 #'
-#' @return A list of character vectors of validated identifiers.
+#' @return A list with one value per validated identifier, in input order,
+#'   in each of `element`, the index into `out`; `index`, the position
+#'   among all matches, `unlist(out)`; and `id`, the cleaned identifier.
 #'
 #' @noRd
 .extract_filter_validate <- function(
@@ -601,14 +766,13 @@ extract_pmcid <- function(text) {
         clean_fn,
         validate_fn
 ) {
-    n <- length(out)
-    if (!n) {
-        return(list())
-    }
-
     lens <- lengths(out)
     if (!any(lens)) {
-        return(rep(list(character(0)), n))
+        return(list(
+            element = integer(),
+            index   = integer(),
+            id      = character()
+        ))
     }
 
     hits <- unlist(out, use.names = FALSE)
@@ -620,10 +784,33 @@ extract_pmcid <- function(text) {
         keep[keep] <- ok
     }
 
-    group <- rep.int(seq_len(n), lens)[keep]
+    list(
+        element = rep.int(seq_along(out), lens)[keep],
+        index   = which(keep),
+        id      = cleaned[keep]
+    )
+}
+
+
+#' Split validated identifiers by input element
+#'
+#' @param hits A list as returned by `.extract_filter_validate()`.
+#' @param n The number of input elements.
+#'
+#' @return A list of `n` character vectors of validated identifiers.
+#'
+#' @noRd
+.extract_split_hits <- function(
+        hits,
+        n
+) {
+    if (!length(hits$id)) {
+        return(rep(list(character(0)), n))
+    }
+
     res <- split(
-        cleaned[keep],
-        factor(group, levels = seq_len(n))
+        hits$id,
+        factor(hits$element, levels = seq_len(n))
     )
     names(res) <- NULL
     res
@@ -649,6 +836,7 @@ extract_pmcid <- function(text) {
 #' @description
 #' Internal helper that extracts identifier candidates from free text using
 #' the registry `extract_pat` for a type, then cleans and validates matches.
+#' With `positions = TRUE`, it also locates each identifier in `text`.
 #'
 #' @param text A character vector of text.
 #' @param type A validated identifier type string.
@@ -656,8 +844,11 @@ extract_pmcid <- function(text) {
 #' @param validate_fn Vectorized validator returning logical values.
 #' @param dashes Whether to fold Unicode dashes in `text`.
 #' @param digits Whether to fold full-width digits in `text`.
+#' @param positions Whether to return a data frame of hits with their
+#'   positions, as described in `.scholid_locate_type()`.
 #'
-#' @return A list of character vectors of validated identifiers.
+#' @return A list of character vectors of validated identifiers, or with
+#'   `positions = TRUE`, a data frame.
 #'
 #' @noRd
 .scholid_extract_validated <- function(
@@ -665,20 +856,40 @@ extract_pmcid <- function(text) {
         type,
         clean_fn,
         validate_fn,
-        dashes = FALSE,
-        digits = FALSE
+        dashes    = FALSE,
+        digits    = FALSE,
+        positions = FALSE
 ) {
-    out <- .extract_with_pattern(
+    text <- as.character(text)
+    pat <- .scholid_registry_extract_pat(type)
+    if (!positions) {
+        # Same matches; gregexpr() is faster without the capture group.
+        pat <- sub("(?<id>", "(?:", pat, fixed = TRUE)
+    }
+    matched <- .extract_with_pattern(
         text   = text,
-        pat    = .scholid_registry_extract_pat(type),
+        pat    = pat,
         dashes = dashes,
         digits = digits
     )
-
-    .extract_filter_validate(
-        out         = out,
+    hits <- .extract_filter_validate(
+        out         = matched$hits,
         clean_fn    = clean_fn,
         validate_fn = validate_fn
+    )
+
+    if (!positions) {
+        return(.extract_split_hits(
+            hits = hits,
+            n    = length(text)
+        ))
+    }
+
+    .extract_located(
+        text     = text,
+        matched  = matched,
+        hits     = hits,
+        clean_fn = clean_fn
     )
 }
 
@@ -1042,6 +1253,211 @@ extract_pmcid <- function(text) {
 
 
 # Level 3 functions (functions called by level 2 functions) definitions --------
+
+
+#' Build the data frame of located identifiers
+#'
+#' @description
+#' Internal helper for `.scholid_extract_validated(positions = TRUE)`. It
+#' finds each span in the cleaned text with `.extract_spans()`, maps it back
+#' to `text` with `.extract_map_positions()`, and reads `match` from `text`.
+#'
+#' @param text A character vector of original text.
+#' @param matched A list as returned by `.extract_with_pattern()`.
+#' @param hits A list as returned by `.extract_filter_validate()`.
+#' @param clean_fn The cleaner that produced `hits`.
+#'
+#' @return A data frame as described in `.scholid_locate_type()`.
+#'
+#' @noRd
+.extract_located <- function(
+        text,
+        matched,
+        hits,
+        clean_fn
+) {
+    span <- .extract_spans(
+        matched  = matched,
+        hits     = hits,
+        clean_fn = clean_fn
+    )
+    src <- text[hits$element]
+    pos <- .extract_map_positions(
+        orig      = src,
+        work      = matched$work[hits$element],
+        start     = span$start,
+        end       = span$end,
+        use_bytes = span$use_bytes
+    )
+    Encoding(src[pos$bytes]) <- "bytes"
+
+    data.frame(
+        element          = hits$element,
+        id               = hits$id,
+        match            = substr(src, pos$start, pos$end),
+        start            = pos$start,
+        end              = pos$end,
+        stringsAsFactors = FALSE
+    )
+}
+
+
+#' Find the span of each validated identifier in the cleaned text
+#'
+#' @description
+#' A span starts at the `id` group of the match. It ends where the shortest
+#' prefix of the match that still cleans to the same identifier ends, so it
+#' leaves out the trailing characters that `clean_fn` trims. Trimming one
+#' character at a time from the end can stop too early: `clean_fn` turns
+#' `10.1000/182.</a>` and `10.1000/182.</a` into `10.1000/182`, but
+#' `10.1000/182.</` into `10.1000/182.`.
+#'
+#' @param matched A list as returned by `.extract_with_pattern()`.
+#' @param hits A list as returned by `.extract_filter_validate()`.
+#' @param clean_fn The cleaner that produced `hits`.
+#'
+#' @return A list with integer vectors `start` and `end`, one value per
+#'   hit, and `use_bytes`, whether `gregexpr()` counted them in bytes.
+#'
+#' @noRd
+.extract_spans <- function(
+        matched,
+        hits,
+        clean_fn
+) {
+    idx <- hits$index
+    if (!length(idx)) {
+        return(list(
+            start     = integer(),
+            end       = integer(),
+            use_bytes = FALSE
+        ))
+    }
+
+    m <- matched$m[lengths(matched$hits) > 0L]
+    use_bytes <- any(unlist(lapply(m, attr, which = "useBytes")))
+    raw <- unlist(matched$hits, use.names = FALSE)[idx]
+    match_start <- unlist(m, use.names = FALSE)[idx]
+    cap_start <- do.call(rbind, lapply(m, attr, which = "capture.start"))
+    cap_length <- do.call(rbind, lapply(m, attr, which = "capture.length"))
+    id_start <- unname(cap_start[idx, "id"])
+
+    # Lengths of the prefixes of raw that end at the start and at the end
+    # of the id group. The shortest prefix that cleans to id lies between.
+    # Cleaners remove characters or change their case, and add at most one
+    # (ark: becomes ark:/), so it is at least first + nchar(id) - 2 long.
+    first <- id_start - match_start + 1L
+    full <- first + unname(cap_length[idx, "id"]) - 1L
+    n_id <- nchar(hits$id, type = if (use_bytes) "bytes" else "chars")
+    len <- pmin(pmax(first, first + n_id - 2L), full)
+    todo <- which(len < full)
+    while (length(todo)) {
+        same <- clean_fn(substr(raw[todo], 1L, len[todo])) == hits$id[todo]
+        todo <- todo[is.na(same) | !same]
+        len[todo] <- len[todo] + 1L
+        todo <- todo[len[todo] < full[todo]]
+    }
+
+    list(
+        start     = id_start,
+        end       = match_start + len - 1L,
+        use_bytes = use_bytes
+    )
+}
+
+
+#' Map positions in cleaned text back to the original text
+#'
+#' @description
+#' `.scholid_clean_chars()` deletes invisible characters and folds
+#' look-alikes one character for one, so only a deleted character shifts
+#' the positions that follow it. When `gregexpr()` counted bytes, each
+#' multibyte character shifts them too. The result counts characters of
+#' `orig`, as `substr()` does, or bytes where `orig` is marked `"bytes"` or
+#' is not valid in its encoding. Only non-ASCII values that had a character
+#' deleted, or were counted in bytes, are mapped, one at a time.
+#'
+#' @param orig A character vector of original text, one value per hit.
+#' @param work The cleaned text, one value per hit.
+#' @param start,end Integer positions of each hit in `work`.
+#' @param use_bytes Whether `start` and `end` count bytes.
+#'
+#' @return A list with integer vectors `start` and `end`, and a logical
+#'   vector `bytes`, whether the positions of each hit count bytes.
+#'
+#' @noRd
+.extract_map_positions <- function(
+        orig,
+        work,
+        start,
+        end,
+        use_bytes
+) {
+    bytes <- rep(FALSE, length(orig))
+    wide <- grepl(
+        "[^\\x01-\\x7F]",
+        orig,
+        perl     = TRUE,
+        useBytes = TRUE
+    )
+    if (!any(wide)) {
+        return(list(
+            start = start,
+            end   = end,
+            bytes = bytes
+        ))
+    }
+
+    bytes[wide] <- is.na(nchar(orig[wide], allowNA = TRUE))
+    remap <- wide
+    if (!use_bytes) {
+        remap[wide] <- .scholid_has_chars(
+            orig[wide],
+            .scholid_invisible_chars()
+        )
+    }
+
+    invisible <- utf8ToInt(paste(.scholid_invisible_chars(), collapse = ""))
+    for (i in which(remap)) {
+        o <- utf8ToInt(enc2utf8(orig[[i]]))
+        w <- utf8ToInt(enc2utf8(work[[i]]))
+        if (anyNA(o) || anyNA(w)) {
+            next
+        }
+
+        at <- c(start[[i]], end[[i]])
+        if (use_bytes) {
+            at <- rep.int(seq_along(w), .utf8_nbytes(w))[at]
+        }
+        # Character j of work is character kept[j] of orig.
+        kept <- which(!o %in% invisible)
+        at <- kept[at]
+        if (bytes[[i]]) {
+            last <- cumsum(.utf8_nbytes(o))
+            at <- c(c(0L, last)[at[[1L]]] + 1L, last[at[[2L]]])
+        }
+        start[[i]] <- at[[1L]]
+        end[[i]] <- at[[2L]]
+    }
+
+    list(
+        start = start,
+        end   = end,
+        bytes = bytes
+    )
+}
+
+
+#' Number of UTF-8 bytes of each code point
+#'
+#' @param x An integer vector of Unicode code points.
+#'
+#' @return An integer vector the same length as `x`.
+#'
+#' @noRd
+.utf8_nbytes <- function(x) {
+    1L + (x >= 128L) + (x >= 2048L) + (x >= 65536L)
+}
 
 
 #' Strip obvious markup tails from an extracted DOI candidate

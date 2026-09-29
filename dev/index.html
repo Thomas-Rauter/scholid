@@ -11,8 +11,8 @@
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Scholarly and Academic Identifier Utilities">
-<meta name="description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings, and locates them in free text. Provides lightweight, dependency-free helpers for identifier types including DOIs, ORCID iDs, ISBNs, ISSNs, arXiv and PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK, SWHID, and selected life-science accessions (UniProt, RefSeq, SRA, GEO, BioProject, and genome assemblies). Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. Use scholid_types() for the authoritative type list. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
-<meta property="og:description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings, and locates them in free text. Provides lightweight, dependency-free helpers for identifier types including DOIs, ORCID iDs, ISBNs, ISSNs, arXiv and PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK, SWHID, and selected life-science accessions (UniProt, RefSeq, SRA, GEO, BioProject, and genome assemblies). Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. Use scholid_types() for the authoritative type list. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
+<meta name="description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings, locates them in free text, gives keys for comparing and deduplicating them, and writes them as resolver URLs, CURIEs, or arXiv DOIs. Provides lightweight, dependency-free helpers for identifier types including DOIs, ORCID iDs, ISBNs, ISSNs, arXiv and PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK, SWHID, and selected life-science accessions (UniProt, RefSeq, SRA, GEO, BioProject, and genome assemblies). Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. Use scholid_types() for the authoritative type list. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
+<meta property="og:description" content="Detects, normalizes, classifies, and extracts scholarly identifier strings, locates them in free text, gives keys for comparing and deduplicating them, and writes them as resolver URLs, CURIEs, or arXiv DOIs. Provides lightweight, dependency-free helpers for identifier types including DOIs, ORCID iDs, ISBNs, ISSNs, arXiv and PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK, SWHID, and selected life-science accessions (UniProt, RefSeq, SRA, GEO, BioProject, and genome assemblies). Functions are vectorized, predictable, and suitable as low-level building blocks for other R packages and data workflows. Use scholid_types() for the authoritative type list. For online lookup, conversion, metadata retrieval, and linked identifier discovery, see scholidonline.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -116,6 +116,14 @@
 <td>Normalize identifiers to canonical form</td>
 </tr>
 <tr>
+<td><code>scholid_key(x, type)</code></td>
+<td>Give keys for comparing and deduplicating identifiers</td>
+</tr>
+<tr>
+<td><code>format_scholid(x, type, as)</code></td>
+<td>Write identifiers as resolver URLs, CURIEs, or arXiv DOIs</td>
+</tr>
+<tr>
 <td><code>extract_scholid(text, type)</code></td>
 <td>Extract identifiers of a given type from free text</td>
 </tr>
@@ -159,22 +167,43 @@
 <span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb7"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="do">## [1] "10.1000/182"</span></span></code></pre></div>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># give keys that match an ISBN-10 and its ISBN-13</span></span>
+<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/scholid_key.html">scholid_key</a></span><span class="op">(</span></span>
+<span>  x    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"0306406152"</span>, <span class="st">"978-0-306-40615-7"</span><span class="op">)</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"isbn"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="do">## [1] "9780306406157" "9780306406157"</span></span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># write identifiers as resolver URLs or CURIEs</span></span>
+<span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/format_scholid.html">format_scholid</a></span><span class="op">(</span></span>
+<span>  x    <span class="op">=</span> <span class="st">"PMID: 12345678"</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"pmid"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="do">## [1] "https://pubmed.ncbi.nlm.nih.gov/12345678/"</span></span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/format_scholid.html">format_scholid</a></span><span class="op">(</span></span>
+<span>  x    <span class="op">=</span> <span class="st">"0000-0002-1825-0097"</span>,</span>
+<span>  type <span class="op">=</span> <span class="st">"orcid"</span>,</span>
+<span>  as   <span class="op">=</span> <span class="st">"curie"</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="do">## [1] "orcid:0000-0002-1825-0097"</span></span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># extract identifiers of a given type from free text</span></span>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/extract_scholid.html">extract_scholid</a></span><span class="op">(</span></span>
 <span>  text <span class="op">=</span> <span class="st">"See https://doi.org/10.1000/182 for details."</span>,</span>
 <span>  type <span class="op">=</span> <span class="st">"doi"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb9"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="do">## [[1]]</span></span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="do">## [1] "10.1000/182"</span></span></code></pre></div>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="do">## [[1]]</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="do">## [1] "10.1000/182"</span></span></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># locate identifiers of all types in free text, with their positions</span></span>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/locate_scholid.html">locate_scholid</a></span><span class="op">(</span></span>
 <span>  text <span class="op">=</span> <span class="st">"See doi:10.1000/182 and ISBN 978-0-306-40615-7."</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb11"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="do">##   element type                id             match start end</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="do">## 1       1  doi       10.1000/182       10.1000/182     9  19</span></span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="do">## 2       1 isbn 978-0-306-40615-7 978-0-306-40615-7    30  46</span></span></code></pre></div>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a><span class="do">##   element type                id             match start end</span></span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="do">## 1       1  doi       10.1000/182       10.1000/182     9  19</span></span>
+<span id="cb17-3"><a href="#cb17-3" tabindex="-1"></a><span class="do">## 2       1 isbn 978-0-306-40615-7 978-0-306-40615-7    30  46</span></span></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># classify the identifier type of each input value</span></span>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/classify_scholid.html">classify_scholid</a></span><span class="op">(</span></span>
 <span>  x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -183,8 +212,8 @@
 <span>    <span class="st">"not an id"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb13"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="do">## [1] "doi"   "orcid" NA</span></span></code></pre></div>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="do">## [1] "doi"   "orcid" NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># detect identifier types from canonical or wrapped input values</span></span>
 <span><span class="fu">scholid</span><span class="fu">::</span><span class="fu"><a href="reference/detect_scholid_type.html">detect_scholid_type</a></span><span class="op">(</span></span>
 <span>  x <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
@@ -194,7 +223,7 @@
 <span>    <span class="st">"not an id"</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb15"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="do">## [1] "doi"   "orcid" "arxiv" NA</span></span></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode R"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="do">## [1] "doi"   "orcid" "arxiv" NA</span></span></code></pre></div>
 <p>For more detailed usage patterns check out the <strong>Get started</strong> vignette.</p>
 </div>
 <div class="section level2">

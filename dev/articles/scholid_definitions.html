@@ -191,6 +191,190 @@ qualifiers, and some RRID bodies are free-form, so those types keep
 dashes and digits as written.</p>
 </div>
 <div class="section level3">
+<h3 id="comparison-keys">Comparison keys<a class="anchor" aria-label="anchor" href="#comparison-keys"></a>
+</h3>
+<p>The same identifier can normalize to different strings: an ISBN-10
+and its ISBN-13 name one book, and <code>2101.00001v1</code> and
+<code>2101.00001v2</code> are versions of one preprint.
+<code><a href="../reference/scholid_key.html">scholid_key()</a></code> normalizes values and then applies the type’s
+key rule, so that such values get the same key for
+<code><a href="https://rdrr.io/r/base/duplicated.html" class="external-link">duplicated()</a></code>, <code><a href="https://rdrr.io/r/base/match.html" class="external-link">match()</a></code>, or
+<code><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge()</a></code>. A type’s key rule, if it has one, is stated in its
+“Validation in scholid” section. For every other type, the key is the
+normalized value.</p>
+<p>Keys are for comparing, not identifiers. Some keys don’t pass
+<code><a href="../reference/is_scholid.html">is_scholid()</a></code>, and a key can leave out a version that tells
+two records apart. Store and show the normalized values instead.</p>
+</div>
+<div class="section level3">
+<h3 id="resolver-urls-and-curies">Resolver URLs and CURIEs<a class="anchor" aria-label="anchor" href="#resolver-urls-and-curies"></a>
+</h3>
+<p>Each type’s section has a table with its resolver URL, the link form
+that the issuing authority documents, and its CURIE, the canonical <a href="https://bioregistry.io" class="external-link">Bioregistry</a> prefix, a colon, and the
+identifier. ISBNs have no resolver URL, and bibcodes have no Bioregistry
+prefix. Some tables also name older URLs that still resolve.</p>
+<p><code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> reads these forms:</p>
+<ul>
+<li>URLs with <code>http</code> or <code>https</code>, in any case, and
+with or without a slash at the end. ARK and SWHID keep that slash in
+some cases; see their sections.</li>
+<li>CURIEs with the prefix in any case, such as
+<code>PubMed:12345678</code>. The identifier must follow the colon
+directly.</li>
+<li>For arXiv, the DOIs that arXiv registers; see the arXiv
+section.</li>
+</ul>
+<p>The canonical forms of ARKs, SWHIDs, and RRIDs already start with
+their Bioregistry prefix and a colon (for RRIDs, in uppercase), so for
+these types the canonical form is the CURIE. <code><a href="../reference/is_scholid.html">is_scholid()</a></code>
+and <code><a href="../reference/classify_scholid.html">classify_scholid()</a></code> accept canonical values only.</p>
+<p><code><a href="../reference/format_scholid.html">format_scholid()</a></code> writes the forms in the URL and CURIE
+rows of these tables, and for arXiv the DOI. Older URLs and those under
+“Also read” are only read. It normalizes its input first, and
+<code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> reads back what it writes. For ARKs,
+SWHIDs, and RRIDs, it writes the canonical form as the CURIE, so RRIDs
+keep the uppercase <code>RRID:</code> prefix.</p>
+<p>The table below is generated with <code><a href="../reference/format_scholid.html">format_scholid()</a></code> from
+one example per type. An empty cell means that the type has no such
+form, and <code><a href="../reference/format_scholid.html">format_scholid()</a></code> stops with an error for it.</p>
+<table class="table">
+<colgroup>
+<col width="7%">
+<col width="48%">
+<col width="28%">
+<col width="15%">
+</colgroup>
+<thead><tr class="header">
+<th align="left">Type</th>
+<th align="left">URL</th>
+<th align="left">CURIE</th>
+<th align="left">DOI</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td align="left"><code>doi</code></td>
+<td align="left"><code>https://doi.org/10.1000/182</code></td>
+<td align="left"><code>doi:10.1000/182</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>arxiv</code></td>
+<td align="left"><code>https://arxiv.org/abs/2101.00001v1</code></td>
+<td align="left"><code>arxiv:2101.00001v1</code></td>
+<td align="left"><code>10.48550/arXiv.2101.00001</code></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>bibcode</code></td>
+<td align="left"><code>https://ui.adsabs.harvard.edu/abs/1998AJ....116.1009R</code></td>
+<td align="left"></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>openalex</code></td>
+<td align="left"><code>https://openalex.org/W2741809807</code></td>
+<td align="left"><code>openalex:W2741809807</code></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>swhid</code></td>
+<td align="left"><code>https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></td>
+<td align="left"><code>swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>ark</code></td>
+<td align="left"><code>https://n2t.net/ark:/12148/btv1b8449691v</code></td>
+<td align="left"><code>ark:/12148/btv1b8449691v</code></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>isni</code></td>
+<td align="left"><code>https://isni.org/isni/0000000121032683</code></td>
+<td align="left"><code>isni:0000000121032683</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>orcid</code></td>
+<td align="left"><code>https://orcid.org/0000-0002-1825-0097</code></td>
+<td align="left"><code>orcid:0000-0002-1825-0097</code></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>ror</code></td>
+<td align="left"><code>https://ror.org/01an7q238</code></td>
+<td align="left"><code>ror:01an7q238</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>rrid</code></td>
+<td align="left"><code>https://scicrunch.org/resolver/RRID:AB_262044</code></td>
+<td align="left"><code>RRID:AB_262044</code></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>uniprot</code></td>
+<td align="left"><code>https://www.uniprot.org/uniprotkb/P12345</code></td>
+<td align="left"><code>uniprot:P12345</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>refseq</code></td>
+<td align="left"><code>https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6</code></td>
+<td align="left"><code>refseq:NM_001744.6</code></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>sra</code></td>
+<td align="left"><code>https://www.ncbi.nlm.nih.gov/sra/SRR1553610</code></td>
+<td align="left"><code>insdc.sra:SRR1553610</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>geo</code></td>
+<td align="left"><code>https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553</code></td>
+<td align="left"><code>geo:GSE2553</code></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>bioproject</code></td>
+<td align="left"><code>https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197</code></td>
+<td align="left"><code>bioproject:PRJNA257197</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>assembly</code></td>
+<td align="left"><code>https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40</code></td>
+<td align="left"><code>ncbi.assembly:GCF_000001405.40</code></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>isbn</code></td>
+<td align="left"></td>
+<td align="left"><code>isbn:9780306406157</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>issn</code></td>
+<td align="left"><code>https://portal.issn.org/resource/ISSN/0317-8471</code></td>
+<td align="left"><code>issn:0317-8471</code></td>
+<td align="left"></td>
+</tr>
+<tr class="odd">
+<td align="left"><code>pmcid</code></td>
+<td align="left"><code>https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/</code></td>
+<td align="left"><code>pmc:PMC1234567</code></td>
+<td align="left"></td>
+</tr>
+<tr class="even">
+<td align="left"><code>pmid</code></td>
+<td align="left"><code>https://pubmed.ncbi.nlm.nih.gov/12345678/</code></td>
+<td align="left"><code>pubmed:12345678</code></td>
+<td align="left"></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
 <h3 id="supported-types-overview">Supported types (overview)<a class="anchor" aria-label="anchor" href="#supported-types-overview"></a>
 </h3>
 <table class="table">
@@ -336,9 +520,9 @@ dashes and digits as written.</p>
 </tbody>
 </table>
 <p>The sections below follow a consistent layout:
-<strong>Structure</strong>, <strong>Validation in scholid</strong>,
-<strong>Checksum</strong> (if applicable), and <strong>Structural
-regex</strong>.</p>
+<strong>Structure</strong>, <strong>Resolver URL and CURIE</strong>,
+<strong>Validation in scholid</strong>, <strong>Checksum</strong> (if
+applicable), and <strong>Structural regex</strong>.</p>
 <hr>
 </div>
 </div>
@@ -380,6 +564,53 @@ Handbook</a>, “Case Insensitivity of the DOI Name”)</li>
 </div>
 </div>
 <div class="section level3">
+<h3 id="resolver-url-and-curie">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://doi.org/10.1000/182</code></td>
+<td><a href="https://www.doi.org/the-identifier/resources/factsheets/doi-resolution-documentation" class="external-link">DOI
+resolution documentation</a></td>
+</tr>
+<tr class="even">
+<td>Older URL</td>
+<td><code>https://dx.doi.org/10.1000/182</code></td>
+<td>Still resolves</td>
+</tr>
+<tr class="odd">
+<td>CURIE</td>
+<td><code>doi:10.1000/182</code></td>
+<td><a href="https://bioregistry.io/registry/doi" class="external-link">Bioregistry
+<code>doi</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>The <a href="https://www.doi.org/the-identifier/resources/handbook" class="external-link">DOI
+Handbook</a> (section 4.7, “Percent-encoding”) percent-encodes most
+characters of a DOI in a URL. <code><a href="../reference/format_scholid.html">format_scholid()</a></code> encodes only
+<code>%</code>, <code>#</code>, and <code>?</code>, as <code>%25</code>,
+<code>%23</code>, and <code>%3F</code>, because <code>doi.org</code>
+would otherwise read them as an escape, the start of a fragment, and the
+start of a query, and resolve a different DOI. It writes other
+characters as they are, so that the URL stays readable; browsers encode
+them when they send the request. So <code>10.1000/456#789</code> gives
+<code>https://doi.org/10.1000/456%23789</code>.
+<code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> decodes these URLs again. CURIEs are
+not encoded.</p>
+</div>
+<div class="section level3">
 <h3 id="validation-in-scholid">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid"></a>
 </h3>
 <p>DOI validation is <strong>structural only</strong>. There is no
@@ -395,9 +626,9 @@ malformed escape, or with escapes that don’t decode to valid text, is
 kept as written. <code><a href="../reference/extract_scholid.html">extract_scholid()</a></code> does not decode URLs in
 free text.</p>
 <p><code><a href="../reference/is_scholid.html">is_scholid()</a></code> and <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>
-preserve case. DOIs should be compared case-insensitively, for example
-by applying <code><a href="https://rdrr.io/r/base/chartr.html" class="external-link">tolower()</a></code> to both sides before comparing or
-deduplicating.</p>
+preserve case. DOIs should be compared case-insensitively for ASCII
+letters only: the key from <code><a href="../reference/scholid_key.html">scholid_key()</a></code> turns ASCII
+letters into uppercase and keeps other characters as they are.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex"></a>
@@ -425,12 +656,39 @@ check character.</p>
 <p>Human-readable presentation uses an <code>ISNI</code> prefix and
 spaces in blocks of four:</p>
 <pre><code>ISNI 0000 0001 2146 438X</code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://isni.org/isni/000000012146438X</code></pre>
 <p>ORCID iDs use the same ISO/IEC 7064 MOD 11-2 checksum on 16
 characters but are canonicalized in <code>scholid</code> with hyphens.
 Compact checksum-valid 16-character strings are treated as ISNI;
 hyphenated strings are treated as ORCID.</p>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-1">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-1"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://isni.org/isni/000000012146438X</code></td>
+<td>ISNI Linked Data page (<code>isni.org/page/linked-data</code>)</td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>isni:000000012146438X</code></td>
+<td><a href="https://bioregistry.io/registry/isni" class="external-link">Bioregistry
+<code>isni</code></a></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-1">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-1"></a>
@@ -478,6 +736,36 @@ may be <code>0</code>–<code>9</code> or <code>X</code>.</p>
 </div>
 </div>
 <div class="section level3">
+<h3 id="resolver-url-and-curie-2">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-2"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://orcid.org/0000-0002-1825-0097</code></td>
+<td><a href="https://info.orcid.org/documentation/integration-guide/orcid-id-display-guidelines/" class="external-link">ORCID
+iD display guidelines</a></td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>orcid:0000-0002-1825-0097</code></td>
+<td><a href="https://bioregistry.io/registry/orcid" class="external-link">Bioregistry
+<code>orcid</code></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
 <h3 id="checksum-1">Checksum<a class="anchor" aria-label="anchor" href="#checksum-1"></a>
 </h3>
 <p>Uses ISO 7064 Mod 11-2 algorithm.<br>
@@ -514,8 +802,36 @@ pattern</a></p>
 </h3>
 <p>A ROR iD is a 9-character lowercase string:</p>
 <pre><code>0abcdef94</code></pre>
-<p>Preferred external form is the full URL:</p>
-<pre><code>https://ror.org/01an7q238</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-3">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-3"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://ror.org/01an7q238</code></td>
+<td><a href="https://ror.readme.io/docs/identifier" class="external-link">ROR identifier
+pattern</a></td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>ror:01an7q238</code></td>
+<td><a href="https://bioregistry.io/registry/ror" class="external-link">Bioregistry
+<code>ror</code></a></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="checksum-2">Checksum<a class="anchor" aria-label="anchor" href="#checksum-2"></a>
@@ -558,8 +874,39 @@ accession:</p>
 <span><span class="va">RRID</span><span class="op">:</span><span class="va">IMSR_JAX</span><span class="op">:</span><span class="fl">000664</span></span>
 <span><span class="va">RRID</span><span class="op">:</span><span class="va">MGI</span><span class="op">:</span><span class="fl">3840442</span></span>
 <span><span class="va">RRID</span><span class="op">:</span><span class="va">Addgene_80088</span></span></code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://scicrunch.org/resolver/RRID:AB_262044</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-4">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-4"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://scicrunch.org/resolver/RRID:AB_262044</code></td>
+<td><a href="https://bioregistry.io/registry/rrid" class="external-link">Bioregistry
+<code>rrid</code></a></td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>rrid:AB_262044</code></td>
+<td><a href="https://bioregistry.io/registry/rrid" class="external-link">Bioregistry
+<code>rrid</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>The canonical form is the CURIE. Bioregistry writes the prefix in
+lowercase, and <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> reads
+<code>rrid:AB_262044</code> as <code>RRID:AB_262044</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-4">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-4"></a>
@@ -600,9 +947,46 @@ UniProt-defined patterns.</p>
 <pre><code><span><span class="va">P12345</span></span>
 <span><span class="va">Q9H0H5</span></span>
 <span><span class="va">A0A022YWF9</span></span></code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://www.uniprot.org/uniprot/P12345
-https://identifiers.org/uniprot/P12345</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-5">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-5"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://www.uniprot.org/uniprotkb/P12345</code></td>
+<td><a href="https://www.uniprot.org/help/linking_to_uniprot" class="external-link">Linking to
+UniProt</a></td>
+</tr>
+<tr class="even">
+<td>Older URL</td>
+<td><code>https://www.uniprot.org/uniprot/P12345</code></td>
+<td>Still resolves</td>
+</tr>
+<tr class="odd">
+<td>Also read</td>
+<td><code>https://identifiers.org/uniprot/P12345</code></td>
+<td>identifiers.org</td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>uniprot:P12345</code></td>
+<td><a href="https://bioregistry.io/registry/uniprot" class="external-link">Bioregistry
+<code>uniprot</code></a></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-5">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-5"></a>
@@ -641,10 +1025,53 @@ alphanumeric accession body, a period, and a version number.</p>
 <span><span class="va">NP_001735.1</span></span>
 <span><span class="va">NC_003619.1</span></span>
 <span><span class="va">NZ_CASIGT010000001.1</span></span></code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6
-https://www.ncbi.nlm.nih.gov/protein/NP_001735.1
-https://identifiers.org/refseq/NM_001744.6</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-6">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-6"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL (protein)</td>
+<td><code>https://www.ncbi.nlm.nih.gov/protein/NP_001735.1</code></td>
+<td><a href="https://bioregistry.io/registry/refseq" class="external-link">Bioregistry
+<code>refseq</code></a></td>
+</tr>
+<tr class="even">
+<td>URL (other)</td>
+<td><code>https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6</code></td>
+<td><a href="https://bioregistry.io/registry/refseq" class="external-link">Bioregistry
+<code>refseq</code></a></td>
+</tr>
+<tr class="odd">
+<td>Also read</td>
+<td><code>https://identifiers.org/refseq/NM_001744.6</code></td>
+<td>identifiers.org</td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>refseq:NM_001744.6</code></td>
+<td><a href="https://bioregistry.io/registry/refseq" class="external-link">Bioregistry
+<code>refseq</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>Protein records, with the prefixes <code>AP</code>, <code>NP</code>,
+<code>WP</code>, <code>XP</code>, and <code>YP</code> in the RefSeq
+accession table linked above, resolve under <code>/protein/</code>, and
+the others under <code>/nuccore/</code>.
+<code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code> reads either path for any RefSeq
+accession.</p>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-6">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-6"></a>
@@ -658,6 +1085,9 @@ classification.</p>
 <p><code>GCA_</code> / <code>GCF_</code> genome assembly accessions are
 a separate type (<code>assembly</code>) and are not matched as
 RefSeq.</p>
+<p>The key from <code><a href="../reference/scholid_key.html">scholid_key()</a></code> drops the version suffix, so
+<code>NM_000546.5</code> and <code>NM_000546.6</code> share the key
+<code>NM_000546</code>.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-6">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-6"></a>
@@ -685,9 +1115,41 @@ plus entity type) followed by digits.</p>
 <span><span class="va">SRR1553610</span></span>
 <span><span class="va">ERR1234567</span></span>
 <span><span class="va">DRR1234567</span></span></code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://www.ncbi.nlm.nih.gov/sra/SRR1553610
-https://identifiers.org/sra/SRR1553610</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-7">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-7"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://www.ncbi.nlm.nih.gov/sra/SRR1553610</code></td>
+<td><a href="https://bioregistry.io/registry/insdc.sra" class="external-link">Bioregistry
+<code>insdc.sra</code></a></td>
+</tr>
+<tr class="even">
+<td>Also read</td>
+<td><code>https://identifiers.org/sra/SRR1553610</code></td>
+<td>identifiers.org</td>
+</tr>
+<tr class="odd">
+<td>CURIE</td>
+<td><code>insdc.sra:SRR1553610</code></td>
+<td><a href="https://bioregistry.io/registry/insdc.sra" class="external-link">Bioregistry
+<code>insdc.sra</code></a></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-7">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-7"></a>
@@ -725,9 +1187,41 @@ digits.</p>
 <span><span class="va">GSM313800</span></span>
 <span><span class="va">GPL96</span></span>
 <span><span class="va">GDS505</span></span></code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553
-https://identifiers.org/geo/GSE2553</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-8">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-8"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553</code></td>
+<td><a href="https://www.ncbi.nlm.nih.gov/geo/info/linking.html" class="external-link">Citing
+and linking to GEO</a></td>
+</tr>
+<tr class="even">
+<td>Also read</td>
+<td><code>https://identifiers.org/geo/GSE2553</code></td>
+<td>identifiers.org</td>
+</tr>
+<tr class="odd">
+<td>CURIE</td>
+<td><code>geo:GSE2553</code></td>
+<td><a href="https://bioregistry.io/registry/geo" class="external-link">Bioregistry
+<code>geo</code></a></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-8">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-8"></a>
@@ -763,9 +1257,46 @@ prefix followed by digits.</p>
 <pre><code><span><span class="va">PRJNA257197</span></span>
 <span><span class="va">PRJEB12345</span></span>
 <span><span class="va">PRJDB303</span></span></code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197
-https://identifiers.org/bioproject/PRJNA257197</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-9">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-9"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197</code></td>
+<td>Links on NCBI record pages</td>
+</tr>
+<tr class="even">
+<td>Also read</td>
+<td><code>https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA257197</code></td>
+<td><a href="https://bioregistry.io/registry/bioproject" class="external-link">Bioregistry
+<code>bioproject</code></a></td>
+</tr>
+<tr class="odd">
+<td>Also read</td>
+<td><code>https://identifiers.org/bioproject/PRJNA257197</code></td>
+<td>identifiers.org</td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>bioproject:PRJNA257197</code></td>
+<td><a href="https://bioregistry.io/registry/bioproject" class="external-link">Bioregistry
+<code>bioproject</code></a></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-9">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-9"></a>
@@ -802,10 +1333,49 @@ version number.</p>
 <pre><code><span><span class="va">GCF_000001405.40</span></span>
 <span><span class="va">GCA_000001405.29</span></span>
 <span><span class="va">GCA_009914755.4</span></span></code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40
-https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/
-https://identifiers.org/insdc.gcf:GCF_000001405.40</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-10">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-10"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40</code></td>
+<td><a href="https://bioregistry.io/registry/ncbi.assembly" class="external-link">Bioregistry
+<code>ncbi.assembly</code></a></td>
+</tr>
+<tr class="even">
+<td>Older URL</td>
+<td><code>https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40</code></td>
+<td>Redirects since NCBI Assembly was retired in 2024</td>
+</tr>
+<tr class="odd">
+<td>Also read</td>
+<td><code>https://identifiers.org/insdc.gcf:GCF_000001405.40</code></td>
+<td>identifiers.org</td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>ncbi.assembly:GCF_000001405.40</code></td>
+<td><a href="https://bioregistry.io/registry/ncbi.assembly" class="external-link">Bioregistry
+<code>ncbi.assembly</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>Bioregistry also has the prefixes <code>insdc.gca</code> and
+<code>insdc.gcf</code> for one kind of accession each.
+<code>ncbi.assembly</code> covers both.</p>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-10">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-10"></a>
@@ -820,6 +1390,9 @@ before classification.</p>
 <p>RefSeq gene and protein accessions (<code>NM_</code>,
 <code>NP_</code>, …) are validated separately and are not accepted as
 <code>assembly</code>.</p>
+<p>The key from <code><a href="../reference/scholid_key.html">scholid_key()</a></code> drops the version suffix.
+<code>GCA_</code> and <code>GCF_</code> accessions with the same number
+keep different keys, because they are different records.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-10">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-10"></a>
@@ -860,12 +1433,44 @@ before classification.</p>
 </div>
 </div>
 <div class="section level3">
+<h3 id="resolver-url-and-curie-11">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-11"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>None</code></td>
+<td>No official resolver</td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>isbn:9780306406157</code></td>
+<td><a href="https://bioregistry.io/registry/isbn" class="external-link">Bioregistry
+<code>isbn</code></a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section level3">
 <h3 id="validation-in-scholid-11">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-11"></a>
 </h3>
 <p>ISBN validation requires a <strong>checksum-valid</strong> ISBN-10 or
 ISBN-13 in compact form (no hyphens or spaces in canonical output).
 Labeled or spaced input should be normalized first. Registry existence
 is not checked.</p>
+<p>The key from <code><a href="../reference/scholid_key.html">scholid_key()</a></code> is the ISBN-13: an ISBN-10
+becomes <code>978</code>, its first nine digits, and a recomputed check
+digit, so both forms of a book share a key.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-11">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-11"></a>
@@ -897,6 +1502,44 @@ is not checked.</p>
 <p>Internal numeric form:</p>
 <pre><code>1234567X</code></pre>
 </div>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-12">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-12"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://portal.issn.org/resource/ISSN/0317-8471</code></td>
+<td><a href="https://bioregistry.io/registry/issn" class="external-link">Bioregistry
+<code>issn</code></a></td>
+</tr>
+<tr class="even">
+<td>Also read</td>
+<td><code>https://issn.org/resource/ISSN/0317-8471</code></td>
+<td>
+<a href="https://portal.issn.org/faq7" class="external-link">ISSN Portal FAQ</a>, 7.2</td>
+</tr>
+<tr class="odd">
+<td>CURIE</td>
+<td><code>issn:0317-8471</code></td>
+<td><a href="https://bioregistry.io/registry/issn" class="external-link">Bioregistry
+<code>issn</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>The ISSN Portal FAQ gives the <code>issn.org</code> URL, which
+redirects to the portal record.</p>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-12">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-12"></a>
@@ -955,6 +1598,57 @@ accepts the compact form.</p>
 </div>
 </div>
 <div class="section level3">
+<h3 id="resolver-url-and-curie-13">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-13"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://arxiv.org/abs/2101.00001</code></td>
+<td><a href="https://info.arxiv.org/help/arxiv_identifier_for_services.html" class="external-link">arXiv
+identifier for services</a></td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>arxiv:2101.00001</code></td>
+<td><a href="https://bioregistry.io/registry/arxiv" class="external-link">Bioregistry
+<code>arxiv</code></a></td>
+</tr>
+<tr class="odd">
+<td>DOI</td>
+<td><code>10.48550/arXiv.2101.00001</code></td>
+<td><a href="https://info.arxiv.org/help/doi.html" class="external-link">arXiv assigned
+DOIs</a></td>
+</tr>
+</tbody>
+</table>
+<p>arXiv registers one DataCite DOI per article:
+<code>10.48550/arXiv.</code> and the identifier, without a version. For
+old-style identifiers, the canonical form that arXiv uses leaves out the
+subject class, as in <code>10.48550/arXiv.hep-th/9901001</code> and
+<code>10.48550/arXiv.math/0309136</code>.
+<code>normalize_scholid(x, "arxiv")</code> reads these DOIs bare, with a
+<code>doi:</code> label, or as <code>doi.org</code> URLs, with the
+prefix in any case. It rejects DOIs with a version or a subject class,
+which arXiv does not register. <code><a href="../reference/detect_scholid_type.html">detect_scholid_type()</a></code> still
+reports these values as <code>doi</code>.
+<code>format_scholid(x, "arxiv", "doi")</code> writes these DOIs, so it
+leaves out the version and the subject class:
+<code>math.GT/0309136v1</code> gives
+<code>10.48550/arXiv.math/0309136</code>. The URL and the CURIE keep
+both.</p>
+</div>
+<div class="section level3">
 <h3 id="validation-in-scholid-13">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-13"></a>
 </h3>
 <p>arXiv validation is <strong>structural only</strong>. Both modern
@@ -963,6 +1657,8 @@ forms are accepted. Optional version suffix <code>vN</code> is allowed.
 Wrapped <code>arXiv:</code> labels and <code>https://arxiv.org/</code>
 URLs should be normalized before classification. No checksum; registry
 existence is not checked.</p>
+<p>The key from <code><a href="../reference/scholid_key.html">scholid_key()</a></code> drops the version suffix, so
+all versions of a preprint share a key.</p>
 <hr>
 </div>
 </div>
@@ -1002,8 +1698,39 @@ with <code>.</code>
 </ul>
 <p>Example:</p>
 <pre><code>1992ApJ...400L...1W</code></pre>
-<p>Preferred resolver URLs include:</p>
-<pre><code>https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-14">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-14"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W</code></td>
+<td><a href="https://adsabs.github.io/help/faq/" class="external-link">ADS help</a></td>
+</tr>
+<tr class="even">
+<td>Older URL</td>
+<td><code>https://adsabs.harvard.edu/abs/1992ApJ...400L...1W</code></td>
+<td>Classic ADS; still resolves</td>
+</tr>
+<tr class="odd">
+<td>CURIE</td>
+<td><code>None</code></td>
+<td>No Bioregistry entry</td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-14">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-14"></a>
@@ -1046,6 +1773,41 @@ canonicalizes them to uppercase.</p>
 <pre><code><span><span class="va">W2741809807</span></span>
 <span><span class="va">A5023888391</span></span>
 <span><span class="va">I97018004</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-15">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-15"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://openalex.org/W2741809807</code></td>
+<td><a href="https://developers.openalex.org/guides/key-concepts" class="external-link">OpenAlex key
+concepts</a></td>
+</tr>
+<tr class="even">
+<td>Also read</td>
+<td><code>https://api.openalex.org/works/W2741809807</code></td>
+<td>OpenAlex API</td>
+</tr>
+<tr class="odd">
+<td>CURIE</td>
+<td><code>openalex:W2741809807</code></td>
+<td><a href="https://bioregistry.io/registry/openalex" class="external-link">Bioregistry
+<code>openalex</code></a></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-15">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-15"></a>
@@ -1096,10 +1858,42 @@ variant (<code>.</code>) suffix</li>
 <p>Examples:</p>
 <pre><code>ark:/12148/btv1b8449691v/f29
 ark:/13030/654xz321</code></pre>
-<p>Resolver URLs often embed the ARK after the host, for example:</p>
-<pre><code>https://n2t.net/ark:/12148/btv1b8449691v</code></pre>
 <p>The labels <code>ark:</code> and <code>ark:/</code> are equivalent;
 <code>scholid</code> canonicalizes to <code>ark:/</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-16">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-16"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://n2t.net/ark:/12148/btv1b8449691v</code></td>
+<td><a href="https://arks.org/about/running-minters-and-resolvers/" class="external-link">Running
+minters and resolvers</a></td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>ark:/12148/btv1b8449691v</code></td>
+<td><a href="https://bioregistry.io/registry/ark" class="external-link">Bioregistry
+<code>ark</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>The CURIE is the canonical form. <code><a href="../reference/normalize_scholid.html">normalize_scholid()</a></code>
+reads an ARK after any host, such as an institution’s own resolver. A
+slash at the end of the URL is kept, because an ARK name can end in a
+slash.</p>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-16">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-16"></a>
@@ -1144,8 +1938,40 @@ identifier</li>
 </ul>
 <p>Optional qualifiers may follow, separated by semicolons:</p>
 <pre><code>swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;origin=https://example.org/repo.git;path=/src/main.c;lines=9-15</code></pre>
-<p>Resolver URLs include:</p>
-<pre><code>https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-17">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-17"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></td>
+<td>
+<a href="https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html" class="external-link">SWHID
+specification</a>, “Resolvers”</td>
+</tr>
+<tr class="even">
+<td>CURIE</td>
+<td><code>swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2</code></td>
+<td><a href="https://bioregistry.io/registry/swh" class="external-link">Bioregistry
+<code>swh</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>The CURIE is the canonical form. A slash at the end of a URL is
+dropped only if the SWHID has no qualifiers, because a <code>path</code>
+qualifier can end in a slash.</p>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-17">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-17"></a>
@@ -1159,6 +1985,9 @@ not performed by <code>scholid</code>.</p>
 example Git commit hashes). Known qualifier keys (<code>origin</code>,
 <code>visit</code>, <code>anchor</code>, <code>path</code>,
 <code>lines</code>) are validated conservatively when present.</p>
+<p>The key from <code><a href="../reference/scholid_key.html">scholid_key()</a></code> drops the qualifiers and
+keeps the core identifier, because qualifiers describe the context of an
+object, not the object.</p>
 </div>
 <div class="section level3">
 <h3 id="structural-regex-16">Structural Regex<a class="anchor" aria-label="anchor" href="#structural-regex-16"></a>
@@ -1179,6 +2008,41 @@ example Git commit hashes). Known qualifier keys (<code>origin</code>,
 checksum.</p>
 <p>Example:</p>
 <pre><code><span><span class="fl">12345678</span></span></code></pre>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-18">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-18"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://pubmed.ncbi.nlm.nih.gov/12345678/</code></td>
+<td><a href="https://bioregistry.io/registry/pubmed" class="external-link">Bioregistry
+<code>pubmed</code></a></td>
+</tr>
+<tr class="even">
+<td>Older URL</td>
+<td><code>https://www.ncbi.nlm.nih.gov/pubmed/12345678</code></td>
+<td>Legacy PubMed, retired in 2020; redirects</td>
+</tr>
+<tr class="odd">
+<td>CURIE</td>
+<td><code>pubmed:12345678</code></td>
+<td><a href="https://bioregistry.io/registry/pubmed" class="external-link">Bioregistry
+<code>pubmed</code></a></td>
+</tr>
+</tbody>
+</table>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-18">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-18"></a>
@@ -1226,6 +2090,43 @@ boundary):</p>
 </li>
 <li>One or more digits</li>
 </ul>
+</div>
+<div class="section level3">
+<h3 id="resolver-url-and-curie-19">Resolver URL and CURIE<a class="anchor" aria-label="anchor" href="#resolver-url-and-curie-19"></a>
+</h3>
+<table class="table">
+<colgroup>
+<col width="26%">
+<col width="39%">
+<col width="34%">
+</colgroup>
+<thead><tr class="header">
+<th>Form</th>
+<th>Example</th>
+<th>Source</th>
+</tr></thead>
+<tbody>
+<tr class="odd">
+<td>URL</td>
+<td><code>https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/</code></td>
+<td><a href="https://www.nlm.nih.gov/pubs/techbull/so24/so24_PMC_Website_Updates.html" class="external-link">NLM
+Technical Bulletin, 2024 Sep-Oct</a></td>
+</tr>
+<tr class="even">
+<td>Older URL</td>
+<td><code>https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1234567/</code></td>
+<td>Used until 2024; redirects</td>
+</tr>
+<tr class="odd">
+<td>CURIE</td>
+<td><code>pmc:PMC1234567</code></td>
+<td><a href="https://bioregistry.io/registry/pmc" class="external-link">Bioregistry
+<code>pmc</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>The CURIE keeps the <code>PMC</code> prefix: <code>pmc:1234567</code>
+is not read.</p>
 </div>
 <div class="section level3">
 <h3 id="validation-in-scholid-19">Validation in scholid<a class="anchor" aria-label="anchor" href="#validation-in-scholid-19"></a>

@@ -38,13 +38,16 @@ extract_scholid(text, type)
 
 ## Value
 
-A list of character vectors of extracted identifiers.
+A list with the same length as `text`, whose elements are character
+vectors of extracted identifiers.
 
 ## See also
 
 [`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md)
 to find identifiers of several types at once, with their positions in
-the text.
+the text,
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md),
+[`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
 
 ## Examples
 

@@ -95,6 +95,89 @@ doesn’t read dashes for ISSN. A DOI suffix may contain any Unicode
 character, and ARK names, SWHID qualifiers, and some RRID bodies are
 free-form, so those types keep dashes and digits as written.
 
+### Comparison keys
+
+The same identifier can normalize to different strings: an ISBN-10 and
+its ISBN-13 name one book, and `2101.00001v1` and `2101.00001v2` are
+versions of one preprint.
+[`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+normalizes values and then applies the type’s key rule, so that such
+values get the same key for
+[`duplicated()`](https://rdrr.io/r/base/duplicated.html),
+[`match()`](https://rdrr.io/r/base/match.html), or
+[`merge()`](https://rdrr.io/r/base/merge.html). A type’s key rule, if it
+has one, is stated in its “Validation in scholid” section. For every
+other type, the key is the normalized value.
+
+Keys are for comparing, not identifiers. Some keys don’t pass
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md),
+and a key can leave out a version that tells two records apart. Store
+and show the normalized values instead.
+
+### Resolver URLs and CURIEs
+
+Each type’s section has a table with its resolver URL, the link form
+that the issuing authority documents, and its CURIE, the canonical
+[Bioregistry](https://bioregistry.io) prefix, a colon, and the
+identifier. ISBNs have no resolver URL, and bibcodes have no Bioregistry
+prefix. Some tables also name older URLs that still resolve.
+
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+reads these forms:
+
+- URLs with `http` or `https`, in any case, and with or without a slash
+  at the end. ARK and SWHID keep that slash in some cases; see their
+  sections.
+- CURIEs with the prefix in any case, such as `PubMed:12345678`. The
+  identifier must follow the colon directly.
+- For arXiv, the DOIs that arXiv registers; see the arXiv section.
+
+The canonical forms of ARKs, SWHIDs, and RRIDs already start with their
+Bioregistry prefix and a colon (for RRIDs, in uppercase), so for these
+types the canonical form is the CURIE.
+[`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
+and
+[`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md)
+accept canonical values only.
+
+[`format_scholid()`](https://thomas-rauter.github.io/scholid/reference/format_scholid.md)
+writes the forms in the URL and CURIE rows of these tables, and for
+arXiv the DOI. Older URLs and those under “Also read” are only read. It
+normalizes its input first, and
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+reads back what it writes. For ARKs, SWHIDs, and RRIDs, it writes the
+canonical form as the CURIE, so RRIDs keep the uppercase `RRID:` prefix.
+
+The table below is generated with
+[`format_scholid()`](https://thomas-rauter.github.io/scholid/reference/format_scholid.md)
+from one example per type. An empty cell means that the type has no such
+form, and
+[`format_scholid()`](https://thomas-rauter.github.io/scholid/reference/format_scholid.md)
+stops with an error for it.
+
+| Type | URL | CURIE | DOI |
+|:---|:---|:---|:---|
+| `doi` | `https://doi.org/10.1000/182` | `doi:10.1000/182` |  |
+| `arxiv` | `https://arxiv.org/abs/2101.00001v1` | `arxiv:2101.00001v1` | `10.48550/arXiv.2101.00001` |
+| `bibcode` | `https://ui.adsabs.harvard.edu/abs/1998AJ....116.1009R` |  |  |
+| `openalex` | `https://openalex.org/W2741809807` | `openalex:W2741809807` |  |
+| `swhid` | `https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2` | `swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2` |  |
+| `ark` | `https://n2t.net/ark:/12148/btv1b8449691v` | `ark:/12148/btv1b8449691v` |  |
+| `isni` | `https://isni.org/isni/0000000121032683` | `isni:0000000121032683` |  |
+| `orcid` | `https://orcid.org/0000-0002-1825-0097` | `orcid:0000-0002-1825-0097` |  |
+| `ror` | `https://ror.org/01an7q238` | `ror:01an7q238` |  |
+| `rrid` | `https://scicrunch.org/resolver/RRID:AB_262044` | `RRID:AB_262044` |  |
+| `uniprot` | `https://www.uniprot.org/uniprotkb/P12345` | `uniprot:P12345` |  |
+| `refseq` | `https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6` | `refseq:NM_001744.6` |  |
+| `sra` | `https://www.ncbi.nlm.nih.gov/sra/SRR1553610` | `insdc.sra:SRR1553610` |  |
+| `geo` | `https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553` | `geo:GSE2553` |  |
+| `bioproject` | `https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197` | `bioproject:PRJNA257197` |  |
+| `assembly` | `https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40` | `ncbi.assembly:GCF_000001405.40` |  |
+| `isbn` |  | `isbn:9780306406157` |  |
+| `issn` | `https://portal.issn.org/resource/ISSN/0317-8471` | `issn:0317-8471` |  |
+| `pmcid` | `https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/` | `pmc:PMC1234567` |  |
+| `pmid` | `https://pubmed.ncbi.nlm.nih.gov/12345678/` | `pubmed:12345678` |  |
+
 ### Supported types (overview)
 
 | Type | Example | Checksum | Notes |
@@ -120,9 +203,9 @@ free-form, so those types keep dashes and digits as written.
 | `pmcid` | `PMC1234567` | No | Literal `PMC` prefix |
 | `pmid` | `12345678` | No | Fallback; excludes valid ISBNs |
 
-The sections below follow a consistent layout: **Structure**,
-**Validation in scholid**, **Checksum** (if applicable), and
-**Structural regex**.
+The sections below follow a consistent layout: **Structure**, **Resolver
+URL and CURIE**, **Validation in scholid**, **Checksum** (if
+applicable), and **Structural regex**.
 
 ------------------------------------------------------------------------
 
@@ -162,6 +245,28 @@ Example:
     10.1000/182
     10.1038/s41586-020-2649-2
 
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://doi.org/10.1000/182` | [DOI resolution documentation](https://www.doi.org/the-identifier/resources/factsheets/doi-resolution-documentation) |
+| Older URL | `https://dx.doi.org/10.1000/182` | Still resolves |
+| CURIE | `doi:10.1000/182` | [Bioregistry `doi`](https://bioregistry.io/registry/doi) |
+
+The [DOI
+Handbook](https://www.doi.org/the-identifier/resources/handbook)
+(section 4.7, “Percent-encoding”) percent-encodes most characters of a
+DOI in a URL.
+[`format_scholid()`](https://thomas-rauter.github.io/scholid/reference/format_scholid.md)
+encodes only `%`, `#`, and `?`, as `%25`, `%23`, and `%3F`, because
+`doi.org` would otherwise read them as an escape, the start of a
+fragment, and the start of a query, and resolve a different DOI. It
+writes other characters as they are, so that the URL stays readable;
+browsers encode them when they send the request. So `10.1000/456#789`
+gives `https://doi.org/10.1000/456%23789`.
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+decodes these URLs again. CURIEs are not encoded.
+
 ### Validation in scholid
 
 DOI validation is **structural only**. There is no checksum. Registry
@@ -180,9 +285,11 @@ does not decode URLs in free text.
 [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
 and
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
-preserve case. DOIs should be compared case-insensitively, for example
-by applying [`tolower()`](https://rdrr.io/r/base/chartr.html) to both
-sides before comparing or deduplicating.
+preserve case. DOIs should be compared case-insensitively for ASCII
+letters only: the key from
+[`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+turns ASCII letters into uppercase and keeps other characters as they
+are.
 
 ### Structural Regex
 
@@ -219,14 +326,17 @@ of four:
 
     ISNI 0000 0001 2146 438X
 
-Preferred resolver URLs include:
-
-    https://isni.org/isni/000000012146438X
-
 ORCID iDs use the same ISO/IEC 7064 MOD 11-2 checksum on 16 characters
 but are canonicalized in `scholid` with hyphens. Compact checksum-valid
 16-character strings are treated as ISNI; hyphenated strings are treated
 as ORCID.
+
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://isni.org/isni/000000012146438X` | ISNI Linked Data page (`isni.org/page/linked-data`) |
+| CURIE | `isni:000000012146438X` | [Bioregistry `isni`](https://bioregistry.io/registry/isni) |
 
 ### Validation in scholid
 
@@ -269,6 +379,13 @@ Internally (without hyphens):
 
     0000000218250097
 
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://orcid.org/0000-0002-1825-0097` | [ORCID iD display guidelines](https://info.orcid.org/documentation/integration-guide/orcid-id-display-guidelines/) |
+| CURIE | `orcid:0000-0002-1825-0097` | [Bioregistry `orcid`](https://bioregistry.io/registry/orcid) |
+
 ### Checksum
 
 Uses ISO 7064 Mod 11-2 algorithm.  
@@ -309,9 +426,12 @@ A ROR iD is a 9-character lowercase string:
 
     0abcdef94
 
-Preferred external form is the full URL:
+### Resolver URL and CURIE
 
-    https://ror.org/01an7q238
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://ror.org/01an7q238` | [ROR identifier pattern](https://ror.readme.io/docs/identifier) |
+| CURIE | `ror:01an7q238` | [Bioregistry `ror`](https://bioregistry.io/registry/ror) |
 
 ### Checksum
 
@@ -351,9 +471,17 @@ literal `RRID:` prefix followed by an authority-specific accession:
     RRID:MGI:3840442
     RRID:Addgene_80088
 
-Preferred resolver URLs include:
+### Resolver URL and CURIE
 
-    https://scicrunch.org/resolver/RRID:AB_262044
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://scicrunch.org/resolver/RRID:AB_262044` | [Bioregistry `rrid`](https://bioregistry.io/registry/rrid) |
+| CURIE | `rrid:AB_262044` | [Bioregistry `rrid`](https://bioregistry.io/registry/rrid) |
+
+The canonical form is the CURIE. Bioregistry writes the prefix in
+lowercase, and
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+reads `rrid:AB_262044` as `RRID:AB_262044`.
 
 ### Validation in scholid
 
@@ -396,10 +524,14 @@ Examples:
     Q9H0H5
     A0A022YWF9
 
-Preferred resolver URLs include:
+### Resolver URL and CURIE
 
-    https://www.uniprot.org/uniprot/P12345
-    https://identifiers.org/uniprot/P12345
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://www.uniprot.org/uniprotkb/P12345` | [Linking to UniProt](https://www.uniprot.org/help/linking_to_uniprot) |
+| Older URL | `https://www.uniprot.org/uniprot/P12345` | Still resolves |
+| Also read | `https://identifiers.org/uniprot/P12345` | identifiers.org |
+| CURIE | `uniprot:P12345` | [Bioregistry `uniprot`](https://bioregistry.io/registry/uniprot) |
 
 ### Validation in scholid
 
@@ -441,11 +573,20 @@ Examples:
     NC_003619.1
     NZ_CASIGT010000001.1
 
-Preferred resolver URLs include:
+### Resolver URL and CURIE
 
-    https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6
-    https://www.ncbi.nlm.nih.gov/protein/NP_001735.1
-    https://identifiers.org/refseq/NM_001744.6
+| Form | Example | Source |
+|----|----|----|
+| URL (protein) | `https://www.ncbi.nlm.nih.gov/protein/NP_001735.1` | [Bioregistry `refseq`](https://bioregistry.io/registry/refseq) |
+| URL (other) | `https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6` | [Bioregistry `refseq`](https://bioregistry.io/registry/refseq) |
+| Also read | `https://identifiers.org/refseq/NM_001744.6` | identifiers.org |
+| CURIE | `refseq:NM_001744.6` | [Bioregistry `refseq`](https://bioregistry.io/registry/refseq) |
+
+Protein records, with the prefixes `AP`, `NP`, `WP`, `XP`, and `YP` in
+the RefSeq accession table linked above, resolve under `/protein/`, and
+the others under `/nuccore/`.
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+reads either path for any RefSeq accession.
 
 ### Validation in scholid
 
@@ -460,6 +601,11 @@ before classification.
 
 `GCA_` / `GCF_` genome assembly accessions are a separate type
 (`assembly`) and are not matched as RefSeq.
+
+The key from
+[`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+drops the version suffix, so `NM_000546.5` and `NM_000546.6` share the
+key `NM_000546`.
 
 ### Structural Regex
 
@@ -488,10 +634,13 @@ Examples:
     ERR1234567
     DRR1234567
 
-Preferred resolver URLs include:
+### Resolver URL and CURIE
 
-    https://www.ncbi.nlm.nih.gov/sra/SRR1553610
-    https://identifiers.org/sra/SRR1553610
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://www.ncbi.nlm.nih.gov/sra/SRR1553610` | [Bioregistry `insdc.sra`](https://bioregistry.io/registry/insdc.sra) |
+| Also read | `https://identifiers.org/sra/SRR1553610` | identifiers.org |
+| CURIE | `insdc.sra:SRR1553610` | [Bioregistry `insdc.sra`](https://bioregistry.io/registry/insdc.sra) |
 
 ### Validation in scholid
 
@@ -531,10 +680,13 @@ Examples:
     GPL96
     GDS505
 
-Preferred resolver URLs include:
+### Resolver URL and CURIE
 
-    https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553
-    https://identifiers.org/geo/GSE2553
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553` | [Citing and linking to GEO](https://www.ncbi.nlm.nih.gov/geo/info/linking.html) |
+| Also read | `https://identifiers.org/geo/GSE2553` | identifiers.org |
+| CURIE | `geo:GSE2553` | [Bioregistry `geo`](https://bioregistry.io/registry/geo) |
 
 ### Validation in scholid
 
@@ -571,10 +723,14 @@ Examples:
     PRJEB12345
     PRJDB303
 
-Preferred resolver URLs include:
+### Resolver URL and CURIE
 
-    https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197
-    https://identifiers.org/bioproject/PRJNA257197
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197` | Links on NCBI record pages |
+| Also read | `https://www.ncbi.nlm.nih.gov/bioproject/?term=PRJNA257197` | [Bioregistry `bioproject`](https://bioregistry.io/registry/bioproject) |
+| Also read | `https://identifiers.org/bioproject/PRJNA257197` | identifiers.org |
+| CURIE | `bioproject:PRJNA257197` | [Bioregistry `bioproject`](https://bioregistry.io/registry/bioproject) |
 
 ### Validation in scholid
 
@@ -612,11 +768,17 @@ Examples:
     GCA_000001405.29
     GCA_009914755.4
 
-Preferred resolver URLs include:
+### Resolver URL and CURIE
 
-    https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40
-    https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40/
-    https://identifiers.org/insdc.gcf:GCF_000001405.40
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://www.ncbi.nlm.nih.gov/datasets/genome/GCF_000001405.40` | [Bioregistry `ncbi.assembly`](https://bioregistry.io/registry/ncbi.assembly) |
+| Older URL | `https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40` | Redirects since NCBI Assembly was retired in 2024 |
+| Also read | `https://identifiers.org/insdc.gcf:GCF_000001405.40` | identifiers.org |
+| CURIE | `ncbi.assembly:GCF_000001405.40` | [Bioregistry `ncbi.assembly`](https://bioregistry.io/registry/ncbi.assembly) |
+
+Bioregistry also has the prefixes `insdc.gca` and `insdc.gcf` for one
+kind of accession each. `ncbi.assembly` covers both.
 
 ### Validation in scholid
 
@@ -632,6 +794,11 @@ before classification.
 
 RefSeq gene and protein accessions (`NM_`, `NP_`, …) are validated
 separately and are not accepted as `assembly`.
+
+The key from
+[`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+drops the version suffix. `GCA_` and `GCF_` accessions with the same
+number keep different keys, because they are different records.
 
 ### Structural Regex
 
@@ -666,12 +833,24 @@ Example:
 
     9780306406157
 
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `None` | No official resolver |
+| CURIE | `isbn:9780306406157` | [Bioregistry `isbn`](https://bioregistry.io/registry/isbn) |
+
 ### Validation in scholid
 
 ISBN validation requires a **checksum-valid** ISBN-10 or ISBN-13 in
 compact form (no hyphens or spaces in canonical output). Labeled or
 spaced input should be normalized first. Registry existence is not
 checked.
+
+The key from
+[`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+is the ISBN-13: an ISBN-10 becomes `978`, its first nine digits, and a
+recomputed check digit, so both forms of a book share a key.
 
 ### Structural Regex
 
@@ -705,6 +884,17 @@ An ISSN has 8 characters:
 Internal numeric form:
 
     1234567X
+
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://portal.issn.org/resource/ISSN/0317-8471` | [Bioregistry `issn`](https://bioregistry.io/registry/issn) |
+| Also read | `https://issn.org/resource/ISSN/0317-8471` | [ISSN Portal FAQ](https://portal.issn.org/faq7), 7.2 |
+| CURIE | `issn:0317-8471` | [Bioregistry `issn`](https://bioregistry.io/registry/issn) |
+
+The ISSN Portal FAQ gives the `issn.org` URL, which redirects to the
+portal record.
 
 ### Validation in scholid
 
@@ -769,6 +959,27 @@ Structural regex:
 
     ^[a-z\-]+/\d{7}(v\d+)?$
 
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://arxiv.org/abs/2101.00001` | [arXiv identifier for services](https://info.arxiv.org/help/arxiv_identifier_for_services.html) |
+| CURIE | `arxiv:2101.00001` | [Bioregistry `arxiv`](https://bioregistry.io/registry/arxiv) |
+| DOI | `10.48550/arXiv.2101.00001` | [arXiv assigned DOIs](https://info.arxiv.org/help/doi.html) |
+
+arXiv registers one DataCite DOI per article: `10.48550/arXiv.` and the
+identifier, without a version. For old-style identifiers, the canonical
+form that arXiv uses leaves out the subject class, as in
+`10.48550/arXiv.hep-th/9901001` and `10.48550/arXiv.math/0309136`.
+`normalize_scholid(x, "arxiv")` reads these DOIs bare, with a `doi:`
+label, or as `doi.org` URLs, with the prefix in any case. It rejects
+DOIs with a version or a subject class, which arXiv does not register.
+[`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+still reports these values as `doi`. `format_scholid(x, "arxiv", "doi")`
+writes these DOIs, so it leaves out the version and the subject class:
+`math.GT/0309136v1` gives `10.48550/arXiv.math/0309136`. The URL and the
+CURIE keep both.
+
 ### Validation in scholid
 
 arXiv validation is **structural only**. Both modern (`YYMM.NNNNN`) and
@@ -776,6 +987,10 @@ legacy (`archive/YYMMNNN`) forms are accepted. Optional version suffix
 `vN` is allowed. Wrapped `arXiv:` labels and `https://arxiv.org/` URLs
 should be normalized before classification. No checksum; registry
 existence is not checked.
+
+The key from
+[`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+drops the version suffix, so all versions of a preprint share a key.
 
 ------------------------------------------------------------------------
 
@@ -806,9 +1021,13 @@ Example:
 
     1992ApJ...400L...1W
 
-Preferred resolver URLs include:
+### Resolver URL and CURIE
 
-    https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W` | [ADS help](https://adsabs.github.io/help/faq/) |
+| Older URL | `https://adsabs.harvard.edu/abs/1992ApJ...400L...1W` | Classic ADS; still resolves |
+| CURIE | `None` | No Bioregistry entry |
 
 ### Validation in scholid
 
@@ -852,6 +1071,14 @@ Examples:
     W2741809807
     A5023888391
     I97018004
+
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://openalex.org/W2741809807` | [OpenAlex key concepts](https://developers.openalex.org/guides/key-concepts) |
+| Also read | `https://api.openalex.org/works/W2741809807` | OpenAlex API |
+| CURIE | `openalex:W2741809807` | [Bioregistry `openalex`](https://bioregistry.io/registry/openalex) |
 
 ### Validation in scholid
 
@@ -903,12 +1130,21 @@ Examples:
     ark:/12148/btv1b8449691v/f29
     ark:/13030/654xz321
 
-Resolver URLs often embed the ARK after the host, for example:
-
-    https://n2t.net/ark:/12148/btv1b8449691v
-
 The labels `ark:` and `ark:/` are equivalent; `scholid` canonicalizes to
 `ark:/`.
+
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://n2t.net/ark:/12148/btv1b8449691v` | [Running minters and resolvers](https://arks.org/about/running-minters-and-resolvers/) |
+| CURIE | `ark:/12148/btv1b8449691v` | [Bioregistry `ark`](https://bioregistry.io/registry/ark) |
+
+The CURIE is the canonical form.
+[`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+reads an ARK after any host, such as an institution’s own resolver. A
+slash at the end of the URL is kept, because an ARK name can end in a
+slash.
 
 ### Validation in scholid
 
@@ -953,9 +1189,16 @@ Optional qualifiers may follow, separated by semicolons:
 
     swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;origin=https://example.org/repo.git;path=/src/main.c;lines=9-15
 
-Resolver URLs include:
+### Resolver URL and CURIE
 
-    https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://archive.softwareheritage.org/swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2` | [SWHID specification](https://docs.softwareheritage.org/devel/swh-model/persistent-identifiers.html), “Resolvers” |
+| CURIE | `swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2` | [Bioregistry `swh`](https://bioregistry.io/registry/swh) |
+
+The CURIE is the canonical form. A slash at the end of a URL is dropped
+only if the SWHID has no qualifiers, because a `path` qualifier can end
+in a slash.
 
 ### Validation in scholid
 
@@ -968,6 +1211,11 @@ To limit false positives, `scholid` requires the explicit `swh:` prefix
 and rejects bare 40-character hex strings (for example Git commit
 hashes). Known qualifier keys (`origin`, `visit`, `anchor`, `path`,
 `lines`) are validated conservatively when present.
+
+The key from
+[`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+drops the qualifiers and keeps the core identifier, because qualifiers
+describe the context of an object, not the object.
 
 ### Structural Regex
 
@@ -988,6 +1236,14 @@ A PMID is a decimal integer assigned by PubMed. There is no checksum.
 Example:
 
     12345678
+
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://pubmed.ncbi.nlm.nih.gov/12345678/` | [Bioregistry `pubmed`](https://bioregistry.io/registry/pubmed) |
+| Older URL | `https://www.ncbi.nlm.nih.gov/pubmed/12345678` | Legacy PubMed, retired in 2020; redirects |
+| CURIE | `pubmed:12345678` | [Bioregistry `pubmed`](https://bioregistry.io/registry/pubmed) |
 
 ### Validation in scholid
 
@@ -1038,6 +1294,16 @@ Components:
 
 - Literal prefix `PMC`
 - One or more digits
+
+### Resolver URL and CURIE
+
+| Form | Example | Source |
+|----|----|----|
+| URL | `https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/` | [NLM Technical Bulletin, 2024 Sep-Oct](https://www.nlm.nih.gov/pubs/techbull/so24/so24_PMC_Website_Updates.html) |
+| Older URL | `https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1234567/` | Used until 2024; redirects |
+| CURIE | `pmc:PMC1234567` | [Bioregistry `pmc`](https://bioregistry.io/registry/pmc) |
+
+The CURIE keeps the `PMC` prefix: `pmc:1234567` is not read.
 
 ### Validation in scholid
 

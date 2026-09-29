@@ -36,6 +36,49 @@
   Where the spans of hits of different types overlap, such as an ISBN
   and the PMID-like digits inside it, it keeps the longer one.
 
+- Added
+  [`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md),
+  which gives keys for comparing identifiers, so that values written
+  differently match in
+  [`duplicated()`](https://rdrr.io/r/base/duplicated.html),
+  [`match()`](https://rdrr.io/r/base/match.html), and
+  [`merge()`](https://rdrr.io/r/base/merge.html). It normalizes values
+  like
+  [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+  and then applies the type’s key rule: an ISBN-10 gets the key of its
+  ISBN-13, arXiv, RefSeq, and genome assembly keys leave out the
+  version, DOI keys uppercase ASCII letters, and SWHID keys leave out
+  the qualifiers. Keys are not identifiers, and some don’t pass
+  [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md).
+  The rules are in the definitions vignette.
+
+- Added
+  [`format_scholid()`](https://thomas-rauter.github.io/scholid/reference/format_scholid.md),
+  which writes identifiers as resolver URLs, as CURIEs, or, for arXiv,
+  as the DOIs that arXiv registers, such as `10.48550/arXiv.2101.00001`,
+  without the version. It normalizes values like
+  [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+  first, and
+  [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
+  reads back what it writes. DOI URLs percent-encode `%`, `#`, and `?`;
+  everything else is written as it is. Asking for a form that a type
+  doesn’t have, such as a URL for an ISBN, is an error that names the
+  forms it has. The forms of each type are in the definitions vignette.
+
+- Accepted each type’s resolver URL and Bioregistry CURIE, older
+  resolver URLs that still resolve, and arXiv DOIs in
+  [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md).
+  Inputs such as `https://pubmed.ncbi.nlm.nih.gov/12345678/`,
+  `pubmed:12345678`,
+  `https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/`,
+  `https://portal.issn.org/resource/ISSN/0317-8471`,
+  `openalex:W2741809807`, and, for `"arxiv"`,
+  `10.48550/arXiv.2101.00001` now normalize instead of giving `NA`. URLs
+  may use `http` or `https`, any case, and a slash at the end.
+  [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
+  detects these forms too, and still reports arXiv DOIs as `doi`. The
+  forms and their sources are in the definitions vignette.
+
 - Accepted Unicode dashes, such as U+2010 and the en dash, in ORCID,
   ISBN, ISNI, and ISSN values, and full-width digits in every type
   except DOI, ARK, SWHID, and RRID, in
@@ -44,6 +87,9 @@
   and
   [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md).
   They are read as their ASCII forms.
+  [`extract_scholid()`](https://thomas-rauter.github.io/scholid/reference/extract_scholid.md)
+  doesn’t read dashes in ISSNs, because an en dash in free text usually
+  marks a range, and
   [`is_scholid()`](https://thomas-rauter.github.io/scholid/reference/is_scholid.md)
   still accepts only ASCII. The per-type rules are under “Input
   characters” in the definitions vignette.
@@ -52,7 +98,22 @@
   `normalize_scholid(x, "doi")`, so `https://doi.org/10.1000%2F182`
   gives `10.1000/182`.
 
+### Documentation
+
+- Added “Input characters”, “Comparison keys”, and “Resolver URLs and
+  CURIEs” to the definitions vignette, and a table of resolver URL and
+  CURIE forms, with their sources, to each type’s section.
+
+- Added sections on
+  [`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md),
+  [`format_scholid()`](https://thomas-rauter.github.io/scholid/reference/format_scholid.md),
+  and
+  [`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md)
+  to the Get started vignette.
+
 ## scholid 0.2.1
+
+CRAN release: 2026-09-28
 
 ### Bug fixes
 

@@ -22,7 +22,7 @@ proposed commit message (format under “Git and releases”).
 | Question | Home |
 |----|----|
 | Which types exist, their precedence, their patterns | `.scholid_registry()` in `R/scholid_registry.R`; [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md) at runtime |
-| Per-type formats, checksums, collision rules | `vignettes/scholid_definitions.Rmd` |
+| Per-type formats, checksums, collision rules, key rules | `vignettes/scholid_definitions.Rmd` |
 | Exported API, arguments, NA and length contracts | roxygen blocks in `R/*.R` (rendered to `man/`) |
 | User workflows and design principles | `vignettes/get_started.Rmd` (“Design notes”) |
 | Package pitch, dependencies, R floor, version | `DESCRIPTION` |
@@ -33,12 +33,22 @@ proposed commit message (format under “Git and releases”).
 
 ## How the code fits together
 
-The six exported functions validate their input and then dispatch by
+The exported functions validate their input and then dispatch by
 **name**: `.scholid_dispatch()` (`R/input_validation.R`) looks up
-`is_<type>`, `normalize_<type>` or `extract_<type>` with
+`is_<type>`, `normalize_<type>`, `extract_<type>` or `key_<type>` with
 [`get0()`](https://rdrr.io/r/base/exists.html). The per-type
 implementations live in `R/is_idtype_functions.R`,
-`R/normalize_scholid.R` and `R/extract_scholid.R`.
+`R/normalize_scholid.R`, `R/extract_scholid.R` and `R/scholid_key.R`.
+[`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+runs `normalize_<type>` and then `key_<type>` on its output.
+[`format_scholid()`](https://thomas-rauter.github.io/scholid/reference/format_scholid.md)
+runs `normalize_<type>` and then fills the registry’s `url`, `curie` or
+`doi` template; it has no per-type dispatch target.
+[`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md)
+calls `extract_<type>(text, positions = TRUE)` for each type, which
+takes each hit’s position from the `(?<id>...)` group of the registry’s
+`extract_pat`, and then drops overlapping hits (longer span first, then
+registry order).
 [`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md)
 and
 [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
@@ -51,7 +61,9 @@ walk the registry order. Consequences:
   [`classify_scholid()`](https://thomas-rauter.github.io/scholid/reference/classify_scholid.md)
   and
   [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)
-  return.
+  return, and which of two overlapping hits of equal length
+  [`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md)
+  keeps.
 
 ## Commands
 
@@ -98,8 +110,8 @@ Match the surrounding code; `R/input_validation.R` is a good reference.
 - Files are sectioned with `# Level 1 function ... ----` (called by
   exported functions) and `# Level 2 ...` (called by level 1) headers.
 - Per-type dispatch targets (`is_<type>`, `normalize_<type>`,
-  `extract_<type>`) are unexported and not dot-prefixed. Other internals
-  are dot-prefixed (`.scholid_*`, `.is_<type>_strict`,
+  `extract_<type>`, `key_<type>`) are unexported and not dot-prefixed.
+  Other internals are dot-prefixed (`.scholid_*`, `.is_<type>_strict`,
   `.clean_extracted_<type>`).
 - Every function has a roxygen block; internals use `@noRd`.
 - Tests call `testthat::` explicitly and live in the test file named
@@ -115,17 +127,36 @@ First check `CONTEXT.md` for types that were already rejected. Commit
 in order:
 
 1.  Registry entry in `.scholid_registry()` with a unique `order` placed
-    by specificity relative to overlapping types.
+    by specificity relative to overlapping types, and a `version_pat` if
+    the identifiers carry a version suffix. Decide the `url` and `curie`
+    fields: the resolver URL that the identifier’s authority documents,
+    and the canonical Bioregistry prefix, or explicitly none. Take both
+    from those sources, check new hosts and prefixes against the other
+    types’ grammars, and add older URLs that still resolve as `url_alt`.
+    The `extract_pat` marks the identifier as written with a
+    `(?<id>...)` group. The roxygen block of `.scholid_registry()`
+    documents every field.
 2.  `is_<type>()` in `R/is_idtype_functions.R`, `normalize_<type>()` in
-    `R/normalize_scholid.R`, and `extract_<type>()` plus
-    `.clean_extracted_<type>()` in `R/extract_scholid.R`.
-3.  Tests in the is, normalize, extract, classify and detect test files,
-    including collision tests against every type with an overlapping
-    grammar. Update the hard-coded type lists in `test-scholid_types.R`
-    and `test-scholid_registry.R`. Add entries for the new type in
-    `tests/testthat/helper-scholid_fixtures.R`.
+    `R/normalize_scholid.R`, `extract_<type>(text, positions = FALSE)`
+    plus `.clean_extracted_<type>()` in `R/extract_scholid.R`, and
+    `key_<type>()` in `R/scholid_key.R`. `extract_<type>()` passes
+    `positions` on to `.scholid_extract_validated()`;
+    [`locate_scholid()`](https://thomas-rauter.github.io/scholid/reference/locate_scholid.md)
+    needs it. Decide the key: which differently written values name the
+    same thing? A type without a key rule returns its input.
+3.  Tests in the is, normalize, key, extract, locate, classify and
+    detect test files, including collision tests against every type with
+    an overlapping grammar (in the locate file, overlapping spans).
+    Update the hard-coded type lists in `test-scholid_types.R` and
+    `test-scholid_registry.R`, in `test-scholid_key.R` if the type has a
+    key rule, and the resolver URL and CURIE lists in
+    `test-normalize_scholid.R` and `test-format_scholid.R`. Add entries
+    for the new type in `tests/testthat/helper-scholid_fixtures.R`.
 4.  A section in `vignettes/scholid_definitions.Rmd`, following its
-    stated layout, plus a row in its overview table.
+    stated layout, with the key rule (if any) in “Validation in
+    scholid”, plus a row in its overview table and an example in the
+    chunk that generates the table of forms under “Resolver URLs and
+    CURIEs”.
 5.  The other places that name types: the “including …” list in the
     `DESCRIPTION` Description field and the Scope list in `README.Rmd`.
     Then run `devtools::build_readme()`. Don’t write the number of types

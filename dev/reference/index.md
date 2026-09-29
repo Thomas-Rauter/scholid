@@ -23,6 +23,10 @@ GitHub).
   : Test scholarly identifier validity
 - [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md)
   : Normalize scholarly identifiers
+- [`scholid_key()`](https://thomas-rauter.github.io/scholid/reference/scholid_key.md)
+  : Comparison keys for scholarly identifiers
+- [`format_scholid()`](https://thomas-rauter.github.io/scholid/reference/format_scholid.md)
+  : Write scholarly identifiers as resolver URLs, CURIEs, or DOIs
 - [`scholid_types()`](https://thomas-rauter.github.io/scholid/reference/scholid_types.md)
   : Supported scholid identifier types
 - [`detect_scholid_type()`](https://thomas-rauter.github.io/scholid/reference/detect_scholid_type.md)

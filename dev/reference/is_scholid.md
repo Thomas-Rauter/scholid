@@ -3,10 +3,12 @@
 Vectorized predicate that tests whether values are valid scholarly
 identifiers of a given supported type.
 
-For identifier types with checksum algorithms (e.g., ORCID, ROR, ISNI,
-ISBN, ISSN), checksum correctness is verified. The same checksum rules
-apply to
+For identifier types that define a checksum, checksum correctness is
+verified. The same checksum rules apply to
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md).
+Which types define one is in the overview table of the *How Scholarly
+Identifiers Are Defined* vignette
+([`vignette("scholid_definitions", package = "scholid")`](https://thomas-rauter.github.io/scholid/articles/scholid_definitions.md)).
 
 The main difference from normalization is input form: `is_scholid()`
 expects values in canonical (or near-canonical) form. Wrapped values
@@ -14,8 +16,8 @@ such as URLs or prefixed labels should be normalized first with
 [`normalize_scholid()`](https://thomas-rauter.github.io/scholid/reference/normalize_scholid.md).
 Values that contain an invisible character or a Unicode space are not
 canonical and return `FALSE`. Unicode dashes and full-width digits are
-not read as their ASCII forms. See "Input characters" in
-[`vignette("scholid_definitions", package = "scholid")`](https://thomas-rauter.github.io/scholid/articles/scholid_definitions.md).
+not read as their ASCII forms. See "Input characters" in the same
+vignette.
 
 Inputs that are `NA` yield `NA`. Non-matching values return `FALSE`.
 

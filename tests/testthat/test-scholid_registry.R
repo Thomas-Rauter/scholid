@@ -191,3 +191,28 @@ testthat::test_that(
         testthat::expect_setequal(curie_is_id, c("swhid", "ark", "rrid"))
     }
 )
+
+testthat::test_that(
+    "registry records a DOI template for arXiv and URL escapes for DOIs only",
+    {
+        reg <- .scholid_registry()
+
+        has_doi <- names(reg)[vapply(
+            reg,
+            function(entry) !is.null(entry$doi),
+            logical(1)
+        )]
+        has_url_escape <- names(reg)[vapply(
+            reg,
+            function(entry) !is.null(entry$url_escape),
+            logical(1)
+        )]
+
+        testthat::expect_identical(has_doi, "arxiv")
+        testthat::expect_true(
+            grepl("^10\\.[0-9]{4,9}/[^{}]*[{]id[}]$", reg$arxiv$doi)
+        )
+        testthat::expect_identical(has_url_escape, "doi")
+        testthat::expect_setequal(reg$doi$url_escape, c("%", "#", "?"))
+    }
+)

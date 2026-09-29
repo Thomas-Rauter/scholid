@@ -37,6 +37,8 @@ The exported functions validate their input and then dispatch by **name**:
 per-type implementations live in `R/is_idtype_functions.R`,
 `R/normalize_scholid.R`, `R/extract_scholid.R` and `R/scholid_key.R`.
 `scholid_key()` runs `normalize_<type>` and then `key_<type>` on its output.
+`format_scholid()` runs `normalize_<type>` and then fills the registry's
+`url`, `curie` or `doi` template; it has no per-type dispatch target.
 `classify_scholid()` and `detect_scholid_type()` walk the registry order.
 Consequences:
 
@@ -118,11 +120,12 @@ shows the documentation pass (`git show --stat <sha>`). Touch, in order:
    Update the hard-coded type lists in `test-scholid_types.R` and
    `test-scholid_registry.R`, in `test-scholid_key.R` if the type has a
    key rule, and the resolver URL and CURIE lists in
-   `test-normalize_scholid.R`. Add entries for the new type in
-   `tests/testthat/helper-scholid_fixtures.R`.
+   `test-normalize_scholid.R` and `test-format_scholid.R`. Add entries for
+   the new type in `tests/testthat/helper-scholid_fixtures.R`.
 4. A section in `vignettes/scholid_definitions.Rmd`, following its stated
    layout, with the key rule (if any) in "Validation in scholid", plus a row
-   in its overview table.
+   in its overview table and an example in the chunk that generates the
+   table of forms under "Resolver URLs and CURIEs".
 5. The other places that name types: the "including …" list in the
    `DESCRIPTION` Description field and the Scope list in `README.Rmd`. Then
    run `devtools::build_readme()`. Don't write the number of types anywhere;

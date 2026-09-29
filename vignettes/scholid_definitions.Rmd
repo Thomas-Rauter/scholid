@@ -114,6 +114,59 @@ Bioregistry prefix and a colon (for RRIDs, in uppercase), so for these
 types the canonical form is the CURIE.
 `is_scholid()` and `classify_scholid()` accept canonical values only.
 
+`format_scholid()` writes the forms in the URL and CURIE rows of these
+tables, and for arXiv the DOI. Older URLs and those under "Also read" are
+only read. It normalizes its input first, and `normalize_scholid()` reads
+back what it writes. For ARKs, SWHIDs, and RRIDs, it writes the canonical
+form as the CURIE, so RRIDs keep the uppercase `RRID:` prefix.
+
+The table below is generated with `format_scholid()` from one example per
+type. An empty cell means that the type has no such form, and
+`format_scholid()` stops with an error for it.
+
+```{r forms overview, echo = FALSE}
+examples <- c(
+    doi        = "10.1000/182",
+    arxiv      = "2101.00001v1",
+    bibcode    = "1998AJ....116.1009R",
+    openalex   = "W2741809807",
+    swhid      = "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+    ark        = "ark:/12148/btv1b8449691v",
+    isni       = "0000000121032683",
+    orcid      = "0000-0002-1825-0097",
+    ror        = "01an7q238",
+    rrid       = "RRID:AB_262044",
+    uniprot    = "P12345",
+    refseq     = "NM_001744.6",
+    sra        = "SRR1553610",
+    geo        = "GSE2553",
+    bioproject = "PRJNA257197",
+    assembly   = "GCF_000001405.40",
+    isbn       = "9780306406157",
+    issn       = "0317-8471",
+    pmcid      = "PMC1234567",
+    pmid       = "12345678"
+)
+# Stops the build if a type has no example.
+stopifnot(setequal(names(examples), scholid::scholid_types()))
+
+form <- function(type, as) {
+    out <- tryCatch(
+        scholid::format_scholid(examples[[type]], type, as),
+        error = function(e) ""
+    )
+    if (nzchar(out)) paste0("`", out, "`") else ""
+}
+types <- scholid::scholid_types()
+knitr::kable(data.frame(
+    Type  = paste0("`", types, "`"),
+    URL   = vapply(types, form, character(1), as = "url"),
+    CURIE = vapply(types, form, character(1), as = "curie"),
+    DOI   = vapply(types, form, character(1), as = "doi"),
+    row.names = NULL
+))
+```
+
 ## Supported types (overview)
 
 | Type | Example | Checksum | Notes |
@@ -190,6 +243,16 @@ Example:
 | URL | `https://doi.org/10.1000/182` | [DOI resolution documentation](https://www.doi.org/the-identifier/resources/factsheets/doi-resolution-documentation) |
 | Older URL | `https://dx.doi.org/10.1000/182` | Still resolves |
 | CURIE | `doi:10.1000/182` | [Bioregistry `doi`](https://bioregistry.io/registry/doi) |
+
+The [DOI Handbook](https://www.doi.org/the-identifier/resources/handbook)
+(section 4.7, "Percent-encoding") percent-encodes most characters of a DOI
+in a URL. `format_scholid()` encodes only `%`, `#`, and `?`, as `%25`,
+`%23`, and `%3F`, because `doi.org` would otherwise read them as an
+escape, the start of a fragment, and the start of a query, and resolve a
+different DOI. It writes other characters as they are, so that the URL
+stays readable; browsers encode them when they send the request. So
+`10.1000/456#789` gives `https://doi.org/10.1000/456%23789`.
+`normalize_scholid()` decodes these URLs again. CURIEs are not encoded.
 
 ## Validation in scholid
 
@@ -930,6 +993,9 @@ form that arXiv uses leaves out the subject class, as in
 label, or as `doi.org` URLs, with the prefix in any case. It rejects DOIs
 with a version or a subject class, which arXiv does not register.
 `detect_scholid_type()` still reports these values as `doi`.
+`format_scholid(x, "arxiv", "doi")` writes these DOIs, so it leaves out
+the version and the subject class: `math.GT/0309136v1` gives
+`10.48550/arXiv.math/0309136`. The URL and the CURIE keep both.
 
 ## Validation in scholid
 

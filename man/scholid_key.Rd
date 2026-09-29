@@ -50,5 +50,6 @@ scholid_key(c("2101.00001v1", "arXiv:2101.00001v2"), "arxiv")
 
 }
 \seealso{
-\code{\link[=normalize_scholid]{normalize_scholid()}}, \code{\link[=is_scholid]{is_scholid()}}, \code{\link[=scholid_types]{scholid_types()}}
+\code{\link[=normalize_scholid]{normalize_scholid()}}, \code{\link[=format_scholid]{format_scholid()}}, \code{\link[=is_scholid]{is_scholid()}},
+\code{\link[=scholid_types]{scholid_types()}}
 }

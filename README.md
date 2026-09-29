@@ -68,6 +68,7 @@ User-available functions:
 | `is_scholid(x, type)`         | Test whether values conform to a given identifier type               |
 | `normalize_scholid(x, type)`  | Normalize identifiers to canonical form                              |
 | `scholid_key(x, type)`        | Give keys for comparing and deduplicating identifiers                |
+| `format_scholid(x, type, as)` | Write identifiers as resolver URLs, CURIEs, or arXiv DOIs            |
 | `extract_scholid(text, type)` | Extract identifiers of a given type from free text                   |
 | `locate_scholid(text, types)` | Find identifiers of several types in free text, with their positions |
 | `classify_scholid(x)`         | Guess the identifier type of each input value                        |
@@ -114,6 +115,26 @@ scholid::scholid_key(
 ```
 
     ## [1] "9780306406157" "9780306406157"
+
+``` r
+# write identifiers as resolver URLs or CURIEs
+scholid::format_scholid(
+  x    = "PMID: 12345678",
+  type = "pmid"
+)
+```
+
+    ## [1] "https://pubmed.ncbi.nlm.nih.gov/12345678/"
+
+``` r
+scholid::format_scholid(
+  x    = "0000-0002-1825-0097",
+  type = "orcid",
+  as   = "curie"
+)
+```
+
+    ## [1] "orcid:0000-0002-1825-0097"
 
 ``` r
 # extract identifiers of a given type from free text

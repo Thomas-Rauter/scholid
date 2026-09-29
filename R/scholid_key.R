@@ -39,7 +39,8 @@
 #' # Versions of one preprint share a key
 #' scholid_key(c("2101.00001v1", "arXiv:2101.00001v2"), "arxiv")
 #'
-#' @seealso [normalize_scholid()], [is_scholid()], [scholid_types()]
+#' @seealso [normalize_scholid()], [format_scholid()], [is_scholid()],
+#'   [scholid_types()]
 #' @export
 scholid_key <- function(
         x,

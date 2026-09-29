@@ -52,6 +52,15 @@
   forms too, and still reports arXiv DOIs as `doi`. The forms and their
   sources are in the definitions vignette.
 
+- Added `format_scholid()`, which writes identifiers as resolver URLs, as
+  CURIEs, or, for arXiv, as the DOIs that arXiv registers, such as
+  `10.48550/arXiv.2101.00001`, without the version. It normalizes values
+  like `normalize_scholid()` first, and `normalize_scholid()` reads back
+  what it writes. DOI URLs percent-encode `%`, `#`, and `?`; everything
+  else is written as it is. Asking for a form that a type doesn't have,
+  such as a URL for an ISBN, is an error that names the forms it has. The
+  forms of each type are in the definitions vignette.
+
 # scholid 0.2.1
 
 ## Bug fixes

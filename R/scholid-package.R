@@ -2,8 +2,8 @@
 #'
 #' @description
 #' `scholid` provides lightweight, dependency-free utilities for detecting,
-#' normalizing, comparing, classifying, extracting, and locating scholarly
-#' identifier strings.
+#' normalizing, comparing, formatting, classifying, extracting, and locating
+#' scholarly identifier strings.
 #' See [scholid_types()] for the supported identifier types and their
 #' classification order.
 #'
@@ -16,6 +16,6 @@
 #'   classification precedence.
 #'
 #' @seealso [is_scholid()], [normalize_scholid()], [scholid_key()],
-#'   [extract_scholid()], [locate_scholid()], [classify_scholid()],
-#'   [detect_scholid_type()], [scholid_types()]
+#'   [format_scholid()], [extract_scholid()], [locate_scholid()],
+#'   [classify_scholid()], [detect_scholid_type()], [scholid_types()]
 "_PACKAGE"

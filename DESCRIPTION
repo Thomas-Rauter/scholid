@@ -9,8 +9,9 @@ Authors@R:
            role = c("aut", "cre", "fnd"),
            comment = c(ORCID = "0009-0004-5578-3628"))
 Description: Detects, normalizes, classifies, and extracts scholarly identifier
-    strings, locates them in free text, and gives keys for comparing and
-    deduplicating them. Provides lightweight,
+    strings, locates them in free text, gives keys for comparing and
+    deduplicating them, and writes them as resolver URLs, CURIEs, or arXiv
+    DOIs. Provides lightweight,
     dependency-free helpers for identifier types including DOIs, ORCID iDs,
     ISBNs, ISSNs, arXiv and
     PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK,

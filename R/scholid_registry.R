@@ -22,7 +22,8 @@
 #' drops it.
 #'
 #' Each entry states how the identifier is written as a link and as a
-#' CURIE. `normalize_scholid()` reads these forms.
+#' CURIE. `normalize_scholid()` reads these forms, and `format_scholid()`
+#' writes them.
 #'
 #' - `url`: resolver URL templates, in which `{id}` stands for the
 #'   canonical identifier. A template's name, if any, is a regular
@@ -31,6 +32,10 @@
 #'   resolver.
 #' - `url_alt` (optional): other URL templates that are read but never
 #'   written, such as older forms that still resolve.
+#' - `url_escape` (optional): characters of the identifier that
+#'   `format_scholid()` percent-encodes in URLs, because the resolver would
+#'   read them as URL syntax. The type's normalizer must decode them in
+#'   URLs.
 #' - `curie`: the Bioregistry prefix, or `NA_character_` if Bioregistry
 #'   has no entry for the type. With `curie_is_id = TRUE`, the canonical
 #'   form already starts with the prefix and a colon, in any case, so it is
@@ -93,6 +98,9 @@
             order       = 10L,
             url         = "https://doi.org/{id}",
             url_alt     = "https://dx.doi.org/{id}",
+            # DOI Handbook 4.7; doi.org reads these as an escape, a
+            # fragment, and a query.
+            url_escape  = c("%", "#", "?"),
             curie       = "doi",
             pat         = "^10\\.[0-9]{4,9}/\\S+$",
             extract_pat = "(?<![[:alnum:]_])(?<id>10\\.[0-9]{4,9}/\\S+)"

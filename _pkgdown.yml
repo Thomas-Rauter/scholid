@@ -45,6 +45,7 @@ reference:
       - is_scholid
       - normalize_scholid
       - scholid_key
+      - format_scholid
       - scholid_types
       - detect_scholid_type
       

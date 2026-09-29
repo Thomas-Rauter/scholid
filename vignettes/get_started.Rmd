@@ -31,6 +31,8 @@ consistently across identifier types:
 - `normalize_scholid(x, type)` returns canonical identifier strings.
 - `scholid_key(x, type)` returns keys for comparing and deduplicating
   identifiers.
+- `format_scholid(x, type, as)` writes identifiers as resolver URLs,
+  CURIEs, or arXiv DOIs.
 - `extract_scholid(text, type)` extracts identifiers from free text.
 - `locate_scholid(text, types)` finds identifiers of several types in free
   text, with their positions.
@@ -145,6 +147,69 @@ scholid::scholid_key(
 Keys are for comparing only. Some don't pass `is_scholid()`, such as the
 RefSeq key `NM_000546` without its version, so keep the normalized values
 for storing and showing identifiers. The key rule of each type is in the
+definitions vignette.
+
+## Write: `format_scholid()`
+
+`format_scholid()` writes identifiers as resolver URLs (the default), as
+CURIEs, or, for arXiv preprints, as the DOIs that arXiv registers. It
+normalizes its input first, so wrapped values work, and values that don't
+normalize give `NA`. For links in a report:
+
+```{r format URLs}
+x <- c(
+  "doi:10.7717/peerj.4375",
+  "https://doi.org/10.1000/182",
+  "not a doi"
+)
+urls <- scholid::format_scholid(
+    x    = x,
+    type = "doi"
+)
+urls
+```
+
+`normalize_scholid()` reads the output back:
+
+```{r format round trip}
+scholid::normalize_scholid(
+    x    = urls,
+    type = "doi"
+)
+```
+
+CURIEs use the type's [Bioregistry](https://bioregistry.io) prefix:
+
+```{r format CURIEs}
+scholid::format_scholid(
+    x    = c("PMID: 12345678", "https://pubmed.ncbi.nlm.nih.gov/7654321/"),
+    type = "pmid",
+    as   = "curie"
+)
+```
+
+The arXiv DOI names the preprint, so it leaves out the version:
+
+```{r format arXiv DOI}
+scholid::format_scholid(
+    x    = c("arXiv:1706.03762v7", "hep-th/9901001"),
+    type = "arxiv",
+    as   = "doi"
+)
+```
+
+Not every type has every form. ISBNs, for example, have no resolver URL,
+and asking for one is an error that names the forms the type has:
+
+```{r format missing form, error = TRUE}
+scholid::format_scholid(
+    x    = "978-0-306-40615-7",
+    type = "isbn",
+    as   = "url"
+)
+```
+
+The forms of each type are listed under "Resolver URLs and CURIEs" in the
 definitions vignette.
 
 ## Extract: `extract_scholid()`

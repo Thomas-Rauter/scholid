@@ -3,6 +3,7 @@
 export(classify_scholid)
 export(detect_scholid_type)
 export(extract_scholid)
+export(format_scholid)
 export(is_scholid)
 export(locate_scholid)
 export(normalize_scholid)

@@ -27,7 +27,7 @@
 #' Wrapped forms include each type's resolver URL and CURIE, and arXiv
 #' DOIs for arXiv identifiers. "Resolver URLs and CURIEs" in the same
 #' vignette says how they are read, and each type's section names its
-#' forms.
+#' forms. [format_scholid()] writes these forms.
 #'
 #' @param x A vector of values to normalize.
 #' @param type A single string giving the identifier type. See
@@ -42,7 +42,8 @@
 #' normalize_scholid("pubmed:12345678", "pmid")
 #' normalize_scholid("https://doi.org/10.48550/arXiv.2101.00001", "arxiv")
 #'
-#' @seealso [is_scholid()], [scholid_types()]
+#' @seealso [is_scholid()], [format_scholid()], [scholid_key()],
+#'   [scholid_types()]
 #' @export
 normalize_scholid <- function(
         x,

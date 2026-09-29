@@ -39,13 +39,18 @@ per-type implementations live in `R/is_idtype_functions.R`,
 `scholid_key()` runs `normalize_<type>` and then `key_<type>` on its output.
 `format_scholid()` runs `normalize_<type>` and then fills the registry's
 `url`, `curie` or `doi` template; it has no per-type dispatch target.
+`locate_scholid()` calls `extract_<type>(text, positions = TRUE)` for each
+type, which takes each hit's position from the `(?<id>...)` group of the
+registry's `extract_pat`, and then drops overlapping hits (longer span
+first, then registry order).
 `classify_scholid()` and `detect_scholid_type()` walk the registry order.
 Consequences:
 
 - A per-type function's name is its registration. Renaming one breaks dispatch;
   only `tests/testthat/test-scholid_registry.R` catches that.
 - Registry `order` values are user-visible behaviour: changing them changes
-  what `classify_scholid()` and `detect_scholid_type()` return.
+  what `classify_scholid()` and `detect_scholid_type()` return, and which of
+  two overlapping hits of equal length `locate_scholid()` keeps.
 
 ## Commands
 
@@ -110,13 +115,18 @@ shows the documentation pass (`git show --stat <sha>`). Touch, in order:
    and the canonical Bioregistry prefix, or explicitly none. Take both
    from those sources, check new hosts and prefixes against the other
    types' grammars, and add older URLs that still resolve as `url_alt`.
+   The `extract_pat` marks the identifier as written with a `(?<id>...)`
+   group. The roxygen block of `.scholid_registry()` documents every field.
 2. `is_<type>()` in `R/is_idtype_functions.R`, `normalize_<type>()` in
-   `R/normalize_scholid.R`, `extract_<type>()` plus
+   `R/normalize_scholid.R`, `extract_<type>(text, positions = FALSE)` plus
    `.clean_extracted_<type>()` in `R/extract_scholid.R`, and `key_<type>()`
-   in `R/scholid_key.R`. Decide the key: which differently written values
-   name the same thing? A type without a key rule returns its input.
-3. Tests in the is, normalize, key, extract, classify and detect test files,
-   including collision tests against every type with an overlapping grammar.
+   in `R/scholid_key.R`. `extract_<type>()` passes `positions` on to
+   `.scholid_extract_validated()`; `locate_scholid()` needs it. Decide the
+   key: which differently written values name the same thing? A type
+   without a key rule returns its input.
+3. Tests in the is, normalize, key, extract, locate, classify and detect
+   test files, including collision tests against every type with an
+   overlapping grammar (in the locate file, overlapping spans).
    Update the hard-coded type lists in `test-scholid_types.R` and
    `test-scholid_registry.R`, in `test-scholid_key.R` if the type has a
    key rule, and the resolver URL and CURIE lists in

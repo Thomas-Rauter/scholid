@@ -30,16 +30,14 @@
   are not identifiers, and some don't pass `is_scholid()`. The rules are
   in the definitions vignette.
 
-- Accepted Unicode dashes, such as U+2010 and the en dash, in ORCID, ISBN,
-  ISNI, and ISSN values, and full-width digits in every type except DOI,
-  ARK, SWHID, and RRID, in `normalize_scholid()`, `extract_scholid()`, and
-  `detect_scholid_type()`. They are read as their ASCII forms.
-  `is_scholid()` still accepts only ASCII. The per-type rules are under
-  "Input characters" in the definitions vignette.
-
-- Percent-decoded `doi.org` and `dx.doi.org` URLs in
-  `normalize_scholid(x, "doi")`, so `https://doi.org/10.1000%2F182` gives
-  `10.1000/182`.
+- Added `format_scholid()`, which writes identifiers as resolver URLs, as
+  CURIEs, or, for arXiv, as the DOIs that arXiv registers, such as
+  `10.48550/arXiv.2101.00001`, without the version. It normalizes values
+  like `normalize_scholid()` first, and `normalize_scholid()` reads back
+  what it writes. DOI URLs percent-encode `%`, `#`, and `?`; everything
+  else is written as it is. Asking for a form that a type doesn't have,
+  such as a URL for an ISBN, is an error that names the forms it has. The
+  forms of each type are in the definitions vignette.
 
 - Accepted each type's resolver URL and Bioregistry CURIE, older resolver
   URLs that still resolve, and arXiv DOIs in `normalize_scholid()`. Inputs
@@ -52,14 +50,27 @@
   forms too, and still reports arXiv DOIs as `doi`. The forms and their
   sources are in the definitions vignette.
 
-- Added `format_scholid()`, which writes identifiers as resolver URLs, as
-  CURIEs, or, for arXiv, as the DOIs that arXiv registers, such as
-  `10.48550/arXiv.2101.00001`, without the version. It normalizes values
-  like `normalize_scholid()` first, and `normalize_scholid()` reads back
-  what it writes. DOI URLs percent-encode `%`, `#`, and `?`; everything
-  else is written as it is. Asking for a form that a type doesn't have,
-  such as a URL for an ISBN, is an error that names the forms it has. The
-  forms of each type are in the definitions vignette.
+- Accepted Unicode dashes, such as U+2010 and the en dash, in ORCID, ISBN,
+  ISNI, and ISSN values, and full-width digits in every type except DOI,
+  ARK, SWHID, and RRID, in `normalize_scholid()`, `extract_scholid()`, and
+  `detect_scholid_type()`. They are read as their ASCII forms.
+  `extract_scholid()` doesn't read dashes in ISSNs, because an en dash in
+  free text usually marks a range, and `is_scholid()` still accepts only
+  ASCII. The per-type rules are under "Input characters" in the
+  definitions vignette.
+
+- Percent-decoded `doi.org` and `dx.doi.org` URLs in
+  `normalize_scholid(x, "doi")`, so `https://doi.org/10.1000%2F182` gives
+  `10.1000/182`.
+
+## Documentation
+
+- Added "Input characters", "Comparison keys", and "Resolver URLs and
+  CURIEs" to the definitions vignette, and a table of resolver URL and
+  CURIE forms, with their sources, to each type's section.
+
+- Added sections on `scholid_key()`, `format_scholid()`, and
+  `locate_scholid()` to the Get started vignette.
 
 # scholid 0.2.1
 

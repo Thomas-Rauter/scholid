@@ -22,7 +22,7 @@ identifier type, or \code{NA_character_} if no supported type matches.
 Classification is based on canonical identifier syntax. Types are checked
 in the order returned by \code{\link[=scholid_types]{scholid_types()}} (most specific first); the first
 match wins. Wrapped forms (e.g., URLs or labels) should be normalized first
-with \code{normalize_scholid()}.
+with \code{\link[=normalize_scholid]{normalize_scholid()}}.
 }
 \examples{
 classify_scholid(c("10.1000/182", "0000-0002-1825-0097", "not an id"))

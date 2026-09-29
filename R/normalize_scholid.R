@@ -5,9 +5,9 @@
 #' to a canonical form (e.g., removing URL prefixes, labels, or separators).
 #'
 #' Normalization requires that inputs match the expected identifier structure.
-#' For identifier types with checksum algorithms (ORCID, ROR, ISNI, ISBN, ISSN),
-#' normalization also requires checksum-valid values. Inputs that do not meet
-#' these requirements yield `NA_character_`.
+#' For identifier types that define a checksum, normalization also requires
+#' checksum-valid values. Inputs that do not meet these requirements yield
+#' `NA_character_`.
 #'
 #' Normalized outputs are canonical, type-specific representations of valid
 #' identifiers.
@@ -33,8 +33,9 @@
 #' @param type A single string giving the identifier type. See
 #'   [scholid_types()] for supported values.
 #'
-#' @return A character vector with the same length as `x`. Invalid, checksum-
-#'   failing, or structurally non-matching inputs yield `NA_character_`.
+#' @return A character vector with the same length as `x`. Values that are
+#'   `NA`, invalid, checksum-failing, or structurally non-matching yield
+#'   `NA_character_`.
 #'
 #' @examples
 #' normalize_scholid("https://doi.org/10.1000/182", "doi")

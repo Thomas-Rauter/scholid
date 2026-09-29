@@ -20,9 +20,11 @@ each element is a valid identifier of the specified type.
 Vectorized predicate that tests whether values are valid scholarly
 identifiers of a given supported type.
 
-For identifier types with checksum algorithms (e.g., ORCID, ROR, ISNI, ISBN,
-ISSN), checksum correctness is verified. The same checksum rules apply to
-\code{\link[=normalize_scholid]{normalize_scholid()}}.
+For identifier types that define a checksum, checksum correctness is
+verified. The same checksum rules apply to \code{\link[=normalize_scholid]{normalize_scholid()}}. Which
+types define one is in the overview table of the \emph{How Scholarly
+Identifiers Are Defined} vignette
+(\code{vignette("scholid_definitions", package = "scholid")}).
 
 The main difference from normalization is input form: \code{is_scholid()}
 expects values in canonical (or near-canonical) form. Wrapped values
@@ -30,7 +32,7 @@ such as URLs or prefixed labels should be normalized first with
 \code{\link[=normalize_scholid]{normalize_scholid()}}. Values that contain an invisible character or a
 Unicode space are not canonical and return \code{FALSE}. Unicode dashes and
 full-width digits are not read as their ASCII forms. See "Input
-characters" in \code{vignette("scholid_definitions", package = "scholid")}.
+characters" in the same vignette.
 
 Inputs that are \code{NA} yield \code{NA}. Non-matching values return \code{FALSE}.
 }

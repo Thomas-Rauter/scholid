@@ -9,7 +9,7 @@
 #'
 #' Matches are returned as extracted identifier tokens from the text.
 #' Surrounding prose punctuation or markup fragments may be removed where
-#' necessary to isolate the identifier. Use `normalize_scholid()` to
+#' necessary to isolate the identifier. Use [normalize_scholid()] to
 #' convert identifiers to canonical form.
 #'
 #' Before matching, invisible characters are removed from the text and
@@ -20,16 +20,18 @@
 #'
 #' @param text A character vector of text.
 #' @param type A single string giving the identifier type. See
-#'   `scholid_types()` for supported values.
+#'   [scholid_types()] for supported values.
 #'
-#' @return A list of character vectors of extracted identifiers.
+#' @return A list with the same length as `text`, whose elements are
+#'   character vectors of extracted identifiers.
 #'
 #' @examples
 #' extract_scholid("See https://doi.org/10.1000/182.", "doi")
 #' extract_scholid("ORCID 0000-0002-1825-0097", "orcid")
 #'
 #' @seealso [locate_scholid()] to find identifiers of several types at once,
-#'   with their positions in the text.
+#'   with their positions in the text, [normalize_scholid()],
+#'   [scholid_types()]
 #' @export
 extract_scholid <- function(
         text,

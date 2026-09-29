@@ -10,7 +10,7 @@ locate_scholid(text, types = scholid_types())
 \item{text}{A character vector of text.}
 
 \item{types}{A character vector of identifier types to look for. See
-\code{scholid_types()} for supported values. Duplicates and order don't
+\code{\link[=scholid_types]{scholid_types()}} for supported values. Duplicates and order don't
 matter.}
 }
 \value{
@@ -21,7 +21,7 @@ A data frame with one row per identifier found and the columns
 \description{
 Find identifiers of several types in free text at once, and report where
 each one is. For each type, the identifiers found are those that
-\code{extract_scholid()} returns.
+\code{\link[=extract_scholid]{extract_scholid()}} returns.
 
 The result is a data frame with one row per identifier found and these
 columns:
@@ -46,8 +46,8 @@ When nothing is found, the result has zero rows and the same columns.
 The same stretch of text can be found by several types, such as an ISBN
 and the PMID-like digits inside it. Within one element, when the spans
 of two hits overlap, only one is kept: the longer span wins, and for
-equal lengths the type that comes first in \code{scholid_types()}, the order
-\code{classify_scholid()} uses. Hits are taken in that order, and each is kept
+equal lengths the type that comes first in \code{\link[=scholid_types]{scholid_types()}}, the order
+\code{\link[=classify_scholid]{classify_scholid()}} uses. Hits are taken in that order, and each is kept
 unless it overlaps one already kept. Only the types in \code{types} take part,
 so a type left out can't hide another.
 }

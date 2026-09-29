@@ -10,10 +10,11 @@ extract_scholid(text, type)
 \item{text}{A character vector of text.}
 
 \item{type}{A single string giving the identifier type. See
-\code{scholid_types()} for supported values.}
+\code{\link[=scholid_types]{scholid_types()}} for supported values.}
 }
 \value{
-A list of character vectors of extracted identifiers.
+A list with the same length as \code{text}, whose elements are
+character vectors of extracted identifiers.
 }
 \description{
 Extract identifiers of a single supported type from free text.
@@ -24,7 +25,7 @@ character vector.
 
 Matches are returned as extracted identifier tokens from the text.
 Surrounding prose punctuation or markup fragments may be removed where
-necessary to isolate the identifier. Use \code{normalize_scholid()} to
+necessary to isolate the identifier. Use \code{\link[=normalize_scholid]{normalize_scholid()}} to
 convert identifiers to canonical form.
 
 Before matching, invisible characters are removed from the text and
@@ -40,5 +41,6 @@ extract_scholid("ORCID 0000-0002-1825-0097", "orcid")
 }
 \seealso{
 \code{\link[=locate_scholid]{locate_scholid()}} to find identifiers of several types at once,
-with their positions in the text.
+with their positions in the text, \code{\link[=normalize_scholid]{normalize_scholid()}},
+\code{\link[=scholid_types]{scholid_types()}}
 }

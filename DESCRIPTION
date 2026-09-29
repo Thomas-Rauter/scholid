@@ -11,16 +11,15 @@ Authors@R:
 Description: Detects, normalizes, classifies, and extracts scholarly identifier
     strings, locates them in free text, gives keys for comparing and
     deduplicating them, and writes them as resolver URLs, CURIEs, or arXiv
-    DOIs. Provides lightweight,
-    dependency-free helpers for identifier types including DOIs, ORCID iDs,
-    ISBNs, ISSNs, arXiv and
-    PubMed identifiers, ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK,
-    SWHID, and selected life-science accessions (UniProt, RefSeq, SRA, GEO,
-    BioProject, and genome assemblies). Functions are vectorized, predictable,
-    and suitable as low-level building blocks for other R packages and data
-    workflows. Use 'scholid_types()' for the authoritative type list. For
-    online lookup, conversion, metadata retrieval, and linked identifier
-    discovery, see 'scholidonline'.
+    DOIs. Provides lightweight, dependency-free helpers for identifier types
+    including DOIs, ORCID iDs, ISBNs, ISSNs, arXiv and PubMed identifiers,
+    ROR and ISNI, OpenAlex and ADS bibcodes, RRID, ARK, SWHID, and selected
+    life-science accessions (UniProt, RefSeq, SRA, GEO, BioProject, and
+    genome assemblies). Functions are vectorized, predictable, and suitable
+    as low-level building blocks for other R packages and data workflows.
+    Use 'scholid_types()' for the authoritative type list. For online
+    lookup, conversion, metadata retrieval, and linked identifier discovery,
+    see 'scholidonline'.
 License: MIT + file LICENSE
 URL: https://thomas-rauter.github.io/scholid/,
     https://thomas-rauter.github.io/scholidonline/

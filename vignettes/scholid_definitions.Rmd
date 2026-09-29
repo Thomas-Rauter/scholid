@@ -149,7 +149,8 @@ examples <- c(
 )
 # Stops the build if a type has no example.
 stopifnot(setequal(names(examples), scholid::scholid_types()))
-
+# No blank lines in this chunk: urlchecker reads the .Rmd with plain
+# pandoc, and a blank line here puts later code fences out of step.
 form <- function(type, as) {
     out <- tryCatch(
         scholid::format_scholid(examples[[type]], type, as),

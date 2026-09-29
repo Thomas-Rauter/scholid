@@ -8,7 +8,7 @@
 #' Classification is based on canonical identifier syntax. Types are checked
 #' in the order returned by [scholid_types()] (most specific first); the first
 #' match wins. Wrapped forms (e.g., URLs or labels) should be normalized first
-#' with `normalize_scholid()`.
+#' with [normalize_scholid()].
 #'
 #' @param x A vector of candidate identifier values.
 #'

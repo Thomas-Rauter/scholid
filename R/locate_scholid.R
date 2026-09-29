@@ -3,7 +3,7 @@
 #' @description
 #' Find identifiers of several types in free text at once, and report where
 #' each one is. For each type, the identifiers found are those that
-#' `extract_scholid()` returns.
+#' [extract_scholid()] returns.
 #'
 #' The result is a data frame with one row per identifier found and these
 #' columns:
@@ -27,14 +27,14 @@
 #' The same stretch of text can be found by several types, such as an ISBN
 #' and the PMID-like digits inside it. Within one element, when the spans
 #' of two hits overlap, only one is kept: the longer span wins, and for
-#' equal lengths the type that comes first in `scholid_types()`, the order
-#' `classify_scholid()` uses. Hits are taken in that order, and each is kept
+#' equal lengths the type that comes first in [scholid_types()], the order
+#' [classify_scholid()] uses. Hits are taken in that order, and each is kept
 #' unless it overlaps one already kept. Only the types in `types` take part,
 #' so a type left out can't hide another.
 #'
 #' @param text A character vector of text.
 #' @param types A character vector of identifier types to look for. See
-#'   `scholid_types()` for supported values. Duplicates and order don't
+#'   [scholid_types()] for supported values. Duplicates and order don't
 #'   matter.
 #'
 #' @return A data frame with one row per identifier found and the columns

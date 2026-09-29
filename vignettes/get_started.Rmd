@@ -9,8 +9,8 @@ vignette: >
 
 `scholid` is a lightweight, dependency-free (base R only) toolkit for
 working with scholarly and academic identifiers. It provides small,
-well-tested helpers to detect, normalize, classify, extract, and locate
-common identifier strings.
+well-tested helpers to detect, normalize, compare, format, classify,
+extract, and locate common identifier strings.
 
 This vignette introduces the interface and typical workflows for
 mixed, messy identifier data.
@@ -58,9 +58,10 @@ the package site as *About identifiers*.
 
 `is_scholid()` checks whether each value is a valid identifier of a
 specific type. It expects canonical (or near-canonical) input; wrapped
-forms such as URLs should be normalized first. For checksum-based types
-(ORCID, ISBN, ISSN), both `is_scholid()` and `normalize_scholid()`
-verify the checksum. It is vectorized and preserves missing values.
+forms such as URLs should be normalized first. For types that define a
+checksum, both `is_scholid()` and `normalize_scholid()` verify it; the
+definitions vignette says which types do. It is vectorized and preserves
+missing values.
 
 ```{r check if DOI}
 x <- c(

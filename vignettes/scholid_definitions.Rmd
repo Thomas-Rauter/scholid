@@ -78,6 +78,20 @@ dashes for ISSN. A DOI suffix may contain any Unicode character, and ARK
 names, SWHID qualifiers, and some RRID bodies are free-form, so those types
 keep dashes and digits as written.
 
+## Comparison keys
+
+The same identifier can normalize to different strings: an ISBN-10 and its
+ISBN-13 name one book, and `2101.00001v1` and `2101.00001v2` are versions
+of one preprint. `scholid_key()` normalizes values and then applies the
+type's key rule, so that such values get the same key for `duplicated()`,
+`match()`, or `merge()`. A type's key rule, if it has one, is stated in its
+"Validation in scholid" section. For every other type, the key is the
+normalized value.
+
+Keys are for comparing, not identifiers. Some keys don't pass
+`is_scholid()`, and a key can leave out a version that tells two records
+apart. Store and show the normalized values instead.
+
 ## Supported types (overview)
 
 | Type | Example | Checksum | Notes |
@@ -160,8 +174,9 @@ don't decode to valid text, is kept as written. `extract_scholid()` does
 not decode URLs in free text.
 
 `is_scholid()` and `normalize_scholid()` preserve case. DOIs should be
-compared case-insensitively, for example by applying `tolower()` to both
-sides before comparing or deduplicating.
+compared case-insensitively for ASCII letters only: the key from
+`scholid_key()` turns ASCII letters into uppercase and keeps other
+characters as they are.
 
 ## Structural Regex
 
@@ -466,6 +481,9 @@ normalized with `normalize_scholid()` before classification.
 `GCA_` / `GCF_` genome assembly accessions are a separate type (`assembly`)
 and are not matched as RefSeq.
 
+The key from `scholid_key()` drops the version suffix, so `NM_000546.5` and
+`NM_000546.6` share the key `NM_000546`.
+
 ## Structural Regex
 
 ```
@@ -648,6 +666,10 @@ body. Wrapped URLs and lowercase accessions should be normalized with
 RefSeq gene and protein accessions (`NM_`, `NP_`, …) are validated separately
 and are not accepted as `assembly`.
 
+The key from `scholid_key()` drops the version suffix. `GCA_` and `GCF_`
+accessions with the same number keep different keys, because they are
+different records.
+
 ## Structural Regex
 
 ```
@@ -688,6 +710,10 @@ Example:
 ISBN validation requires a **checksum-valid** ISBN-10 or ISBN-13 in compact
 form (no hyphens or spaces in canonical output). Labeled or spaced input
 should be normalized first. Registry existence is not checked.
+
+The key from `scholid_key()` is the ISBN-13: an ISBN-10 becomes `978`, its
+first nine digits, and a recomputed check digit, so both forms of a book
+share a key.
 
 ## Structural Regex
 
@@ -815,6 +841,9 @@ arXiv validation is **structural only**. Both modern (`YYMM.NNNNN`) and legacy
 (`archive/YYMMNNN`) forms are accepted. Optional version suffix `vN` is allowed.
 Wrapped `arXiv:` labels and `https://arxiv.org/` URLs should be normalized
 before classification. No checksum; registry existence is not checked.
+
+The key from `scholid_key()` drops the version suffix, so all versions of a
+preprint share a key.
 
 ---
 
@@ -1024,6 +1053,10 @@ To limit false positives, `scholid` requires the explicit `swh:` prefix and
 rejects bare 40-character hex strings (for example Git commit hashes). Known
 qualifier keys (`origin`, `visit`, `anchor`, `path`, `lines`) are validated
 conservatively when present.
+
+The key from `scholid_key()` drops the qualifiers and keeps the core
+identifier, because qualifiers describe the context of an object, not the
+object.
 
 ## Structural Regex
 

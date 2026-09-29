@@ -1310,12 +1310,24 @@ is_pmcid <- function(x) {
     }
 
     y <- compact[ok]
-    acc <- rep(0, length(y))
+    res[which(ok)] <- .isbn13_check_digit(y) == substr(y, 13L, 13L)
+    res
+}
+
+
+#' Compute ISBN-13 check digits
+#'
+#' @param x A character vector of strings whose first 12 characters are
+#'   digits.
+#'
+#' @return A character vector of check digits, the same length as `x`.
+#'
+#' @noRd
+.isbn13_check_digit <- function(x) {
+    acc <- rep(0, length(x))
     w <- rep(c(1, 3), 6)
     for (i in seq_len(12L)) {
-        acc <- acc + as.integer(substr(y, i, i)) * w[[i]]
+        acc <- acc + as.integer(substr(x, i, i)) * w[[i]]
     }
-    cd <- (10 - (acc %% 10)) %% 10
-    res[which(ok)] <- cd == as.integer(substr(y, 13L, 13L))
-    res
+    as.character((10 - (acc %% 10)) %% 10)
 }

@@ -29,6 +29,8 @@ consistently across identifier types:
 - `scholid_types()` lists supported identifier types.
 - `is_scholid(x, type)` checks whether values match the identifier type.
 - `normalize_scholid(x, type)` returns canonical identifier strings.
+- `scholid_key(x, type)` returns keys for comparing and deduplicating
+  identifiers.
 - `extract_scholid(text, type)` extracts identifiers from free text.
 - `locate_scholid(text, types)` finds identifiers of several types in free
   text, with their positions.
@@ -105,6 +107,45 @@ scholid::normalize_scholid(
 Normalization is designed to be predictable:
 - `NA` input stays `NA`.
 - Invalid inputs typically become `NA_character_`.
+
+## Compare: `scholid_key()`
+
+Normalization keeps apart values that name the same thing in different
+ways: an ISBN-10 and its ISBN-13, versions of one arXiv preprint, or DOIs
+that differ only in the case of ASCII letters. `scholid_key()` normalizes
+values and gives them keys that match, for use with `duplicated()`,
+`unique()`, `match()`, or `merge()`.
+
+```{r key ISBN}
+x <- c(
+  "0306406152",
+  "ISBN 978-0-306-40615-7",
+  "0-8044-2957-X",
+  "9780804429573"
+)
+keys <- scholid::scholid_key(
+    x    = x,
+    type = "isbn"
+)
+keys
+x[!duplicated(keys)]
+```
+
+```{r key arXiv and DOI}
+scholid::scholid_key(
+    x    = c("2101.00001v1", "arXiv:2101.00001v2"),
+    type = "arxiv"
+)
+scholid::scholid_key(
+    x    = c("10.1000/abc", "https://doi.org/10.1000/ABC"),
+    type = "doi"
+)
+```
+
+Keys are for comparing only. Some don't pass `is_scholid()`, such as the
+RefSeq key `NM_000546` without its version, so keep the normalized values
+for storing and showing identifiers. The key rule of each type is in the
+definitions vignette.
 
 ## Extract: `extract_scholid()`
 
@@ -264,7 +305,7 @@ already-canonical strings.
 
 - It uses base R only at runtime.
 - Functions are vectorized and return stable types.
-- Type-specific logic is kept in small `is_*()`, `normalize_*()`, and
-  `extract_*()` helpers.
+- Type-specific logic is kept in small `is_*()`, `normalize_*()`,
+  `key_*()`, and `extract_*()` helpers.
 - The package is designed to be a low-level building block for other
   packages and for workflows.

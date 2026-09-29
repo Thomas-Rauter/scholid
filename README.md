@@ -67,6 +67,7 @@ User-available functions:
 | `scholid_types()`             | List supported scholarly identifier types                            |
 | `is_scholid(x, type)`         | Test whether values conform to a given identifier type               |
 | `normalize_scholid(x, type)`  | Normalize identifiers to canonical form                              |
+| `scholid_key(x, type)`        | Give keys for comparing and deduplicating identifiers                |
 | `extract_scholid(text, type)` | Extract identifiers of a given type from free text                   |
 | `locate_scholid(text, types)` | Find identifiers of several types in free text, with their positions |
 | `classify_scholid(x)`         | Guess the identifier type of each input value                        |
@@ -103,6 +104,16 @@ scholid::normalize_scholid(
 ```
 
     ## [1] "10.1000/182"
+
+``` r
+# give keys that match an ISBN-10 and its ISBN-13
+scholid::scholid_key(
+  x    = c("0306406152", "978-0-306-40615-7"),
+  type = "isbn"
+)
+```
+
+    ## [1] "9780306406157" "9780306406157"
 
 ``` r
 # extract identifiers of a given type from free text

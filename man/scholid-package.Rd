@@ -7,8 +7,8 @@
 \title{Scholarly and Academic Identifier Utilities}
 \description{
 \code{scholid} provides lightweight, dependency-free utilities for detecting,
-normalizing, classifying, extracting, and locating scholarly identifier
-strings.
+normalizing, comparing, classifying, extracting, and locating scholarly
+identifier strings.
 See \code{\link[=scholid_types]{scholid_types()}} for the supported identifier types and their
 classification order.
 }
@@ -24,9 +24,9 @@ classification precedence.
 }
 
 \seealso{
-\code{\link[=is_scholid]{is_scholid()}}, \code{\link[=normalize_scholid]{normalize_scholid()}}, \code{\link[=extract_scholid]{extract_scholid()}},
-\code{\link[=locate_scholid]{locate_scholid()}}, \code{\link[=classify_scholid]{classify_scholid()}}, \code{\link[=detect_scholid_type]{detect_scholid_type()}},
-\code{\link[=scholid_types]{scholid_types()}}
+\code{\link[=is_scholid]{is_scholid()}}, \code{\link[=normalize_scholid]{normalize_scholid()}}, \code{\link[=scholid_key]{scholid_key()}},
+\code{\link[=extract_scholid]{extract_scholid()}}, \code{\link[=locate_scholid]{locate_scholid()}}, \code{\link[=classify_scholid]{classify_scholid()}},
+\code{\link[=detect_scholid_type]{detect_scholid_type()}}, \code{\link[=scholid_types]{scholid_types()}}
 }
 \author{
 \strong{Maintainer}: Thomas Rauter \email{rauterthomas0@gmail.com} (\href{https://orcid.org/0009-0004-5578-3628}{ORCID}) [funder]

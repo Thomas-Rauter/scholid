@@ -21,6 +21,15 @@
   Where the spans of hits of different types overlap, such as an ISBN and
   the PMID-like digits inside it, it keeps the longer one.
 
+- Added `scholid_key()`, which gives keys for comparing identifiers, so
+  that values written differently match in `duplicated()`, `match()`, and
+  `merge()`. It normalizes values like `normalize_scholid()` and then
+  applies the type's key rule: an ISBN-10 gets the key of its ISBN-13,
+  arXiv, RefSeq, and genome assembly keys leave out the version, DOI keys
+  uppercase ASCII letters, and SWHID keys leave out the qualifiers. Keys
+  are not identifiers, and some don't pass `is_scholid()`. The rules are
+  in the definitions vignette.
+
 - Accepted Unicode dashes, such as U+2010 and the en dash, in ORCID, ISBN,
   ISNI, and ISSN values, and full-width digits in every type except DOI,
   ARK, SWHID, and RRID, in `normalize_scholid()`, `extract_scholid()`, and

@@ -17,6 +17,10 @@
 #' keeps a prefix that the canonical form starts with, such as `RRID:`.
 #' `.scholid_locate_type()` reports its position.
 #'
+#' Optional `version_pat` matches the version suffix at the end of the
+#' canonical form, for types whose identifiers carry one. `scholid_key()`
+#' drops it.
+#'
 #' @return A named list. Names are identifier types; values are per-type
 #'   metadata lists.
 #' @noRd
@@ -50,8 +54,10 @@
         "XM", "XP", "XR", "YP", "WP"
     )
     refseq_prefix_pat <- paste(refseq_prefixes, collapse = "|")
+    # RefSeq and assembly accessions end in a period and a version number.
+    accession_version_pat <- "\\.[0-9]+"
     refseq_core_pat <- paste0(
-        "(?:", refseq_prefix_pat, ")_[A-Z0-9]+\\.[0-9]+"
+        "(?:", refseq_prefix_pat, ")_[A-Z0-9]+", accession_version_pat
     )
     sra_core_pat <- "[SED]R[RXSP][0-9]{5,}"
     geo_core_pat <- "(?:GSE|GSM|GPL|GDS)[0-9]{2,}"
@@ -60,7 +66,8 @@
     bioproject_core_pat <- paste0(
         "(?:", bioproject_prefix_pat, ")[0-9]{2,}"
     )
-    assembly_core_pat <- "GC[AF]_[0-9]{9}\\.[0-9]+"
+    assembly_core_pat <- paste0("GC[AF]_[0-9]{9}", accession_version_pat)
+    arxiv_version_pat <- "v\\d+"
 
     list(
         doi = list(
@@ -70,15 +77,21 @@
         ),
         arxiv = list(
             order = 20L,
-            pat1  = "^\\d{4}\\.\\d{4,5}(v\\d+)?$",       # post 2007
+            # post 2007
+            pat1  = paste0("^\\d{4}\\.\\d{4,5}(", arxiv_version_pat, ")?$"),
             # pre 2007
-            pat2  = "^[a-z]+(?:-[a-z]+)*(?:\\.[A-Z]{2})?/\\d{7}(v\\d+)?$",
+            pat2  = paste0(
+                "^[a-z]+(?:-[a-z]+)*(?:\\.[A-Z]{2})?/\\d{7}(",
+                arxiv_version_pat,
+                ")?$"
+            ),
+            version_pat = paste0(arxiv_version_pat, "$"),
             extract_pat = paste0(
                 "(?<![[:alnum:]_\\./-])",
                 "(?<id>",
-                "\\d{4}\\.\\d{4,5}(v\\d+)?",
+                "\\d{4}\\.\\d{4,5}(", arxiv_version_pat, ")?",
                 "|",
-                "[a-z\\-]+/\\d{7}(v\\d+)?",
+                "[a-z\\-]+/\\d{7}(", arxiv_version_pat, ")?",
                 ")",
                 "(?![[:alnum:]_\\-/])"
             )
@@ -199,8 +212,9 @@
             )
         ),
         refseq = list(
-            order = 39L,
-            pat   = paste0("^", refseq_core_pat, "$"),
+            order       = 39L,
+            pat         = paste0("^", refseq_core_pat, "$"),
+            version_pat = paste0(accession_version_pat, "$"),
             extract_pat = paste0(
                 "(?i)(?<![[:alnum:]_])",
                 "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:nuccore|protein)/|",
@@ -255,8 +269,9 @@
             )
         ),
         assembly = list(
-            order = 43L,
-            pat   = paste0("^", assembly_core_pat, "$"),
+            order       = 43L,
+            pat         = paste0("^", assembly_core_pat, "$"),
+            version_pat = paste0(accession_version_pat, "$"),
             extract_pat = paste0(
                 "(?i)(?<![[:alnum:]_])",
                 "(?:https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:assembly|datasets/genome)/|",

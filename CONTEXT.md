@@ -7,9 +7,10 @@ home of each fact instead of repeating it.
 ## What it is
 
 A CRAN package for offline, syntax-level handling of scholarly identifiers:
-validate, normalize, extract and locate in free text, classify, and detect. The
-pitch is in `DESCRIPTION`, the supported types are whatever `scholid_types()`
-returns, and the user-facing tour is `vignettes/get_started.Rmd`.
+validate, normalize, compare through keys, extract and locate in free text,
+classify, and detect. The pitch is in `DESCRIPTION`, the supported types are
+whatever `scholid_types()` returns, and the user-facing tour is
+`vignettes/get_started.Rmd`.
 
 ## Who depends on it
 

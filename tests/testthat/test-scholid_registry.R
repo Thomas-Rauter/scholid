@@ -105,6 +105,14 @@ testthat::test_that(
                     )),
                 info = paste("missing extract_", type, "()", sep = "")
             )
+            testthat::expect_false(
+                is.null(.scholid_resolve_impl(
+                    type,
+                    "key_",
+                    required = FALSE
+                    )),
+                info = paste("missing key_", type, "()", sep = "")
+            )
 
             testthat::expect_false(
                 is.null(.scholid_registry_extract_pat(type)),

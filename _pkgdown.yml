@@ -44,6 +44,7 @@ reference:
       - locate_scholid
       - is_scholid
       - normalize_scholid
+      - scholid_key
       - scholid_types
       - detect_scholid_type
       

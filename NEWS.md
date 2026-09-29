@@ -41,6 +41,17 @@
   `normalize_scholid(x, "doi")`, so `https://doi.org/10.1000%2F182` gives
   `10.1000/182`.
 
+- Accepted each type's resolver URL and Bioregistry CURIE, older resolver
+  URLs that still resolve, and arXiv DOIs in `normalize_scholid()`. Inputs
+  such as `https://pubmed.ncbi.nlm.nih.gov/12345678/`, `pubmed:12345678`,
+  `https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/`,
+  `https://portal.issn.org/resource/ISSN/0317-8471`,
+  `openalex:W2741809807`, and, for `"arxiv"`, `10.48550/arXiv.2101.00001`
+  now normalize instead of giving `NA`. URLs may use `http` or `https`,
+  any case, and a slash at the end. `detect_scholid_type()` detects these
+  forms too, and still reports arXiv DOIs as `doi`. The forms and their
+  sources are in the definitions vignette.
+
 # scholid 0.2.1
 
 ## Bug fixes

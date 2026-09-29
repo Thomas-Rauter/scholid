@@ -103,7 +103,11 @@ shows the documentation pass (`git show --stat <sha>`). Touch, in order:
 
 1. Registry entry in `.scholid_registry()` with a unique `order` placed by
    specificity relative to overlapping types, and a `version_pat` if the
-   identifiers carry a version suffix.
+   identifiers carry a version suffix. Decide the `url` and `curie`
+   fields: the resolver URL that the identifier's authority documents,
+   and the canonical Bioregistry prefix, or explicitly none. Take both
+   from those sources, check new hosts and prefixes against the other
+   types' grammars, and add older URLs that still resolve as `url_alt`.
 2. `is_<type>()` in `R/is_idtype_functions.R`, `normalize_<type>()` in
    `R/normalize_scholid.R`, `extract_<type>()` plus
    `.clean_extracted_<type>()` in `R/extract_scholid.R`, and `key_<type>()`
@@ -112,8 +116,9 @@ shows the documentation pass (`git show --stat <sha>`). Touch, in order:
 3. Tests in the is, normalize, key, extract, classify and detect test files,
    including collision tests against every type with an overlapping grammar.
    Update the hard-coded type lists in `test-scholid_types.R` and
-   `test-scholid_registry.R`, and in `test-scholid_key.R` if the type has a
-   key rule. Add entries for the new type in
+   `test-scholid_registry.R`, in `test-scholid_key.R` if the type has a
+   key rule, and the resolver URL and CURIE lists in
+   `test-normalize_scholid.R`. Add entries for the new type in
    `tests/testthat/helper-scholid_fixtures.R`.
 4. A section in `vignettes/scholid_definitions.Rmd`, following its stated
    layout, with the key rule (if any) in "Validation in scholid", plus a row

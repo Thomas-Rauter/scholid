@@ -2006,3 +2006,461 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "normalize_scholid reads resolver URLs, CURIEs, and arXiv DOIs",
+    {
+        x <- list(
+            pmid = c(
+                "https://pubmed.ncbi.nlm.nih.gov/12345678/",
+                "pubmed:12345678"
+            ),
+            pmcid = c(
+                "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/",
+                "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1234567/",
+                "pmc:PMC1234567"
+            ),
+            issn = "https://portal.issn.org/resource/ISSN/0317-8471",
+            openalex = "openalex:W2741809807",
+            isni = "isni:0000000121032683",
+            arxiv = "10.48550/arXiv.2101.00001"
+        )
+        exp <- list(
+            pmid = c("12345678", "12345678"),
+            pmcid = c("PMC1234567", "PMC1234567", "PMC1234567"),
+            issn = "0317-8471",
+            openalex = "W2741809807",
+            isni = "0000000121032683",
+            arxiv = "2101.00001"
+        )
+
+        for (t in names(x)) {
+            testthat::expect_identical(
+                normalize_scholid(x[[t]], t),
+                exp[[t]],
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid reads each type's resolver URL",
+    {
+        x <- list(
+            doi = "https://doi.org/10.1038/s41586-020-2649-2",
+            arxiv = "https://arxiv.org/abs/2101.00001",
+            bibcode = "https://ui.adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+            openalex = "https://openalex.org/W2741809807",
+            swhid = paste0(
+                "https://archive.softwareheritage.org/",
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
+            ),
+            ark = "https://n2t.net/ark:/12148/btv1b8449691v",
+            isni = "https://isni.org/isni/000000012146438X",
+            orcid = "https://orcid.org/0000-0002-1825-0097",
+            ror = "https://ror.org/01an7q238",
+            rrid = "https://scicrunch.org/resolver/RRID:AB_262044",
+            uniprot = "https://www.uniprot.org/uniprotkb/P12345",
+            refseq = c(
+                "https://www.ncbi.nlm.nih.gov/nuccore/NM_001744.6",
+                "https://www.ncbi.nlm.nih.gov/protein/NP_001735.1"
+            ),
+            sra = "https://www.ncbi.nlm.nih.gov/sra/SRR1553610",
+            geo = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553",
+            bioproject = "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA257197",
+            assembly = paste0(
+                "https://www.ncbi.nlm.nih.gov/datasets/genome/",
+                "GCF_000001405.40"
+            ),
+            issn = "https://portal.issn.org/resource/ISSN/0317-8471",
+            pmcid = "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/",
+            pmid = "https://pubmed.ncbi.nlm.nih.gov/12345678/"
+        )
+        exp <- list(
+            doi = "10.1038/s41586-020-2649-2",
+            arxiv = "2101.00001",
+            bibcode = "1992ApJ...400L...1W",
+            openalex = "W2741809807",
+            swhid = "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            ark = "ark:/12148/btv1b8449691v",
+            isni = "000000012146438X",
+            orcid = "0000-0002-1825-0097",
+            ror = "01an7q238",
+            rrid = "RRID:AB_262044",
+            uniprot = "P12345",
+            refseq = c("NM_001744.6", "NP_001735.1"),
+            sra = "SRR1553610",
+            geo = "GSE2553",
+            bioproject = "PRJNA257197",
+            assembly = "GCF_000001405.40",
+            issn = "0317-8471",
+            pmcid = "PMC1234567",
+            pmid = "12345678"
+        )
+
+        testthat::expect_setequal(
+            names(x),
+            setdiff(scholid_types(), "isbn")
+        )
+        for (t in names(x)) {
+            testthat::expect_identical(
+                normalize_scholid(x[[t]], t),
+                exp[[t]],
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid reads resolver URLs in any scheme and host case",
+    {
+        x <- list(
+            orcid = c(
+                "http://orcid.org/0000-0002-1825-0097",
+                "HTTPS://ORCID.ORG/0000-0002-1825-0097",
+                "https://orcid.org/0000-0002-1825-0097/"
+            ),
+            pmid = c(
+                "http://pubmed.ncbi.nlm.nih.gov/12345678",
+                "HTTPS://PubMed.NCBI.nlm.nih.gov/12345678/"
+            ),
+            pmcid = c(
+                "http://pmc.ncbi.nlm.nih.gov/articles/PMC1234567",
+                "Https://PMC.ncbi.nlm.nih.gov/articles/PMC1234567/"
+            ),
+            issn = c(
+                "http://portal.issn.org/resource/ISSN/0317-8471",
+                "https://Portal.ISSN.org/resource/ISSN/0317-8471/"
+            ),
+            isni = "HTTP://ISNI.ORG/isni/000000012146438X/",
+            ror = "HTTPS://ROR.ORG/01an7q238",
+            arxiv = "https://arxiv.org/abs/2101.00001/",
+            openalex = "HTTPS://OpenAlex.org/W2741809807/",
+            uniprot = "https://www.uniprot.org/uniprotkb/P12345/",
+            sra = "http://WWW.NCBI.NLM.NIH.GOV/sra/SRR1553610/",
+            geo = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE2553/",
+            assembly = paste0(
+                "https://www.ncbi.nlm.nih.gov/datasets/genome/",
+                "GCF_000001405.40/"
+            ),
+            swhid = paste0(
+                "HTTPS://Archive.SoftwareHeritage.org/",
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2/"
+            )
+        )
+        exp <- list(
+            orcid = rep("0000-0002-1825-0097", 3),
+            pmid = rep("12345678", 2),
+            pmcid = rep("PMC1234567", 2),
+            issn = rep("0317-8471", 2),
+            isni = "000000012146438X",
+            ror = "01an7q238",
+            arxiv = "2101.00001",
+            openalex = "W2741809807",
+            uniprot = "P12345",
+            sra = "SRR1553610",
+            geo = "GSE2553",
+            assembly = "GCF_000001405.40",
+            swhid = "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
+        )
+
+        for (t in names(x)) {
+            testthat::expect_identical(
+                normalize_scholid(x[[t]], t),
+                exp[[t]],
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid keeps a slash that ends a SWHID path qualifier",
+    {
+        x <- paste0(
+            "https://archive.softwareheritage.org/",
+            "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;",
+            "path=/src/"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "swhid"),
+            paste0(
+                "swh:1:cnt:4d99d2d18326621ccdd70f5ea66c2e2ac236ad8b;",
+                "path=/src/"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid reads each type's CURIE with any prefix case",
+    {
+        x <- list(
+            doi = c("doi:10.1000/182", "DOI:10.1000/182"),
+            arxiv = c("arxiv:2101.00001", "ARXIV:2101.00001"),
+            openalex = c("openalex:W2741809807", "OpenAlex:W2741809807"),
+            swhid = c(
+                "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+                "SWH:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2"
+            ),
+            ark = c(
+                "ark:/12148/btv1b8449691v",
+                "ARK:/12148/btv1b8449691v"
+            ),
+            isni = c("isni:000000012146438X", "ISNI:000000012146438X"),
+            orcid = c(
+                "orcid:0000-0002-1825-0097",
+                "ORCID:0000-0002-1825-0097"
+            ),
+            ror = c("ror:01an7q238", "ROR:01an7q238"),
+            rrid = c("rrid:AB_262044", "RRID:AB_262044"),
+            uniprot = c("uniprot:P12345", "UniProt:P12345"),
+            refseq = c("refseq:NM_001744.6", "RefSeq:NM_001744.6"),
+            sra = c("insdc.sra:SRR1553610", "INSDC.SRA:SRR1553610"),
+            geo = c("geo:GSE2553", "GEO:GSE2553"),
+            bioproject = c(
+                "bioproject:PRJNA257197",
+                "BioProject:PRJNA257197"
+            ),
+            assembly = c(
+                "ncbi.assembly:GCF_000001405.40",
+                "NCBI.Assembly:GCF_000001405.40"
+            ),
+            isbn = c("isbn:9780306406157", "ISBN:9780306406157"),
+            issn = c("issn:0317-8471", "ISSN:0317-8471"),
+            pmcid = c("pmc:PMC1234567", "PMC:PMC1234567"),
+            pmid = c("pubmed:12345678", "PubMed:12345678")
+        )
+        exp <- list(
+            doi = "10.1000/182",
+            arxiv = "2101.00001",
+            openalex = "W2741809807",
+            swhid = "swh:1:cnt:94a9ed024d3859793618152ea559a168bbcbb5e2",
+            ark = "ark:/12148/btv1b8449691v",
+            isni = "000000012146438X",
+            orcid = "0000-0002-1825-0097",
+            ror = "01an7q238",
+            rrid = "RRID:AB_262044",
+            uniprot = "P12345",
+            refseq = "NM_001744.6",
+            sra = "SRR1553610",
+            geo = "GSE2553",
+            bioproject = "PRJNA257197",
+            assembly = "GCF_000001405.40",
+            isbn = "9780306406157",
+            issn = "0317-8471",
+            pmcid = "PMC1234567",
+            pmid = "12345678"
+        )
+
+        testthat::expect_setequal(
+            names(x),
+            setdiff(scholid_types(), "bibcode")
+        )
+        for (t in names(x)) {
+            testthat::expect_identical(
+                normalize_scholid(x[[t]], t),
+                rep(exp[[t]], length(x[[t]])),
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid reads older resolver URLs that still resolve",
+    {
+        x <- list(
+            doi = "https://dx.doi.org/10.1000/182",
+            bibcode = "https://adsabs.harvard.edu/abs/1992ApJ...400L...1W",
+            uniprot = "https://www.uniprot.org/uniprot/P12345",
+            bioproject = paste0(
+                "https://www.ncbi.nlm.nih.gov/bioproject/",
+                "?term=PRJNA257197"
+            ),
+            assembly = "https://www.ncbi.nlm.nih.gov/assembly/GCF_000001405.40",
+            issn = "https://issn.org/resource/ISSN/0317-8471/",
+            pmcid = "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1234567/",
+            pmid = "https://www.ncbi.nlm.nih.gov/pubmed/12345678"
+        )
+        exp <- list(
+            doi = "10.1000/182",
+            bibcode = "1992ApJ...400L...1W",
+            uniprot = "P12345",
+            bioproject = "PRJNA257197",
+            assembly = "GCF_000001405.40",
+            issn = "0317-8471",
+            pmcid = "PMC1234567",
+            pmid = "12345678"
+        )
+
+        for (t in names(x)) {
+            testthat::expect_identical(
+                normalize_scholid(x[[t]], t),
+                exp[[t]],
+                info = t
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid reads arXiv DataCite DOIs",
+    {
+        x <- c(
+            "10.48550/arXiv.2101.00001",
+            "doi:10.48550/arXiv.2101.00001",
+            "https://doi.org/10.48550/arXiv.2101.00001",
+            "https://dx.doi.org/10.48550/arXiv.2101.00001",
+            "10.48550/ARXIV.2101.00001",
+            "10.48550/arxiv.2101.00001",
+            "10.48550/arXiv.hep-th/9901001",
+            "https://doi.org/10.48550/arXiv.hep-th%2F9901001",
+            "10.48550/ARXIV.HEP-TH/9901001",
+            "10.48550/arXiv.math/0303001"
+        )
+        exp <- c(
+            rep("2101.00001", 6),
+            rep("hep-th/9901001", 3),
+            "math/0303001"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "arxiv"),
+            exp
+        )
+    }
+)
+
+testthat::test_that(
+    "normalize_scholid rejects DOIs that arXiv does not register",
+    {
+        x <- c(
+            "10.48550/arXiv.2101.00001v2",
+            "10.48550/arXiv.hep-th/9901001v1",
+            "10.48550/arXiv.math.GT/0309136",
+            "10.48550/arXiv.",
+            "10.48550/arXiv.2101.000",
+            "10.48550/2101.00001",
+            "10.1000/arXiv.2101.00001",
+            "arXiv:10.48550/arXiv.2101.00001"
+        )
+
+        testthat::expect_identical(
+            normalize_scholid(x, "arxiv"),
+            rep(NA_character_, length(x))
+        )
+        testthat::expect_identical(
+            normalize_scholid("10.48550/arXiv.2101.00001", "doi"),
+            "10.48550/arXiv.2101.00001"
+        )
+    }
+)
+
+testthat::test_that(
+    "resolver URL and CURIE forms normalize only as their own type",
+    {
+        owners <- list(
+            "https://pubmed.ncbi.nlm.nih.gov/12345678/" = "pmid",
+            "https://www.ncbi.nlm.nih.gov/pubmed/12345678" = "pmid",
+            "pubmed:12345678" = "pmid",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/" = "pmcid",
+            "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1234567/" = "pmcid",
+            "pmc:PMC1234567" = "pmcid",
+            "https://portal.issn.org/resource/ISSN/0317-8471" = "issn",
+            "https://issn.org/resource/ISSN/0317-8471" = "issn",
+            "openalex:W2741809807" = "openalex",
+            "isni:0000000121032683" = "isni",
+            "insdc.sra:SRR1553610" = "sra",
+            "ncbi.assembly:GCF_000001405.40" = "assembly",
+            "https://www.uniprot.org/uniprotkb/P12345" = "uniprot",
+            "https://orcid.org/0000-0002-1825-0097/" = "orcid",
+            "https://isni.org/isni/000000012146438X/" = "isni",
+            "https://doi.org/10.48550/arXiv.2101.00001" = c("doi", "arxiv"),
+            "10.48550/arXiv.2101.00001" = c("doi", "arxiv")
+        )
+
+        for (x in names(owners)) {
+            hit <- vapply(
+                scholid_types(),
+                function(t) !is.na(normalize_scholid(x, t)),
+                logical(1)
+            )
+            testthat::expect_setequal(
+                names(hit)[hit],
+                owners[[x]]
+            )
+        }
+    }
+)
+
+testthat::test_that(
+    "CURIE prefixes and hosts do not carry other types' identifiers",
+    {
+        x <- list(
+            pmid = c(
+                "pmc:PMC1234567",
+                "pmc:12345678",
+                "https://pmc.ncbi.nlm.nih.gov/articles/12345678/",
+                "https://pubmed.ncbi.nlm.nih.gov/PMC1234567/"
+            ),
+            pmcid = c(
+                "pubmed:PMC1234567",
+                "pmc:1234567",
+                "https://pubmed.ncbi.nlm.nih.gov/PMC1234567/",
+                "https://pmc.ncbi.nlm.nih.gov/articles/1234567/"
+            ),
+            openalex = c("openalex:P12345", "pubmed:W2741809807"),
+            uniprot = "openalex:P12345",
+            isni = c(
+                "orcid:0000000121032683",
+                "https://orcid.org/0000000121032683"
+            ),
+            orcid = c(
+                "isni:0000-0002-1825-0097",
+                "https://isni.org/isni/0000-0002-1825-0097"
+            ),
+            refseq = c(
+                "ncbi.assembly:NM_001744.6",
+                "insdc.sra:NM_001744.6"
+            ),
+            assembly = c(
+                "insdc.sra:GCF_000001405.40",
+                "refseq:GCF_000001405.40",
+                "https://www.ncbi.nlm.nih.gov/protein/GCF_000001405.40"
+            ),
+            sra = c(
+                "ncbi.assembly:SRR1553610",
+                "geo:SRR1553610",
+                "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=SRR1553610"
+            ),
+            geo = c(
+                "insdc.sra:GSE2553",
+                "https://www.ncbi.nlm.nih.gov/sra/GSE2553"
+            ),
+            issn = c(
+                "isbn:0317-8471",
+                "https://portal.issn.org/resource/ISSN-L/0317-8471"
+            ),
+            isbn = c(
+                "issn:9780306406157",
+                "https://portal.issn.org/resource/ISSN/9780306406157"
+            ),
+            doi = c(
+                "arxiv:10.1000/182",
+                "https://arxiv.org/abs/10.1000/182"
+            )
+        )
+
+        for (t in names(x)) {
+            testthat::expect_identical(
+                normalize_scholid(x[[t]], t),
+                rep(NA_character_, length(x[[t]])),
+                info = t
+            )
+        }
+    }
+)

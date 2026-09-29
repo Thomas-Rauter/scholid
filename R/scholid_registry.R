@@ -21,6 +21,25 @@
 #' canonical form, for types whose identifiers carry one. `scholid_key()`
 #' drops it.
 #'
+#' Each entry states how the identifier is written as a link and as a
+#' CURIE. `normalize_scholid()` reads these forms.
+#'
+#' - `url`: resolver URL templates, in which `{id}` stands for the
+#'   canonical identifier. A template's name, if any, is a regular
+#'   expression; a link uses the first template whose name matches the
+#'   identifier or that has no name. `character(0)` means the type has no
+#'   resolver.
+#' - `url_alt` (optional): other URL templates that are read but never
+#'   written, such as older forms that still resolve.
+#' - `curie`: the Bioregistry prefix, or `NA_character_` if Bioregistry
+#'   has no entry for the type. With `curie_is_id = TRUE`, the canonical
+#'   form already starts with the prefix and a colon, in any case, so it is
+#'   the CURIE form.
+#' - `doi` (optional): the template of the DOI that the type's authority
+#'   registers for each identifier.
+#'
+#' The sources are named in `vignettes/scholid_definitions.Rmd`.
+#'
 #' @return A named list. Names are identifier types; values are per-type
 #'   metadata lists.
 #' @noRd
@@ -72,11 +91,17 @@
     list(
         doi = list(
             order       = 10L,
+            url         = "https://doi.org/{id}",
+            url_alt     = "https://dx.doi.org/{id}",
+            curie       = "doi",
             pat         = "^10\\.[0-9]{4,9}/\\S+$",
             extract_pat = "(?<![[:alnum:]_])(?<id>10\\.[0-9]{4,9}/\\S+)"
         ),
         arxiv = list(
             order = 20L,
+            url   = "https://arxiv.org/abs/{id}",
+            curie = "arxiv",
+            doi   = "10.48550/arXiv.{id}",
             # post 2007
             pat1  = paste0("^\\d{4}\\.\\d{4,5}(", arxiv_version_pat, ")?$"),
             # pre 2007
@@ -98,6 +123,9 @@
         ),
         bibcode = list(
             order = 21L,
+            url   = "https://ui.adsabs.harvard.edu/abs/{id}",
+            url_alt = "https://adsabs.harvard.edu/abs/{id}",
+            curie = NA_character_,
             pat = "^\\d{4}[A-Za-z0-9.]{14}[A-Za-z]$",
             extract_pat = paste0(
                 "(?<![[:alnum:]_/])",
@@ -108,6 +136,8 @@
         ),
         openalex = list(
             order = 22L,
+            url   = "https://openalex.org/{id}",
+            curie = "openalex",
             pat   = "^[WASTIKPFG][0-9]{5,}$",
             extract_pat = paste0(
                 "(?<![[:alnum:]_./-])",
@@ -121,6 +151,9 @@
         ),
         swhid = list(
             order = 25L,
+            url   = "https://archive.softwareheritage.org/{id}",
+            curie = "swh",
+            curie_is_id = TRUE,
             core_pat = "^swh:1:(cnt|dir|rev|rel|snp):[0-9a-f]{40}$",
             qualifier_keys = c(
                 "origin",
@@ -140,6 +173,9 @@
         ),
         ark = list(
             order = 27L,
+            url   = "https://n2t.net/{id}",
+            curie = "ark",
+            curie_is_id = TRUE,
             pat   = "^ark:/[0-9]{5}/[0-9A-Za-z][0-9A-Za-z._/=-]*$",
             extract_pat = paste0(
                 "(?i)(?<![[:alnum:]_])",
@@ -152,6 +188,8 @@
         ),
         isni = list(
             order = 29L,
+            url   = "https://isni.org/isni/{id}",
+            curie = "isni",
             pat   = "^\\d{15}[0-9X]$",
             extract_pat = paste0(
                 "(?i)(?<![[:alnum:]_])",
@@ -169,10 +207,14 @@
         ),
         orcid = list(
             order       = 30L,
+            url         = "https://orcid.org/{id}",
+            curie       = "orcid",
             extract_pat = "(?<id>\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx])"
         ),
         ror = list(
             order       = 35L,
+            url         = "https://ror.org/{id}",
+            curie       = "ror",
             pat         = "^0[a-hjkmnp-tv-z0-9]{6}[0-9]{2}$",
             extract_pat = paste0(
                 "(?<![[:alnum:]_./-])",
@@ -183,6 +225,9 @@
         ),
         rrid = list(
             order = 37L,
+            url   = "https://scicrunch.org/resolver/{id}",
+            curie = "rrid",
+            curie_is_id = TRUE,
             pat   = "^RRID:.+$",
             body_patterns = rrid_body_patterns,
             extract_pat = paste0(
@@ -197,6 +242,9 @@
         ),
         uniprot = list(
             order = 38L,
+            url   = "https://www.uniprot.org/uniprotkb/{id}",
+            url_alt = "https://www.uniprot.org/uniprot/{id}",
+            curie = "uniprot",
             pat   = paste0(
                 "^(?:[OPQ][0-9][A-Z0-9]{3}[0-9]|",
                 "[A-NR-Z][0-9](?:[A-Z][A-Z0-9]{2}[0-9]){1,2})$"
@@ -213,6 +261,14 @@
         ),
         refseq = list(
             order       = 39L,
+            # Protein records resolve under /protein/, the others under
+            # /nuccore/.
+            url         = c(
+                "^(?:AP|NP|WP|XP|YP)_" =
+                    "https://www.ncbi.nlm.nih.gov/protein/{id}",
+                "https://www.ncbi.nlm.nih.gov/nuccore/{id}"
+            ),
+            curie       = "refseq",
             pat         = paste0("^", refseq_core_pat, "$"),
             version_pat = paste0(accession_version_pat, "$"),
             extract_pat = paste0(
@@ -228,6 +284,8 @@
         ),
         sra = list(
             order = 40L,
+            url   = "https://www.ncbi.nlm.nih.gov/sra/{id}",
+            curie = "insdc.sra",
             pat   = paste0("^", sra_core_pat, "$"),
             extract_pat = paste0(
                 "(?i)(?<![[:alnum:]_])",
@@ -242,6 +300,8 @@
         ),
         geo = list(
             order = 41L,
+            url   = "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc={id}",
+            curie = "geo",
             pat   = paste0("^", geo_core_pat, "$"),
             extract_pat = paste0(
                 "(?i)(?<![[:alnum:]_])",
@@ -256,6 +316,9 @@
         ),
         bioproject = list(
             order = 42L,
+            url   = "https://www.ncbi.nlm.nih.gov/bioproject/{id}",
+            url_alt = "https://www.ncbi.nlm.nih.gov/bioproject/?term={id}",
+            curie = "bioproject",
             pat   = paste0("^", bioproject_core_pat, "$"),
             extract_pat = paste0(
                 "(?i)(?<![[:alnum:]_])",
@@ -270,6 +333,9 @@
         ),
         assembly = list(
             order       = 43L,
+            url         = "https://www.ncbi.nlm.nih.gov/datasets/genome/{id}",
+            url_alt     = "https://www.ncbi.nlm.nih.gov/assembly/{id}",
+            curie       = "ncbi.assembly",
             pat         = paste0("^", assembly_core_pat, "$"),
             version_pat = paste0(accession_version_pat, "$"),
             extract_pat = paste0(
@@ -285,19 +351,30 @@
         ),
         isbn = list(
             order       = 44L,
+            url         = character(0),
+            curie       = "isbn",
             extract_pat = "(?<![[:alnum:]_])(?<id>[0-9Xx][0-9Xx\\- ]{8,16}[0-9Xx])(?![[:alnum:]_\\-/])"
         ),
         issn = list(
             order       = 50L,
+            url         = "https://portal.issn.org/resource/ISSN/{id}",
+            url_alt     = "https://issn.org/resource/ISSN/{id}",
+            curie       = "issn",
             extract_pat = "(?<![[:alnum:]_\\-])(?<id>\\d{4}-\\d{3}[0-9Xx])(?![[:alnum:]_\\-])"
         ),
         pmcid = list(
             order       = 60L,
+            url         = "https://pmc.ncbi.nlm.nih.gov/articles/{id}/",
+            url_alt     = "https://www.ncbi.nlm.nih.gov/pmc/articles/{id}/",
+            curie       = "pmc",
             pat         = "^PMC\\d+$",
             extract_pat = "(?<![[:alnum:]_./-])(?<id>PMC\\d+)(?![[:alnum:]_]|[-/.][[:alnum:]_])"
         ),
         pmid = list(
             order       = 90L,
+            url         = "https://pubmed.ncbi.nlm.nih.gov/{id}/",
+            url_alt     = "https://www.ncbi.nlm.nih.gov/pubmed/{id}",
+            curie       = "pubmed",
             detect_last = TRUE,
             pat         = "^\\d+$",
             extract_pat = paste0(

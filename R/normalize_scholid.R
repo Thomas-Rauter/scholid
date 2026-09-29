@@ -24,6 +24,11 @@
 #' (`vignette("scholid_definitions", package = "scholid")`). Its DOI
 #' section covers DOI case and the percent-decoding of `doi.org` URLs.
 #'
+#' Wrapped forms include each type's resolver URL and CURIE, and arXiv
+#' DOIs for arXiv identifiers. "Resolver URLs and CURIEs" in the same
+#' vignette says how they are read, and each type's section names its
+#' forms.
+#'
 #' @param x A vector of values to normalize.
 #' @param type A single string giving the identifier type. See
 #'   [scholid_types()] for supported values.
@@ -34,6 +39,8 @@
 #' @examples
 #' normalize_scholid("https://doi.org/10.1000/182", "doi")
 #' normalize_scholid("https://orcid.org/0000-0002-1825-0097", "orcid")
+#' normalize_scholid("pubmed:12345678", "pmid")
+#' normalize_scholid("https://doi.org/10.48550/arXiv.2101.00001", "arxiv")
 #'
 #' @seealso [is_scholid()], [scholid_types()]
 #' @export
@@ -62,8 +69,8 @@ normalize_scholid <- function(
 #' Normalize Digital Object Identifiers
 #'
 #' @description
-#' Normalizes DOI strings by removing URL prefixes, `doi:` labels, and
-#' trailing punctuation. The part after a `doi.org` or `dx.doi.org` host is
+#' Normalizes DOI strings by removing resolver URLs, `doi:` labels, and
+#' trailing punctuation. The part after a resolver URL's host is
 #' percent-decoded. Bare DOIs and `doi:` labels are not, because `%` can be
 #' part of a DOI name.
 #'
@@ -77,12 +84,11 @@ normalize_doi <- function(x) {
     y <- trimws(init$x[init$ok])
 
     y <- sub("^doi:\\s*", "", y, ignore.case = TRUE)
-    url_pat <- "^https?://(dx\\.)?doi\\.org/"
-    is_url <- grepl(url_pat, y, ignore.case = TRUE)
-    y <- sub(url_pat, "", y, ignore.case = TRUE)
-    if (any(is_url)) {
-        y[is_url] <- .scholid_clean_chars(
-            .scholid_percent_decode(y[is_url])
+    forms <- .scholid_strip_forms(y, "doi")
+    y <- forms$x
+    if (any(forms$url)) {
+        y[forms$url] <- .scholid_clean_chars(
+            .scholid_percent_decode(y[forms$url])
         )
     }
     y <- sub("[[:punct:]]+$", "", y)
@@ -122,6 +128,7 @@ normalize_swhid <- function(x) {
         grepl("identifiers\\.org/swh/", y, ignore.case = TRUE)
 
     y[!has_marker] <- NA_character_
+    is_url <- grepl("^https?://", y, ignore.case = TRUE)
 
     y <- sub(
         "^https?://archive\\.softwareheritage\\.org/",
@@ -143,6 +150,8 @@ normalize_swhid <- function(x) {
     )
     y <- gsub("[[:space:]]+", "", y)
     y <- sub("[.,;:!?]+$", "", y)
+    # A slash after a URL's SWHID. With qualifiers, it can end a path.
+    y[is_url] <- sub("^([^;]*)/$", "\\1", y[is_url])
 
     todo <- !is.na(y) & nzchar(y)
     if (any(todo)) {
@@ -200,9 +209,10 @@ normalize_ark <- function(x) {
 #' Normalize ISNI identifiers
 #'
 #' @description
-#' Normalizes International Standard Name Identifiers from `isni.org` URLs,
-#' `ISNI`-prefixed spaced forms, or compact 16-character strings to canonical
-#' compact uppercase form. Hyphenated ORCID-style strings are rejected.
+#' Normalizes International Standard Name Identifiers from resolver URLs,
+#' CURIEs, `ISNI`-prefixed spaced forms, or compact 16-character strings to
+#' canonical compact uppercase form. Bare hyphenated ORCID-style strings are
+#' rejected.
 #'
 #' Normalization requires checksum-valid identifiers.
 #'
@@ -224,8 +234,11 @@ normalize_isni <- function(x) {
     is_orcid_hyph <- grepl("^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx]$", y)
     y[is_orcid_hyph] <- NA_character_
 
+    forms <- .scholid_strip_forms(y, "isni")
+    y <- forms$x
+
     bare_pat <- .isni_pat()
-    has_marker <- grepl("isni\\.org/isni/", y, ignore.case = TRUE) |
+    has_marker <- forms$url | forms$curie |
         grepl("(?i)^urn:isni:", y, perl = TRUE) |
         grepl("(?i)^isni[[:space:]]", y, perl = TRUE) |
         grepl("viaf\\.org/viaf/sourceID/ISNI", y, ignore.case = TRUE) |
@@ -234,7 +247,6 @@ normalize_isni <- function(x) {
 
     y[!has_marker] <- NA_character_
 
-    y <- sub("^https?://isni\\.org/isni/", "", y, ignore.case = TRUE)
     y <- sub("(?i)^urn:isni:", "", y, perl = TRUE)
     y <- sub("(?i)^isni[[:space:]]*:?[[:space:]]*", "", y, perl = TRUE)
     y <- sub(
@@ -278,7 +290,7 @@ normalize_orcid <- function(x) {
     )
     y <- trimws(init$x[init$ok])
 
-    y <- sub("^https?://orcid\\.org/", "", y, ignore.case = TRUE)
+    y <- .scholid_strip_forms(y, "orcid")$x
     y <- sub("^orcid\\s*:\\s*", "", y, ignore.case = TRUE)
 
     is_hyph <- grepl("^\\d{4}-\\d{4}-\\d{4}-\\d{3}[0-9Xx]$", y)
@@ -335,9 +347,12 @@ normalize_uniprot <- function(x) {
     )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
+    forms <- .scholid_strip_forms(y, "uniprot")
+    y <- forms$x
 
     bare_pat <- .uniprot_pat()
-    has_marker <- grepl("uniprot\\.org/(?:uniprot|uniprotkb)/", y, ignore.case = TRUE) |
+    has_marker <- forms$url | forms$curie |
+        grepl("uniprot\\.org/(?:uniprot|uniprotkb)/", y, ignore.case = TRUE) |
         grepl("identifiers\\.org/uniprot/", y, ignore.case = TRUE) |
         grepl("(?i)^uniprot:", y, perl = TRUE) |
         grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
@@ -389,25 +404,17 @@ normalize_refseq <- function(x) {
     )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
+    forms <- .scholid_strip_forms(y, "refseq")
+    y <- forms$x
 
     bare_pat <- .refseq_pat()
-    has_marker <- grepl(
-        "ncbi\\.nlm\\.nih\\.gov/(?:nuccore|protein)/",
-        y,
-        ignore.case = TRUE
-    ) |
+    has_marker <- forms$url | forms$curie |
         grepl("identifiers\\.org/refseq/", y, ignore.case = TRUE) |
         grepl("(?i)^refseq:", y, perl = TRUE) |
         grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
 
     y[!has_marker] <- NA_character_
 
-    y <- sub(
-        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:nuccore|protein)/",
-        "",
-        y,
-        ignore.case = TRUE
-    )
     y <- sub(
         "^https?://identifiers\\.org/refseq/",
         "",
@@ -446,21 +453,17 @@ normalize_sra <- function(x) {
     )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
+    forms <- .scholid_strip_forms(y, "sra")
+    y <- forms$x
 
     bare_pat <- .sra_pat()
-    has_marker <- grepl("ncbi\\.nlm\\.nih\\.gov/sra/", y, ignore.case = TRUE) |
+    has_marker <- forms$url | forms$curie |
         grepl("identifiers\\.org/sra/", y, ignore.case = TRUE) |
         grepl("(?i)^sra:", y, perl = TRUE) |
         grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
 
     y[!has_marker] <- NA_character_
 
-    y <- sub(
-        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/sra/",
-        "",
-        y,
-        ignore.case = TRUE
-    )
     y <- sub(
         "^https?://identifiers\\.org/sra/",
         "",
@@ -499,25 +502,17 @@ normalize_geo <- function(x) {
     )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
+    forms <- .scholid_strip_forms(y, "geo")
+    y <- forms$x
 
     bare_pat <- .geo_pat()
-    has_marker <- grepl(
-        "ncbi\\.nlm\\.nih\\.gov/geo/query/acc\\.cgi",
-        y,
-        ignore.case = TRUE
-    ) |
+    has_marker <- forms$url | forms$curie |
         grepl("identifiers\\.org/geo/", y, ignore.case = TRUE) |
         grepl("(?i)^geo:", y, perl = TRUE) |
         grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
 
     y[!has_marker] <- NA_character_
 
-    y <- sub(
-        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/geo/query/acc\\.cgi\\?acc=",
-        "",
-        y,
-        ignore.case = TRUE
-    )
     y <- sub(
         "^https?://identifiers\\.org/geo/",
         "",
@@ -558,9 +553,11 @@ normalize_bioproject <- function(x) {
     )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
+    forms <- .scholid_strip_forms(y, "bioproject")
+    y <- forms$x
 
     bare_pat <- .bioproject_pat()
-    has_marker <- grepl("ncbi\\.nlm\\.nih\\.gov/bioproject", y, ignore.case = TRUE) |
+    has_marker <- forms$url | forms$curie |
         grepl("identifiers\\.org/bioproject", y, ignore.case = TRUE) |
         grepl("(?i)^bioproject:", y, perl = TRUE) |
         grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
@@ -568,19 +565,12 @@ normalize_bioproject <- function(x) {
     y[!has_marker] <- NA_character_
 
     y <- sub(
-        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/bioproject/",
-        "",
-        y,
-        ignore.case = TRUE
-    )
-    y <- sub(
         "^https?://identifiers\\.org/bioproject[:/]",
         "",
         y,
         ignore.case = TRUE
     )
     y <- sub("(?i)^bioproject:", "", y, perl = TRUE)
-    y <- sub("(?i)^\\?term=", "", y, perl = TRUE)
     y <- sub("[?#].*$", "", y)
     y <- toupper(y)
 
@@ -614,25 +604,17 @@ normalize_assembly <- function(x) {
     )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
+    forms <- .scholid_strip_forms(y, "assembly")
+    y <- forms$x
 
     bare_pat <- .assembly_pat()
-    has_marker <- grepl(
-        "ncbi\\.nlm\\.nih\\.gov/(?:assembly|datasets/genome)/",
-        y,
-        ignore.case = TRUE
-    ) |
+    has_marker <- forms$url | forms$curie |
         grepl("identifiers\\.org/insdc\\.(?:gca|gcf):", y, ignore.case = TRUE) |
         grepl("(?i)^assembly:", y, perl = TRUE) |
         grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
 
     y[!has_marker] <- NA_character_
 
-    y <- sub(
-        "^https?://www\\.ncbi\\.nlm\\.nih\\.gov/(?:assembly|datasets/genome)/",
-        "",
-        y,
-        ignore.case = TRUE
-    )
     y <- sub(
         "^https?://identifiers\\.org/insdc\\.(?:gca|gcf):",
         "",
@@ -671,7 +653,7 @@ normalize_ror <- function(x) {
     )
     y <- trimws(init$x[init$ok])
 
-    y <- sub("^https?://ror\\.org/", "", y, ignore.case = TRUE)
+    y <- .scholid_strip_forms(y, "ror")$x
     y <- sub("^ror\\.org/", "", y, ignore.case = TRUE)
     y <- sub("^ror\\s*:?\\s*", "", y, ignore.case = TRUE)
     y <- sub("/+$", "", y)
@@ -703,21 +685,17 @@ normalize_ror <- function(x) {
 normalize_rrid <- function(x) {
     init <- .scholid_init_na_character(x)
     y <- trimws(init$x[init$ok])
+    forms <- .scholid_strip_forms(y, "rrid")
+    y <- forms$x
 
-    has_marker <- grepl("RRID\\s*:", y, ignore.case = TRUE) |
-        grepl("scicrunch\\.org/resolver/", y, ignore.case = TRUE) |
+    has_marker <- forms$url |
+        grepl("RRID\\s*:", y, ignore.case = TRUE) |
         grepl("identifiers\\.org/", y, ignore.case = TRUE) |
         grepl("n2t\\.net/", y, ignore.case = TRUE) |
         grepl("bioregistry\\.io/rrid:", y, ignore.case = TRUE)
 
     y[!has_marker] <- NA_character_
 
-    y <- sub(
-        "^https?://scicrunch\\.org/resolver/",
-        "",
-        y,
-        ignore.case = TRUE
-    )
     y <- sub(
         "^https?://identifiers\\.org/",
         "",
@@ -767,6 +745,7 @@ normalize_isbn <- function(x) {
     )
 
     s <- trimws(init$x[init$ok])
+    s <- .scholid_strip_forms(s, "isbn")$x
     s <- .strip_isbn_label(s)
     out <- rep(NA_character_, length(s))
     fmt <- .isbn_format_ok(s)
@@ -790,8 +769,8 @@ normalize_isbn <- function(x) {
 #' Normalize ISSN identifiers
 #'
 #' @description
-#' Normalizes ISSN values by removing prefixes and enforcing `NNNN-NNNN`
-#' format.
+#' Normalizes ISSN values by removing resolver URLs and prefixes and
+#' enforcing `NNNN-NNNN` format.
 #'
 #' @param x A vector of ISSN values.
 #'
@@ -805,6 +784,7 @@ normalize_issn <- function(x) {
         digits = TRUE
     )
     y <- trimws(init$x[init$ok])
+    y <- .scholid_strip_forms(y, "issn")$x
 
     # Remove only an optional ISSN label at the beginning
     y <- sub("^ISSN\\s*:?[[:space:]]*", "", y, ignore.case = TRUE)
@@ -842,7 +822,8 @@ normalize_issn <- function(x) {
 #' Normalize arXiv identifiers
 #'
 #' @description
-#' Normalizes arXiv identifiers by removing URL prefixes and `arXiv:` labels.
+#' Normalizes arXiv identifiers by removing URL prefixes and `arXiv:`
+#' labels, and reads arXiv DOIs.
 #'
 #' @param x A vector of arXiv identifier values.
 #'
@@ -856,8 +837,10 @@ normalize_arxiv <- function(x) {
     )
     y <- trimws(init$x[init$ok])
 
+    from_doi <- .arxiv_from_doi(y)
     y <- sub("^arXiv:\\s*", "", y, ignore.case = TRUE)
-    y <- sub("^https?://arxiv\\.org/abs/", "", y, ignore.case = TRUE)
+    y <- .scholid_strip_forms(y, "arxiv")$x
+    y[!is.na(from_doi)] <- from_doi[!is.na(from_doi)]
 
     y[!is.na(y) & !is_arxiv(y)] <- NA_character_
 
@@ -889,20 +872,16 @@ normalize_bibcode <- function(x) {
     )
     y <- trimws(init$x[init$ok])
     y <- sub("[.,;:!?]+$", "", y)
+    forms <- .scholid_strip_forms(y, "bibcode")
+    y <- forms$x
 
     bare_pat <- .bibcode_pat()
-    has_marker <- grepl("adsabs\\.harvard\\.edu", y, ignore.case = TRUE) |
+    has_marker <- forms$url |
         grepl("(?i)^bibcode\\s*:", y, perl = TRUE) |
         grepl(bare_pat, y, perl = TRUE)
 
     y[!has_marker] <- NA_character_
 
-    y <- sub(
-        "^https?://(?:ui\\.)?adsabs\\.harvard\\.edu/abs/",
-        "",
-        y,
-        ignore.case = TRUE
-    )
     y <- sub("(?i)^bibcode\\s*:?\\s*", "", y, perl = TRUE)
 
     y[!is.na(y) & !is_bibcode(y)] <- NA_character_
@@ -915,9 +894,10 @@ normalize_bibcode <- function(x) {
 #' Normalize OpenAlex identifiers
 #'
 #' @description
-#' Normalizes OpenAlex IDs from `openalex.org` or `api.openalex.org` URLs to
-#' canonical uppercase key form. Inputs must include an explicit OpenAlex URL
-#' or a bare key matching the structural pattern; other strings are rejected.
+#' Normalizes OpenAlex IDs from `openalex.org` or `api.openalex.org` URLs or
+#' CURIEs to canonical uppercase key form. Inputs must include an explicit
+#' OpenAlex URL or CURIE or a bare key matching the structural pattern;
+#' other strings are rejected.
 #'
 #' Normalization requires structurally valid identifiers. Registry existence
 #' is not checked.
@@ -934,14 +914,16 @@ normalize_openalex <- function(x) {
         digits = TRUE
     )
     y <- trimws(init$x[init$ok])
+    forms <- .scholid_strip_forms(y, "openalex")
+    y <- forms$x
 
     bare_pat <- .openalex_key_pat()
-    has_marker <- grepl("openalex\\.org/", y, ignore.case = TRUE) |
+    has_marker <- forms$url | forms$curie |
+        grepl("openalex\\.org/", y, ignore.case = TRUE) |
         grepl(paste0("(?i)", bare_pat), y, perl = TRUE)
 
     y[!has_marker] <- NA_character_
 
-    y <- sub("^https?://openalex\\.org/", "", y, ignore.case = TRUE)
     y <- sub(
         paste0(
             "^https?://api\\.openalex\\.org/",
@@ -965,7 +947,8 @@ normalize_openalex <- function(x) {
 #' Normalize PubMed identifiers
 #'
 #' @description
-#' Normalizes PubMed identifiers by removing labels and whitespace.
+#' Normalizes PubMed identifiers by removing resolver URLs, CURIEs,
+#' labels, and whitespace.
 #'
 #' @param x A vector of PubMed identifier values.
 #'
@@ -979,6 +962,7 @@ normalize_pmid <- function(x) {
     )
     y <- trimws(init$x[init$ok])
 
+    y <- .scholid_strip_forms(y, "pmid")$x
     y <- sub(
         "^PMID(?:[[:space:]]*:[[:space:]]*|[[:space:]]+)",
         "",
@@ -996,8 +980,8 @@ normalize_pmid <- function(x) {
 #' Normalize PubMed Central identifiers
 #'
 #' @description
-#' Normalizes PMCID values by removing optional `PMCID` labels and enforcing
-#' canonical `PMC`-prefixed form.
+#' Normalizes PMCID values by removing resolver URLs, CURIEs, and optional
+#' `PMCID` labels, and enforcing canonical `PMC`-prefixed form.
 #'
 #' When a `PMCID` label is present, digit-only values are interpreted as the
 #' numeric part of a PMCID and normalized by restoring the missing `PMC`
@@ -1015,6 +999,7 @@ normalize_pmcid <- function(x) {
         digits = TRUE
     )
     y <- trimws(init$x[init$ok])
+    y <- .scholid_strip_forms(y, "pmcid")$x
 
     had_label <- grepl(
         "^PMCID\\s*:?[[:space:]]*",
@@ -1042,6 +1027,134 @@ normalize_pmcid <- function(x) {
 
 
 # Level 2 functions (functions called by level 1 functions) definitions --------
+
+
+#' Remove a resolver URL or CURIE prefix recorded in the registry
+#'
+#' @description
+#' Removes from the start of each value a URL built from one of the
+#' registry's `url` and `url_alt` templates for `type`, or else the
+#' registry's `curie` prefix and its colon. A URL matches with `http` or
+#' `https` and in any case. The rest of its template and a slash after the
+#' identifier are removed too. If several templates match, the one with
+#' the longest text before `{id}` wins. The CURIE prefix matches in any
+#' case and must be followed by the identifier, not by a space. It is kept
+#' for types with `curie_is_id`, whose canonical form starts with it.
+#'
+#' ARK and SWHID identifiers can end in a slash, so their normalizers don't
+#' use this helper.
+#'
+#' @param x A character vector.
+#' @param type A validated identifier type string.
+#'
+#' @return A list with `x`, the values without the URL or CURIE prefix, and
+#'   the logical vectors `url` and `curie`, which mark the values that had
+#'   one.
+#'
+#' @noRd
+.scholid_strip_forms <- function(
+        x,
+        type
+) {
+    entry <- .scholid_registry()[[type]]
+    url <- rep(FALSE, length(x))
+    curie <- rep(FALSE, length(x))
+
+    parts <- lapply(
+        c(entry$url, entry$url_alt),
+        .scholid_split_template
+    )
+    heads <- vapply(
+        parts,
+        function(p) p[["head"]],
+        character(1)
+    )
+    for (i in order(-nchar(heads))) {
+        # \Q...\E quotes the template text for PCRE.
+        head_pat <- paste0(
+            "^https?://\\Q",
+            sub("^https?://", "", heads[[i]]),
+            "\\E"
+        )
+        tail_pat <- paste0(
+            "\\Q",
+            sub("/$", "", parts[[i]][["tail"]]),
+            "\\E/?$"
+        )
+        hit <- !url & !is.na(x) & grepl(
+            head_pat,
+            x,
+            ignore.case = TRUE,
+            perl        = TRUE
+        )
+        if (any(hit)) {
+            y <- sub(head_pat, "", x[hit], ignore.case = TRUE, perl = TRUE)
+            x[hit] <- sub(tail_pat, "", y, ignore.case = TRUE, perl = TRUE)
+            url <- url | hit
+        }
+    }
+
+    if (!is.na(entry$curie) && !isTRUE(entry$curie_is_id)) {
+        curie_pat <- paste0("^\\Q", entry$curie, "\\E:(?![[:space:]])")
+        curie <- !url & !is.na(x) & grepl(
+            curie_pat,
+            x,
+            ignore.case = TRUE,
+            perl        = TRUE
+        )
+        x[curie] <- sub(
+            curie_pat,
+            "",
+            x[curie],
+            ignore.case = TRUE,
+            perl        = TRUE
+        )
+    }
+
+    list(
+        x     = x,
+        url   = url,
+        curie = curie
+    )
+}
+
+
+#' Read arXiv identifiers from arXiv DOIs
+#'
+#' @description
+#' Reads arXiv DataCite DOIs (`10.48550/arXiv.<id>`), bare, with a `doi:`
+#' label, or as a `doi.org` URL, like `normalize_doi()`. The prefix matches
+#' in any case, and the identifier is returned in lowercase. arXiv
+#' registers one DOI per article, whose identifier has no version and, if
+#' old-style, no subject class. DOIs with either, and all other values,
+#' give `NA_character_`.
+#'
+#' @param x A character vector.
+#'
+#' @return A character vector the same length as `x`.
+#'
+#' @noRd
+.arxiv_from_doi <- function(x) {
+    reg <- .scholid_registry()[["arxiv"]]
+    head <- .scholid_split_template(reg$doi)[["head"]]
+    out <- rep(NA_character_, length(x))
+
+    doi <- normalize_doi(x)
+    hit <- !is.na(doi) & grepl(
+        paste0("^\\Q", head, "\\E"),
+        doi,
+        ignore.case = TRUE,
+        perl        = TRUE
+    )
+    if (any(hit)) {
+        id <- tolower(substring(doi[hit], nchar(head) + 1L))
+        unregistered <- grepl(reg$version_pat, id, perl = TRUE) |
+            grepl("^[^/]*\\.[a-z]{2}/", id, perl = TRUE)
+        id[unregistered] <- NA_character_
+        out[hit] <- id
+    }
+    out
+}
 
 
 #' Decode percent-escapes
@@ -1093,6 +1206,23 @@ normalize_pmcid <- function(x) {
 
 
 # Level 3 functions (functions called by level 2 functions) definitions --------
+
+
+#' Split a registry template at its `{id}` placeholder
+#'
+#' @param template A single template string from the registry.
+#'
+#' @return A character vector with `head`, the text before `{id}`, and
+#'   `tail`, the text after it.
+#'
+#' @noRd
+.scholid_split_template <- function(template) {
+    pos <- regexpr("{id}", template, fixed = TRUE)
+    c(
+        head = substr(template, 1L, pos - 1L),
+        tail = substr(template, pos + 4L, nchar(template))
+    )
+}
 
 
 #' Decode one run of percent-escapes

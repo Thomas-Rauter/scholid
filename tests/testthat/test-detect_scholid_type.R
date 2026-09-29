@@ -1007,3 +1007,53 @@ testthat::test_that(
         )
     }
 )
+
+testthat::test_that(
+    "detect_scholid_type detects resolver URLs and CURIEs",
+    {
+        x <- c(
+            "https://pubmed.ncbi.nlm.nih.gov/12345678/",
+            "pubmed:12345678",
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC1234567/",
+            "https://www.ncbi.nlm.nih.gov/pmc/articles/PMC1234567/",
+            "pmc:PMC1234567",
+            "https://portal.issn.org/resource/ISSN/0317-8471",
+            "openalex:W2741809807",
+            "isni:0000000121032683",
+            "insdc.sra:SRR1553610",
+            "ncbi.assembly:GCF_000001405.40"
+        )
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            c(
+                "pmid",
+                "pmid",
+                "pmcid",
+                "pmcid",
+                "pmcid",
+                "issn",
+                "openalex",
+                "isni",
+                "sra",
+                "assembly"
+            )
+        )
+    }
+)
+
+testthat::test_that(
+    "detect_scholid_type keeps arXiv DOIs as doi",
+    {
+        x <- c(
+            "10.48550/arXiv.2101.00001",
+            "doi:10.48550/arXiv.2101.00001",
+            "https://doi.org/10.48550/arXiv.2101.00001"
+        )
+
+        testthat::expect_identical(
+            detect_scholid_type(x),
+            rep("doi", length(x))
+        )
+    }
+)

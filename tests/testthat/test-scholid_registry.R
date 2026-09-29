@@ -138,3 +138,56 @@ testthat::test_that(
         }
     }
 )
+
+testthat::test_that(
+    "registry states each type's resolver URL and CURIE prefix, or none",
+    {
+        reg <- .scholid_registry()
+
+        for (type in scholid_types()) {
+            entry <- reg[[type]]
+            urls <- c(entry$url, entry$url_alt)
+
+            testthat::expect_true(
+                is.character(entry$url),
+                info = paste("missing url for type:", type)
+            )
+            testthat::expect_true(
+                is.character(entry$curie) && length(entry$curie) == 1L,
+                info = paste("missing curie for type:", type)
+            )
+            testthat::expect_true(
+                all(grepl("^https://[^{}]+[{]id[}][^{}]*$", urls)),
+                info = paste("malformed url template for type:", type)
+            )
+            testthat::expect_true(
+                is.na(entry$curie) || grepl("^[a-z0-9.]+$", entry$curie),
+                info = paste("malformed curie for type:", type)
+            )
+            testthat::expect_true(
+                !isTRUE(entry$curie_is_id) || !is.na(entry$curie),
+                info = paste("curie_is_id without curie for type:", type)
+            )
+        }
+
+        no_url <- names(reg)[vapply(
+            reg,
+            function(entry) !length(entry$url),
+            logical(1)
+        )]
+        no_curie <- names(reg)[vapply(
+            reg,
+            function(entry) is.na(entry$curie),
+            logical(1)
+        )]
+        curie_is_id <- names(reg)[vapply(
+            reg,
+            function(entry) isTRUE(entry$curie_is_id),
+            logical(1)
+        )]
+
+        testthat::expect_identical(no_url, "isbn")
+        testthat::expect_identical(no_curie, "bibcode")
+        testthat::expect_setequal(curie_is_id, c("swhid", "ark", "rrid"))
+    }
+)
